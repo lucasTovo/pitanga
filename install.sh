@@ -17,8 +17,8 @@ if (!(test -e $CERT_PATH)); then
         -sha256 -days 3650 -nodes \
         -subj "/C=BR/ST=RioGrandeDoSul/L=PortoAlegre/O=IFRSPitanga/OU=TI/CN=$CommonName"
 
-    keytool -delete -cacerts -alias  pitanga #-storepass $STORE_PASS
-    keytool -importcert -cacerts -file $CERT_PATH -alias pitanga # -storepass $STORE_PASS
+    keytool -delete -cacerts -alias  pitanga -storepass $STORE_PASS
+    keytool -importcert -cacerts -file $CERT_PATH -alias pitanga -storepass $STORE_PASS
 
     sudo chmod og+r $KEY_PATH
     docker compose up -d --build keycloak
@@ -30,8 +30,8 @@ export SHOW_SQL=false
 export DB_URL="jdbc:postgresql://localhost:5432/challenges_pitanga"
 export DB_PASSWORD="mysecretpassword"
 export DB_USERNAME="postgres"
-export ISSUER_URI="https://localhost:8444/realms/master"
-export JWK_SET_URI="https://localhost:8444/realms/master/protocol/openid-connect/certs"
+export ISSUER_URI="https://localhost:8444/realms/pitanga"
+export JWK_SET_URI="https://localhost:8444/realms/pitanga/protocol/openid-connect/certs"
 
 cd ./core
 ./mvnw clean package
