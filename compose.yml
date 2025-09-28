@@ -32,6 +32,18 @@ services:
         limits:
           cpus: "0.5"
           memory: 2G
+  school:
+    build:
+      dockerfile: ./docker/school.Dockerfile
+      context: ./school
+    environment:
+      DATABASE_URL: postgres://postgres:mysecretpassword@postgres:5432/school_pitanga
+    ports:
+      - "4000:4000"
+    networks:
+      - pitangaweb
+    depends_on:
+      - postgres
 
 networks:
   pitangaweb:
