@@ -6,12 +6,12 @@ import { ChallengeEditor } from "./app/pages/ChallengeEditor";
 import { CreateChallenge } from "./app/pages/CreateChallenge";
 import { ErrorPage } from "./app/pages/ErrorPage";
 
-import { getChallengeSolution, listChallenges } from "./infra/data/core.rest";
+import { getChallengeSolution, listChallenges } from "./infra/data/challenges.rest";
 import { useAuth } from "./auth/hook/useAuth";
 
 const basename = import.meta.env.BASE_URL ?? "/pitanga-tcc";
 
-export function App() {
+export const App = () => {
   const { initialized, isAuthenticated, login } = useAuth();
 
   if (!initialized) {

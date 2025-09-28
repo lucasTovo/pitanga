@@ -1,7 +1,7 @@
 
 import { useKeycloak } from "@react-keycloak/web";
 
-export function useAuth() {
+export const useAuth = () => {
   const { keycloak, initialized } = useKeycloak();
 
   return {
@@ -16,7 +16,7 @@ export function useAuth() {
   };
 }
 
-export function getToken() {
+export const getToken = () => {
   const { keycloak } = useKeycloak();
   return keycloak.token;
 }

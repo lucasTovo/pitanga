@@ -4,7 +4,7 @@ import { default as Quill } from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import { defaultEditorConfig } from '../components/editor/editor-config.context';
 
-import { saveChallenge } from '../../infra/data/core.rest';
+import { saveChallenge } from '../../infra/data/challenges.rest';
 import { ValidationEditor } from '../components/validation/validation-editor';
 import { ChallengeEditor } from '../components/editor/challenge-editor';
 import { ValidationFormField, validationFactory } from '../../infra/utils/validation-factory';
