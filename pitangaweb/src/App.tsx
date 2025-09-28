@@ -1,47 +1,53 @@
-import { StrictMode } from 'react';
-import { Component } from 'react';
-import { ChallengesList } from './app/pages/ChallengesList';
-import { RouterProvider, createBrowserRouter } from 'react-router-dom';
-import { ChallengeEditor } from './app/pages/ChallengeEditor';
-import { getChallengeSolution, listChallenges } from './infra/data/pitanga.rest';
-import { ErrorPage } from './app/pages/ErrorPage';
-import { CreateChallenge } from './app/pages/CreateChallenge';
-import { Auth } from './app/config/auth.config';
-import { requestAuthToken } from './app/actions/login-action';
+import { StrictMode } from "react";
+import { RouterProvider, createBrowserRouter } from "react-router-dom";
 
-const basename = import.meta.env.BASE_URL ?? '/pitanga-tcc';
+import { ChallengesList } from "./app/pages/ChallengesList";
+import { ChallengeEditor } from "./app/pages/ChallengeEditor";
+import { CreateChallenge } from "./app/pages/CreateChallenge";
+import { ErrorPage } from "./app/pages/ErrorPage";
 
-// using this component style to provide error handling context
-export class App extends Component {
-  router = createBrowserRouter([
-    {
-      path: '/',
-      element: <ChallengesList />,
-      loader: listChallenges,
-      errorElement: <ErrorPage />,
-    },
-    {
-      path: '/challenge/:challengeId',
-      element: <ChallengeEditor />,
-      loader: getChallengeSolution,
-      errorElement: <ErrorPage />,
-    },
-    {
-      path: '/create-challenge',
-      element: <CreateChallenge />,
-    },
-    {
-      path: Auth.client.CALLBACK_ENDPOINT,
-      element: <div></div>,
-      loader: requestAuthToken
-    }
-  ], { basename });
+import { getChallengeSolution, listChallenges } from "./infra/data/pitanga.rest";
+import { useAuth } from "./auth/hook/useAuth";
 
-  render() {
-    return (
-      <StrictMode>
-        <RouterProvider router={this.router} />
-      </StrictMode>
-    );
+const basename = import.meta.env.BASE_URL ?? "/pitanga-tcc";
+
+export function App() {
+  const { initialized, isAuthenticated, login } = useAuth();
+
+  if (!initialized) {
+    return <div>Carregando Keycloak...</div>;
   }
+
+  if (!isAuthenticated) {
+    login();
+    return <div>Redirecionando para login...</div>;
+  }
+
+  const router = createBrowserRouter(
+    [
+      {
+        path: "/",
+        element: <ChallengesList />,
+        loader: listChallenges,
+        errorElement: <ErrorPage />,
+      },
+      {
+        path: "/challenge/:challengeId",
+        element: <ChallengeEditor />,
+        loader: getChallengeSolution,
+        errorElement: <ErrorPage />,
+      },
+      {
+        path: "/create-challenge",
+        element: <CreateChallenge />,
+      },
+    ],
+    { basename }
+  );
+
+  return (
+    <StrictMode>
+      <RouterProvider router={router} />
+    </StrictMode>
+  );
 }

@@ -10,9 +10,11 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@react-keycloak/web": "^3.4.0",
     "ace-builds": "^1.32.6",
     "axios": "^1.6.8",
     "class-transformer": "^0.5.1",
+    "keycloak-js": "^26.2.0",
     "react": "^18.2.0",
     "react-ace": "^10.1.0",
     "react-dom": "^18.2.0",

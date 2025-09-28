@@ -6,6 +6,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.stereotype.Service;
@@ -30,22 +31,28 @@ public class ChallengesService {
 
     public Page<ChallengeResponse> findAndFilter(String userId, ChallengePageableFilter filter) {
         Pageable pageable = filter.getPage();
-        Page<Challenge> page = challengesRepository.findAll(filter.getSpec(), pageable);
+
+        // Combina o spec do filtro com o filtro pelo creatorId
+        Specification<Challenge> spec = Specification
+                .where(filter.getSpec())
+                .and((root, query, cb) -> cb.equal(root.get("creatorId"), userId));
+
+        Page<Challenge> page = challengesRepository.findAll(spec, pageable);
         long total = page.getTotalElements();
 
-        List<ChallengeResponse> content = page.getContent().stream().map(i -> {
-            Integer solutions = solutionsRepository.countSolutionsForChallenge(userId, i.getId());
-            Boolean check = solutionsRepository.solutionPassValidations(userId, i.getId());
+        List<ChallengeResponse> content = page.getContent().stream().map(challenge -> {
+            Integer solutions = solutionsRepository.countSolutionsForChallenge(userId, challenge.getId());
+            Boolean check = solutionsRepository.solutionPassValidations(userId, challenge.getId());
 
             return ChallengeResponse.builder()
-                .id(i.getId())
-                .title(i.getTitle())
-                .level(i.getLevel())
+                .id(challenge.getId())
+                .title(challenge.getTitle())
+                .level(challenge.getLevel())
                 .status(SolutionStatus.getStatus(solutions, check))
                 .build();
         }).toList();
 
-        return new PageImpl<ChallengeResponse>(content, pageable, total);
+        return new PageImpl<>(content, pageable, total);
     }
 
     public Optional<Challenge> findById(UUID id) {

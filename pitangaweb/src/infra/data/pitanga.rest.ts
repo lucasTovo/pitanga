@@ -7,13 +7,15 @@ import { Page } from './page.dto';
 import { ChallengeListItem } from '../../domain/problem/challenge';
 
 export async function listChallenges() {
-  type Short = Page<ChallengeListItem[]>;
+  type Short = Page<ChallengeListItem>;
   const challengesRaw = await apiBase.get<Short>('/challenges');
   if(!challengesRaw.data?.content) {
     throw new Error('Could not load page');
   }
-  return challengesRaw.data?.content
+  const challenges = challengesRaw.data?.content
     .map(c => plainToInstance(ChallengeListItem, c));
+
+  return challenges;
 }
 
 export async function getChallengeSolution({ params }: {params: Params}) {
