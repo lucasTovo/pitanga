@@ -6,7 +6,7 @@ import { ChallengeEditor } from "./app/pages/ChallengeEditor";
 import { CreateChallenge } from "./app/pages/CreateChallenge";
 import { ErrorPage } from "./app/pages/ErrorPage";
 
-import { getChallengeSolution, listChallenges } from "./infra/data/pitanga.rest";
+import { getChallengeSolution, listChallenges } from "./infra/data/core.rest";
 import { useAuth } from "./auth/hook/useAuth";
 
 const basename = import.meta.env.BASE_URL ?? "/pitanga-tcc";

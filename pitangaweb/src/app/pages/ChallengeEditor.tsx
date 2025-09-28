@@ -4,7 +4,7 @@ import { Solution } from '../../domain/problem/solution';
 import { ValidationContainer } from '../components/validation';
 import { ToolTray } from '../components/tool-tray';
 import { useEffect, useRef, useState } from 'react';
-import { saveSolution } from '../../infra/data/pitanga.rest';
+import { saveSolution } from '../../infra/data/core.rest';
 import { DescriptionModal } from '../components/description-modal';
 import { EditorConfigContext, defaultEditorConfig } from '../components/editor/editor-config.context';
 import { Editor } from '../components/editor/editor';
