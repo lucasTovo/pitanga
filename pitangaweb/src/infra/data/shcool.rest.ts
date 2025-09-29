@@ -1,11 +1,13 @@
+import { SchoolClass } from "@/app/pages/SchoolClassList";
 import { classesApi } from "./base";
 
-export async function listSchoolClasses() {
+export async function listSchoolClasses(): Promise<SchoolClass[]> {
     try {
         const response = await classesApi.get('/classes');
         return response.data;
     } catch (error) {
         console.error('Error listing school classes:', error);
+        return [];
     }
 }
 

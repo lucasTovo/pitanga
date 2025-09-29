@@ -2,7 +2,7 @@ import { Link, useLoaderData } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
-interface SchoolClass {
+export interface SchoolClass {
   id: string;
   name: string;
   description?: string;

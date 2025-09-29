@@ -3,7 +3,7 @@ import * as service from '../services/school-class.service';
 
 export async function createSchoolClass(req: Request, res: Response, next: NextFunction) {
   try {
-    const result = await service.createSchoolClass(req.body);
+    const result = await service.createSchoolClass({ ...req.body, creatorId: req.user?.sub });
     res.status(201).json(result);
   } catch (err) {
     next(err);

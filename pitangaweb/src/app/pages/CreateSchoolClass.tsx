@@ -4,22 +4,22 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { createSchoolClass } from "@/infra/data/shcool.rest";
-import { useAuth } from "@/auth/hook/useAuth";
 
 export const CreateSchoolClass = () => {
   const navigate = useNavigate();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
-  const { userId } = useAuth();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
     try {
-        const body = { name, description, creatorId: userId };
+        const body = { name, description };
         const res = await createSchoolClass(body);
         console.log('School class created:', res);
-        navigate("/classes/" + res.id);
+        console.log("Class ID:", res?.id);
+        // navigate("/classes/" + res?.id);
+        navigate("/classes");
     } catch (error) {
         console.error('Error creating school class:', error);   
     }
