@@ -21,5 +21,56 @@ model SchoolClass {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  students   SchoolClassUser[]
+  challenges SchoolClassChallenge[]
+  creator    User                   @relation(fields: [creatorId], references: [id])
+
   @@index([creatorId])
+}
+
+enum UserRole {
+  STUDENT
+  TEACHER
+}
+
+model User {
+  id        String   @id
+  name      String
+  email     String   @unique
+  role      UserRole @default(STUDENT)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  schoolClasses  SchoolClassUser[] // turmas em que o usuário está matriculado
+  createdClasses SchoolClass[] // turmas criadas por este usuário
+}
+
+// Tabela de junção entre SchoolClass e User
+model SchoolClassUser {
+  schoolClassId String
+  userId        String
+  createdAt     DateTime @default(now())
+
+  user        User        @relation(fields: [userId], references: [id])
+  schoolClass SchoolClass @relation(fields: [schoolClassId], references: [id])
+
+  @@id([schoolClassId, userId])
+}
+
+model Challenge {
+  id String @id
+
+  schoolClasses SchoolClassChallenge[]
+}
+
+// Tabela de junção entre SchoolClass e Challenge
+model SchoolClassChallenge {
+  schoolClassId String
+  challengeId   String
+  createdAt     DateTime @default(now())
+
+  schoolClass SchoolClass @relation(fields: [schoolClassId], references: [id])
+  challenge   Challenge   @relation(fields: [challengeId], references: [id])
+
+  @@id([schoolClassId, challengeId])
 }
