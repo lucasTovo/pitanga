@@ -6,6 +6,7 @@ import { authenticate } from "./middlewares/auth.middleware";
 import { readFileSync } from "fs";
 import { createServer } from "https";
 import logger from "./shared/logger";
+import userRouter from "./routes/user.routes";
 
 dotenv.config();
 
@@ -21,8 +22,8 @@ app.use(cors({
 
 app.use(express.json());
 
-// Protege todas as rotas de classes
 app.use("/classes", authenticate, schoolClassRouter);
+app.use("/users", authenticate, userRouter);
 
 const options = {
   key: readFileSync('./certs/server.key'),
