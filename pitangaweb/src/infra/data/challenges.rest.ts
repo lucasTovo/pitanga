@@ -1,38 +1,52 @@
-import { Challenge } from '../../domain/problem';
-import { plainToInstance } from 'class-transformer';
-import { challengesApi } from './base';
 import { Params, redirect } from 'react-router-dom';
-import { Solution } from '../../domain/problem/solution';
-import { Page } from './page.dto';
-import { ChallengeListItem } from '../../domain/problem/challenge';
+
+import { Challenge } from '@/types/challenges.types';
+import { Solution } from '@/types/solutions.types';
+import { Page } from '@/types/common.types';
+
+import { challengesApi } from './base';
 
 export async function listChallenges() {
-  type Short = Page<ChallengeListItem>;
+  type Short = Page<Challenge>;
   const challengesRaw = await challengesApi.get<Short>('/challenges');
+
   if(!challengesRaw.data?.content) {
     throw new Error('Could not load page');
   }
-  const challenges = challengesRaw.data?.content
-    .map(c => plainToInstance(ChallengeListItem, c));
 
+  const challenges = challengesRaw.data?.content
   return challenges;
 }
 
-export async function getChallengeSolution({ params }: {params: Params}) {
-  const url = `/challenges/${params.challengeId}`;
-  const challengeRaw = await challengesApi.get<Challenge>(url);
-  if(challengeRaw.status === 404) {
-    return redirect('/?error=Challenge not found');
+export async function getChallengeById(id: string) {
+  try {
+    const response = await challengesApi.get<Challenge>(`/challenges/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error(`Error fetching challenge ${id}:`, error);
+    return null;
   }
-  const solutionRaw = await challengesApi.get<Solution>(url + '/solutions');
-  const result = {
-    challenge: plainToInstance(Challenge, challengeRaw.data),
-    solution: undefined
-  } as { challenge: Challenge, solution?: Solution };
-  if(solutionRaw.status === 200) {
-    result.solution = plainToInstance(Solution, solutionRaw.data);
+}
+
+export async function getChallengeSolution({ params }: { params: Params }) {
+  try {
+    const url = `/challenges/${params.challengeId}`;
+    const challengeRaw = await challengesApi.get<Challenge>(url);
+    const solutionRaw = await challengesApi.get<Solution>(`${url}/solutions`);
+
+    const result = {
+      challenge: challengeRaw.data as Challenge,
+      solution: solutionRaw.status === 200 ? (solutionRaw.data as Solution) : undefined
+    };
+
+    return result;
+  } catch (err: any) {
+    if (err?.response?.status === 404) {
+      return redirect('/?error=Challenge not found');
+    }
+
+    throw err;
   }
-  return result;
 }
 
 type ChallengeSaveCommand = {
@@ -43,9 +57,12 @@ type ChallengeSaveCommand = {
 };
 
 export async function saveChallenge(props: ChallengeSaveCommand) {
-  const res = await challengesApi.post<Challenge>('/challenges', {...props, creatorId: 2});
-  console.log(res.data);
-  return plainToInstance(Challenge, res.data);
+  const res = await challengesApi.post<Challenge>('/challenges', {
+    ...props,
+    creatorId: "2", // cuidado se o tipo for string
+  });
+
+  return res.data;
 }
 
 type SaveCommand = { code: string, language: string, challengeId: string};
@@ -56,10 +73,12 @@ export async function saveSolution(params: SaveCommand) {
     language: params.language,
     code: params.code
   });
+
   if(newSolution.status !== 200) {
     // TODO
     return;
   }
+
   const solutionRaw = await challengesApi.get<Solution>(url);
-  return plainToInstance(Solution, solutionRaw.data);
+  return solutionRaw.data;
 }
