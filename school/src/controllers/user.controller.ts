@@ -1,18 +1,30 @@
 import { NextFunction, Request, Response } from "express";
-import * as userService from "../services/user.service";
 import { UserRole } from "@prisma/client";
+
+import * as userService from "../services/user.service";
 import { CreateUserDTO, UpdateUserDTO } from "../types/user.types";
 
 export const createUser = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const dto: CreateUserDTO = { 
-        id: req.user.sub,
-        name: req.user.name,
-        email: req.user.email, 
-        role: req.user.realm_access.roles.includes(UserRole.TEACHER.toLowerCase()) ? UserRole.TEACHER : UserRole.STUDENT
+    const dto: CreateUserDTO = {
+      id: req.user.sub,
+      name: req.user.name,
+      email: req.user.email,
+      role: req.user.realm_access.roles.includes(UserRole.TEACHER.toLowerCase()) ? UserRole.TEACHER : UserRole.STUDENT
     };
+
     const user = await userService.createUser(dto);
+
     res.status(201).json(user);
+  } catch (err: any) {
+    next(err);
+  }
+};
+
+export const getLoggedUser = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const user = await userService.getLoggedUser(req.user.sub);
+    res.json(user);
   } catch (err: any) {
     next(err);
   }
@@ -38,15 +50,15 @@ export const listUsers = async (_req: Request, res: Response, next: NextFunction
 
 export const updateUser = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const userBody: UpdateUserDTO = { 
+    const userBody: UpdateUserDTO = {
       name: req.user.name,
-      email: req.user.email, 
+      email: req.user.email,
       role: req.user.realm_access.roles.includes(UserRole.TEACHER.toLowerCase()) ? UserRole.TEACHER : UserRole.STUDENT
     };
 
     const user = await userService.updateUser(req.user.sub, userBody);
+
     res.json(user);
-    
   } catch (err: any) {
     next(err);
   }

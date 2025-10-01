@@ -9,6 +9,15 @@ export const createUser = async (data: CreateUserDTO): Promise<UserResponse> => 
   }
 };
 
+export const getLoggedUser = async (id: string): Promise<UserResponse | null> => {
+  try {
+    const user = await userRepo.getUserById(id);
+    return user;
+  } catch (err: any) {
+    throw new Error(`Failed to get logged user: ${err.message}`);
+  }
+};
+
 export const getUser = async (id: string): Promise<UserResponse | null> => {
   try {
     const user = await userRepo.getUserById(id);
@@ -35,6 +44,7 @@ export const updateUser = async (id: string, data: UpdateUserDTO) => {
     } else {
       await userRepo.createUser({ id, ...data } as CreateUserDTO);
     }
+
   } catch (err: any) {
     throw new Error(`Failed to update user: ${err.message}`);
   }
