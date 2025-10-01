@@ -7,8 +7,10 @@ export const useAuth = () => {
   return {
     initialized,
     isAuthenticated: keycloak.authenticated,
-    userName: keycloak.tokenParsed?.preferred_username,
     userId: keycloak.tokenParsed?.sub,
+    userName: keycloak.tokenParsed?.name,
+    userEmail: keycloak.tokenParsed?.email,
+    userPreferredUsername: keycloak.tokenParsed?.preferred_username,
     roles: keycloak.tokenParsed?.realm_access?.roles || [],
     token: keycloak.token,
     logout: () => keycloak.logout(),
