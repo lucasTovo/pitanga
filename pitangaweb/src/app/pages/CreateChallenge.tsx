@@ -2,12 +2,14 @@ import { FormEvent, useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { default as Quill } from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
-import { defaultEditorConfig } from '../components/editor/editor-config.context';
 
 import { saveChallenge } from '../../infra/data/challenges.rest';
-import { ValidationEditor } from '../components/validation/validation-editor';
-import { ChallengeEditor } from '../components/editor/challenge-editor';
+import { defaultEditorConfig } from '../components/editor/editor-config.context';
 import { ValidationFormField, validationFactory } from '../../infra/utils/validation-factory';
+
+import { ChallengeEditor } from '../components/editor/challenge-editor';
+import { ValidationEditor } from '../components/validation/validation-editor';
+
 
 export const CreateChallenge = () => {
   const navigate = useNavigate();
@@ -37,7 +39,7 @@ export const CreateChallenge = () => {
 
     saveChallenge(body)
       .then((res) => {
-        navigate('/challenge/' + res.id);
+        navigate('/challenges/' + res.id);
       });
   }, [description, baseCode, navigate]);
 
@@ -48,7 +50,7 @@ export const CreateChallenge = () => {
           <Link
             to={'/'}
             className="col-span-1 flex p-2 text-cyan-500 text-center gap-1">
-            <img className='h-5 w-full' src='/pitanga-tcc/back.svg' alt='voltar'/>
+            <img className='h-5 w-full' src='/pitanga-tcc/back.svg' alt='voltar' />
           </Link>
           <h2 className='col-span-5 text-xl font-bold text-ellipsis overflow-hidden'>
             Criar desafio

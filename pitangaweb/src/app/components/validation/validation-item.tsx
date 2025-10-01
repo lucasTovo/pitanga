@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ValidationResult, ValidationStatus } from '../../../domain/problem/solution';
+import { ValidationResult, ValidationStatus } from '@/types/validations.type';
 
 const NULL_STYLE = 'border-gray-800 bg-gray-500 text-white';
 const FAIL_STYLE = 'border-red-800 bg-red-500 text-white';
@@ -23,7 +23,7 @@ export const ValidationItem = (props: ValidationResult) => {
     >
       <div className="grid grid-cols-6 pb-1">
         <div className="col-span-5">
-          <p>Input: {props.input?.trim()?.length > 0 ? props.input : 'Sem input'}</p>
+          <p>Input: {props.testInput?.trim()?.length > 0 ? props.testInput : 'Sem input'}</p>
           <p className='font-black'>Output esperado: {props.expectedOutput}</p>
         </div>
       </div>

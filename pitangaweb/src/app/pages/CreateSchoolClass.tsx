@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
+
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+
 import { createSchoolClass } from "@/infra/data/shcool.rest";
 
 export const CreateSchoolClass = () => {
@@ -14,14 +16,11 @@ export const CreateSchoolClass = () => {
     e.preventDefault();
 
     try {
-        const body = { name, description };
-        const res = await createSchoolClass(body);
-        console.log('School class created:', res);
-        console.log("Class ID:", res?.id);
-        // navigate("/classes/" + res?.id);
-        navigate("/classes");
+      const body = { name, description };
+      const res = await createSchoolClass(body);
+      navigate("/classes/" + res?.id);
     } catch (error) {
-        console.error('Error creating school class:', error);   
+      console.error('Error creating school class:', error);
     }
   }
 

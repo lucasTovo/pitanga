@@ -1,7 +1,8 @@
-import { AxiosError } from 'axios';
-import { useRouteError } from 'react-router-dom';
-import { ErrorCodeMap } from '../../infra/error/error-code.map';
 import { useEffect, useState } from 'react';
+import { useRouteError } from 'react-router-dom';
+import { AxiosError } from 'axios';
+
+import { ErrorCodeMap } from '../../infra/error/error-code.map';
 
 export const ErrorPage = () => {
   const error = useRouteError();
@@ -10,7 +11,7 @@ export const ErrorPage = () => {
 
   useEffect(() => {
     console.error(error);
-    if(error instanceof AxiosError) {
+    if (error instanceof AxiosError) {
       setMessage(mapper.fromAxiosError(error));
     }
     document.title = 'Pitanga | ' + message;
@@ -21,7 +22,7 @@ export const ErrorPage = () => {
     <div className="max-w-sm mx-auto space-y-3 h-screen flex flex-col justify-center">
       <h1 className="text-center text-4xl font-bold">Oops!</h1>
       <p className="text-center">{message}</p>
-      <p className="text-center text-gray-500">{(error as {message: string}).message}</p>
+      <p className="text-center text-gray-500">{(error as { message: string }).message}</p>
     </div>
   );
 };
