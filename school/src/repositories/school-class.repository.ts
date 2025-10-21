@@ -1,6 +1,6 @@
+import { SchoolClass } from '@prisma/client';
 
 import { prisma } from '../shared/prisma-client';
-import { SchoolClass } from '@prisma/client';
 import { CreateSchoolClassDTO, SchoolClassResponse } from '../types/schoolClass.types';
 
 function mapToSchoolClassResponse(raw: any): SchoolClassResponse {
@@ -51,6 +51,20 @@ export async function createSchoolClass(data: CreateSchoolClassDTO): Promise<Sch
     return mapToSchoolClassResponse(result);
 }
 
+export async function addChallengeToSchoolClass(schoolClassId: string, challengeId: string) {
+  await prisma.schoolClassChallenge.create({
+    data: { schoolClassId, challengeId },
+  });
+
+  const updated = await prisma.schoolClass.findUnique({
+    where: { id: schoolClassId },
+    select: schoolClassSelect,
+  });
+
+  if (!updated) throw new Error('School class not found');
+  return mapToSchoolClassResponse(updated);
+}
+
 export async function findAllSchoolClasses(): Promise<SchoolClassResponse[]> {
     const result = await prisma.schoolClass.findMany({
         select: schoolClassSelect,
@@ -58,7 +72,6 @@ export async function findAllSchoolClasses(): Promise<SchoolClassResponse[]> {
 
     return result.map(r => mapToSchoolClassResponse(r));
 }
-
 
 export async function findSchoolClassById(id: string): Promise<SchoolClassResponse | null> {
     const result = await prisma.schoolClass.findUnique({
@@ -69,8 +82,6 @@ export async function findSchoolClassById(id: string): Promise<SchoolClassRespon
 
     return mapToSchoolClassResponse(result);
 }
-
-
 
 export async function updateSchoolClass(id: string, data: Partial<SchoolClass>): Promise<SchoolClassResponse> {
     const result = await prisma.schoolClass.update({

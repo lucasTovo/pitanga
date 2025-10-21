@@ -9,16 +9,18 @@ export interface CreateSchoolClassDTO {
 export interface UpdateSchoolClassDTO {
   name?: string;
   description?: string;
+  students: string[];
+  challenges: string[];
 }
 
-// Resposta de turma
+// Response de turma
 export interface SchoolClassResponse {
   id: string;
   name: string;
   description: string | null;
   creator: {
     id: string;
-    name: string;   
+    name: string;
   };
   students: string[];
   challenges: string[];

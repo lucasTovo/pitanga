@@ -57,12 +57,6 @@ model SchoolClassUser {
   @@id([schoolClassId, userId])
 }
 
-model Challenge {
-  id String @id
-
-  schoolClasses SchoolClassChallenge[]
-}
-
 // Tabela de junção entre SchoolClass e Challenge
 model SchoolClassChallenge {
   schoolClassId String
@@ -70,7 +64,6 @@ model SchoolClassChallenge {
   createdAt     DateTime @default(now())
 
   schoolClass SchoolClass @relation(fields: [schoolClassId], references: [id])
-  challenge   Challenge   @relation(fields: [challengeId], references: [id])
 
   @@id([schoolClassId, challengeId])
 }

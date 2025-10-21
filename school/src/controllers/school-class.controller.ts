@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+
 import * as service from '../services/school-class.service';
 import { CreateSchoolClassDTO } from '../types/schoolClass.types';
 
@@ -11,6 +12,17 @@ export async function createSchoolClass(req: Request, res: Response, next: NextF
     next(err);
   }
 };
+
+export async function addChallengeToSchoolClass(req: Request, res: Response, next: NextFunction) {
+  try {
+    const schoolClassId = req.params.id;
+    const { challengeId }: { challengeId: string } = req.body;
+    const result = await service.addChallengeToSchoolClass(schoolClassId, challengeId);
+    res.json(result);
+  } catch (err: any) {
+    next(err);
+  }
+}
 
 export async function listSchoolClasses(_req: Request, res: Response, next: NextFunction) {
   try {
@@ -31,6 +43,15 @@ export async function getSchoolClass(req: Request, res: Response, next: NextFunc
 };
 
 export async function updateSchoolClass(req: Request, res: Response, next: NextFunction) {
+  try {
+    const result = await service.updateSchoolClass(req.params.id, req.body);
+    res.json(result);
+  } catch (err: any) {
+    next(err);
+  }
+};
+
+export async function updateChallengesSchoolClass(req: Request, res: Response, next: NextFunction) {
   try {
     const result = await service.updateSchoolClass(req.params.id, req.body);
     res.json(result);

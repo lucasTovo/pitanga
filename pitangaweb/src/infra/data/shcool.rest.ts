@@ -1,6 +1,8 @@
-import { SchoolClass, User } from "@/types/schoolClass.types";
-import { classesApi } from "./base";
 import { Params } from "react-router-dom";
+
+import { SchoolClass, User } from "@/types/schoolClass.types";
+
+import { classesApi } from "./base";
 
 export async function listSchoolClasses() {
   try {
@@ -28,6 +30,18 @@ export async function createSchoolClass(data: { name: string; description?: stri
     return schoolClass.data;
   } catch (error) {
     console.error('Error creating school class:', error);
+  }
+}
+
+export async function addChallengeToSchoolClass(schoolClassId: string, challengeId: string) {
+  try {
+    const response = await classesApi.post<SchoolClass>(`/classes/${schoolClassId}/challenges`, {
+      challengeId,
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error adding challenge to school class:", error);
+    return null;
   }
 }
 
