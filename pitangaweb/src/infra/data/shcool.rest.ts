@@ -33,6 +33,18 @@ export async function createSchoolClass(data: { name: string; description?: stri
   }
 }
 
+export async function addStudentToSchoolClass(schoolClassId: string, studentId: string) {
+  try {
+    const response = await classesApi.post<SchoolClass>(`/classes/${schoolClassId}/students`, {
+      studentId,
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error adding student to school class:", error);
+    return null;
+  }
+}
+
 export async function addChallengeToSchoolClass(schoolClassId: string, challengeId: string) {
   try {
     const response = await classesApi.post<SchoolClass>(`/classes/${schoolClassId}/challenges`, {
@@ -67,7 +79,7 @@ export async function deleteSchoolClass(id: string) {
 
 export async function listUsers() {
   try {
-    const response = await classesApi.get<User>("/users");
+    const response = await classesApi.get<User[]>("/users");
     return response.data;
   } catch (error) {
     console.error("Error listing users:", error);

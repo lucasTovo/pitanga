@@ -5,7 +5,7 @@ import { DialogOverlay } from '@radix-ui/react-dialog';
 import type { SchoolClass, User } from '@/types/schoolClass.types';
 import type { Challenge } from '@/types/challenges.types';
 
-import { addChallengeToSchoolClass, getUser } from '@/infra/data/shcool.rest';
+import { addChallengeToSchoolClass, addStudentToSchoolClass, getUser, listUsers } from '@/infra/data/shcool.rest';
 import { getChallengeById, listChallenges } from '@/infra/data/challenges.rest';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -14,28 +14,27 @@ import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/ca
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 
+type Tab = 'students' | 'challenges';
 
 export default function SchoolClass() {
   const schoolClass = useLoaderData() as SchoolClass;
-  const [students, setStudents] = useState<User[]>([]);
-  const [loadingStudents, setLoadingStudents] = useState(true);
-  const [challenges, setChallenges] = useState<Challenge[]>([]);
-  const [loadingChallenges, setLoadingChallenges] = useState(true);
+  const [classStudents, setClassStudents] = useState<User[]>([]);
+  const [allStudents, setAllStudents] = useState<User[]>([]);
+  const [classChallenges, setClassChallenges] = useState<Challenge[]>([]);
   const [myChallenges, setMyChallenges] = useState<Challenge[]>([]);
-  const [loadingMyChallenges, setLoadingMyChallenges] = useState(true);
+  const [tab, setTab] = useState<Tab>('students');
   const [modalOpen, setModalOpen] = useState(false);
-
-  const handleAddchallenge = async (challenge: Challenge) => {
-    await addChallengeToSchoolClass(schoolClass.id, challenge.id);
-    setChallenges([...challenges, challenge])
-  }
+  const [loadingStudents, setLoadingStudents] = useState(true);
+  const [loadingAllStudents, setLoadingAllStudents] = useState(true);
+  const [loadingChallenges, setLoadingChallenges] = useState(true);
+  const [loadingMyChallenges, setLoadingMyChallenges] = useState(true);
 
   useEffect(() => {
-    async function getStudents() {
+    async function getClassStudents() {
       try {
         const results = await Promise.all(schoolClass.students.map(id => getUser(id)));
         const students = results.filter((u): u is User => Boolean(u));
-        setStudents(students);
+        setClassStudents(students);
       } catch (err) {
         console.error('Error fetching students:', err);
       } finally {
@@ -43,20 +42,35 @@ export default function SchoolClass() {
       }
     }
 
-    if (!schoolClass.students.length) {
+    if (!schoolClass?.students?.length) {
       setLoadingStudents(false);
       return;
     }
 
-    getStudents();
-  }, [schoolClass.students]);
+    getClassStudents();
+  }, []);
 
   useEffect(() => {
-    async function getChallenges() {
+    async function getAllStudents() {
+      try {
+        const students = await listUsers();
+        setAllStudents(students);
+      } catch (err) {
+        console.error('Error fetching students:', err);
+      } finally {
+        setLoadingAllStudents(false);
+      }
+    }
+
+    getAllStudents();
+  }, []);
+
+  useEffect(() => {
+    async function getClassChallenges() {
       try {
         const results = await Promise.all(schoolClass.challenges.map(id => getChallengeById(id)));
         const challenges = results.filter((u): u is Challenge => Boolean(u));
-        setChallenges(challenges);
+        setClassChallenges(challenges);
       } catch (err) {
         console.error('Error fetching students:', err);
       } finally {
@@ -64,13 +78,13 @@ export default function SchoolClass() {
       }
     }
 
-    if (!schoolClass.challenges.length) {
+    if (!schoolClass?.challenges?.length) {
       setLoadingChallenges(false);
       return;
     }
 
-    getChallenges();
-  }, [schoolClass.challenges]);
+    getClassChallenges();
+  }, []);
 
   useEffect(() => {
     async function getMyChallenges() {
@@ -88,7 +102,35 @@ export default function SchoolClass() {
     getMyChallenges();
   }, []);
 
-  if (loadingStudents) return <p>Carregando alunos...</p>;
+  const handleAddchallenge = async (challenge: Challenge) => {
+    await addChallengeToSchoolClass(schoolClass.id, challenge.id);
+    setClassChallenges([...classChallenges, challenge])
+  }
+
+  const handleAddStudent = async (student: User) => {
+    await addStudentToSchoolClass(schoolClass.id, student.id);
+    setClassStudents([...classStudents, student]);
+  }
+
+  const filterAvailableUsers = () => {
+    const assignedIds = new Set(classStudents.map(student => student.id));
+    return allStudents.filter(student => !assignedIds.has(student.id));
+  }
+
+  const dialogContent: Record<Tab, { button: string; title: string; loadingMsg: string }> = {
+    students: {
+      button: '+ Adicionar aluno á turma',
+      title: 'Escolha um aluno para adicionar',
+      loadingMsg: 'Carregando alunos...',
+    },
+    challenges: {
+      button: '+ Adicionar desafio á turma',
+      title: 'Escolha um desafio para adicionar',
+      loadingMsg: 'Carregando desafios...',
+    }
+  }
+
+  if (loadingStudents || loadingAllStudents) return <p>Carregando alunos...</p>;
   if (loadingChallenges) return <p>Carregando desafios...</p>;
 
   if (!schoolClass) {
@@ -101,14 +143,14 @@ export default function SchoolClass() {
         <CardHeader>
           <CardTitle>{schoolClass.name}</CardTitle>
           <CardDescription>
-            <p className="text-sm text-muted-foreground">Desafios: {challenges.length}</p>
-            <p className="text-sm text-muted-foreground">Alunos: {schoolClass.count.students}</p>
+            <p className="text-sm text-muted-foreground">Desafios: {classChallenges.length}</p>
+            <p className="text-sm text-muted-foreground">Alunos: {classStudents.length}</p>
           </CardDescription>
         </CardHeader>
       </Card>
 
       {/* Abas */}
-      <Tabs defaultValue="students" className="space-y-4">
+      <Tabs defaultValue={tab} onValueChange={(value) => setTab(value as Tab)} className="space-y-4">
         <TabsList>
           <TabsTrigger value="students">Alunos</TabsTrigger>
           <TabsTrigger value="challenges">Desafios</TabsTrigger>
@@ -125,7 +167,7 @@ export default function SchoolClass() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {students.map((student: User) => (
+              {classStudents.map((student: User) => (
                 <TableRow key={student.id}>
                   <TableCell>{student.name}</TableCell>
                   <TableCell>{student.email}</TableCell>
@@ -147,7 +189,7 @@ export default function SchoolClass() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {challenges.map((challenge: Challenge) => (
+              {classChallenges.map((challenge: Challenge) => (
                 <TableRow key={challenge.id}>
                   <TableCell>{challenge.title}</TableCell>
                   <TableCell>{challenge.level}</TableCell>
@@ -156,39 +198,53 @@ export default function SchoolClass() {
               ))}
             </TableBody>
           </Table>
-
-          <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-            <DialogTrigger asChild>
-              <Button variant="outline">+ Adicionar desafio á turma</Button>
-            </DialogTrigger>
-            <DialogOverlay>
-              {/* <DialogContent className="sm:max-w-[425px]"> */}
-              <DialogContent className="sm:max-w-2xl w-full max-h-[70vh] overflow-hidden">
-                <DialogHeader>
-                  <DialogTitle>Escolha um desafio para adicionar</DialogTitle>
-                  <DialogDescription></DialogDescription>
-                </DialogHeader>
-                <div className="mt-4 overflow-y-auto px-2" style={{ maxHeight: 'calc(70vh - 6rem)' }}>
-                  {loadingMyChallenges ? (
-                    <p>Carregando desafios...</p>
-                  ) : myChallenges.map(ch => (
-                    <Card key={ch.id} onClick={() => {
-                      handleAddchallenge(ch)
-                      setModalOpen(false)
-                    }}>
-                      <CardHeader>
-                        <CardTitle>{ch.title}</CardTitle>
-                        <p>{ch.level}</p>
-                      </CardHeader>
-                    </Card>
-                  ))}
-
-                </div>
-              </DialogContent>
-            </DialogOverlay>
-          </Dialog>
         </TabsContent>
       </Tabs>
+
+      <Dialog open={modalOpen} onOpenChange={setModalOpen}>
+        <DialogTrigger asChild>
+          <Button variant="outline">{dialogContent[tab].button}</Button>
+        </DialogTrigger>
+        <DialogContent className="sm:max-w-2xl w-full max-h-[70vh] overflow-hidden">
+          <DialogHeader>
+            <DialogTitle>{dialogContent[tab].title}</DialogTitle>
+            <DialogDescription></DialogDescription>
+          </DialogHeader>
+          <div className="mt-4 overflow-y-auto px-2" style={{ maxHeight: 'calc(70vh - 6rem)' }}>
+            {tab === 'challenges' && (
+              loadingMyChallenges ? (
+                <p>{dialogContent[tab].loadingMsg}</p>
+              ) : myChallenges.map(challenge => (
+                <Card key={challenge.id} onClick={() => {
+                  handleAddchallenge(challenge)
+                  setModalOpen(false)
+                }}>
+                  <CardHeader>
+                    <CardTitle>{challenge.title}</CardTitle>
+                    <p>{challenge.level}</p>
+                  </CardHeader>
+                </Card>
+              ))
+            )}
+
+            {tab === 'students' && (
+              loadingAllStudents ? (
+                <p>{dialogContent[tab].loadingMsg}</p>
+              ) : filterAvailableUsers().map(student => (
+                <Card key={student.id} onClick={() => {
+                  handleAddStudent(student)
+                  setModalOpen(false)
+                }}>
+                  <CardHeader>
+                    <CardTitle>{student.name}</CardTitle>
+                    <p>{student.email}</p>
+                  </CardHeader>
+                </Card>
+              ))
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

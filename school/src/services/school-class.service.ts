@@ -9,6 +9,22 @@ export const createSchoolClass = async (data: CreateSchoolClassDTO): Promise<Sch
     }
 }
 
+export const addStudentToSchoolClass = async (schoolClassId: string, studentId: string) => {
+  try {
+    return await repo.addStudentToSchoolClass(schoolClassId, studentId);
+  } catch (err: any) {
+    throw new Error(`Failed to add student to school class: ${err.message}`);
+  }
+};
+
+export const addChallengeToSchoolClass = async (schoolClassId: string, challengeId: string) => {
+  try {
+    return await repo.addChallengeToSchoolClass(schoolClassId, challengeId);
+  } catch (err: any) {
+    throw new Error(`Failed to add challenge to school class: ${err.message}`);
+  }
+};
+
 export const listSchoolClasses = async (): Promise<SchoolClassResponse[]> => {
     try {
         return await repo.findAllSchoolClasses();

@@ -51,6 +51,20 @@ export async function createSchoolClass(data: CreateSchoolClassDTO): Promise<Sch
     return mapToSchoolClassResponse(result);
 }
 
+export async function addStudentToSchoolClass(schoolClassId: string, studentId: string) {
+  await prisma.schoolClassUser.create({
+    data: { schoolClassId, userId: studentId },
+  });
+
+  const updated = await prisma.schoolClass.findUnique({
+    where: { id: schoolClassId },
+    select: schoolClassSelect,
+  });
+
+  if (!updated) throw new Error('School class not found');
+  return mapToSchoolClassResponse(updated);
+}
+
 export async function addChallengeToSchoolClass(schoolClassId: string, challengeId: string) {
   await prisma.schoolClassChallenge.create({
     data: { schoolClassId, challengeId },

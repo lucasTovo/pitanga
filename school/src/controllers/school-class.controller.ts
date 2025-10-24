@@ -13,6 +13,17 @@ export async function createSchoolClass(req: Request, res: Response, next: NextF
   }
 };
 
+export async function addStudentToSchoolClass(req: Request, res: Response, next: NextFunction) {
+  try {
+    const schoolClassId = req.params.id;
+    const { studentId }: { studentId: string } = req.body;
+    const result = await service.addStudentToSchoolClass(schoolClassId, studentId);
+    res.json(result);
+  } catch (err: any) {
+    next(err);
+  }
+}
+
 export async function addChallengeToSchoolClass(req: Request, res: Response, next: NextFunction) {
   try {
     const schoolClassId = req.params.id;
