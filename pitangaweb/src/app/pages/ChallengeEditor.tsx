@@ -1,18 +1,19 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLoaderData } from 'react-router-dom';
 
-import { Solution } from '@/types/solutions.types';
-import { Challenge } from '@/types/challenges.types';
-import { ValidationResult } from '@/types/validations.type';
+import type { Solution } from '@/types/solutions.types';
+import type { Challenge } from '@/types/challenges.types';
+import type { ValidationResult } from '@/types/validations.type';
 
-import { saveSolution } from '../../infra/data/challenges.rest';
-import { debounce } from '../../infra/utils/debounce';
+import { saveSolution } from '@/infra/data/challenges.rest';
+import { debounce } from '@/infra/utils/debounce';
 
 import { ToolTray } from '../components/tool-tray';
 import { Editor } from '../components/editor/editor';
 import { ValidationContainer } from '../components/validation';
 import { DescriptionModal } from '../components/description-modal';
 import { EditorConfigContext, defaultEditorConfig } from '../components/editor/editor-config.context';
+
 
 export const ChallengeEditor = () => {
   const { challenge, solution: currentSolution } = useLoaderData() as {

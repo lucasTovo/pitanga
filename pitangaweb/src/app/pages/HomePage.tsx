@@ -1,19 +1,23 @@
-import { useEffect, useState } from "react";
-import { Link, useLoaderData } from "react-router-dom";
+import { useEffect, useState } from 'react';
+import { Link, Navigate, useLoaderData, useNavigate } from 'react-router-dom';
 
-import { useAuth } from "@/auth/hook/useAuth";
+import { useAuth } from '@/auth/hook/useAuth';
 
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 
-import { Challenge } from "@/types/challenges.types";
-import { SchoolClass, User, UserRole } from "@/types/schoolClass.types";
+import { Challenge } from '@/types/challenges.types';
+import { SchoolClass, User, UserRole } from '@/types/schoolClass.types';
 
-import { listSchoolClasses } from "@/infra/data/shcool.rest";
-import { listChallenges } from "@/infra/data/challenges.rest";
+import { listSchoolClasses } from '@/infra/data/shcool.rest';
+import { listChallenges } from '@/infra/data/challenges.rest';
+import { Badge } from '@/components/ui/badge';
+import { LogOutIcon, UserIcon } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@radix-ui/react-avatar';
 
 export function HomePage() {
+  const navigate = useNavigate();
   const user = useLoaderData() as User;
   const [challenges, setChallenges] = useState<Challenge[]>([]);
   const [schoolClasses, setSchoolClasses] = useState<SchoolClass[]>([]);
@@ -26,7 +30,7 @@ export function HomePage() {
   const { logout } = useAuth();
   const handleLogout = () => {
     logout();
-  }
+  };
 
   useEffect(() => {
     async function getChallenges() {
@@ -62,14 +66,32 @@ export function HomePage() {
   if (loadingSchoolClasses) return <p>Carregando turmas...</p>;
 
   return (
-    <div className="p-4 space-y-6">
+    <div className="p-2 space-y-6">
       {/* Topo com informações do usuário */}
-      <Card>
-        <CardHeader>
-          <CardTitle>{user.name}</CardTitle>
-          <p>{user.email}</p>
-          {isTeacher && <p>Turmas criadas: {schoolClasses.length}</p>}
-          <Button variant="destructive" onClick={handleLogout}>
+      <Card className="w-full">
+        <CardHeader className='flex-row'>
+          <Avatar className="w-16 h-16 object-cover mr-4">
+            <AvatarImage className='rounded-full' src="https://github.com/shadcn.png" alt="@shadcn" />
+            <AvatarFallback>CN</AvatarFallback>
+          </Avatar>
+
+          <div>
+            <CardTitle>{user.name}</CardTitle>
+            <CardDescription>
+              <p className="text-sm text-muted-foreground">{user.email}</p>
+              <Badge variant="secondary" className="flex items-center gap-1 mt-1">
+                <UserIcon className="w-4 h-4" />
+                {isTeacher ? 'Professor' : 'Aluno'}
+              </Badge>
+            </CardDescription>
+          </div>
+
+          <Button
+            variant="destructive"
+            className="ml-auto"
+            onClick={handleLogout}
+          >
+            <LogOutIcon className="w-4 h-4" />
             Sair
           </Button>
         </CardHeader>
@@ -98,8 +120,8 @@ export function HomePage() {
               </Card>
             </Link>
           ))}
-          <Button asChild className="self-start">
-            <Link to="/create-challenge">+ Adicionar Desafio</Link>
+          <Button className="self-start" onClick={() => navigate("/create-challenge")}>
+            + Adicionar Desafio
           </Button>
         </TabsContent>
 
