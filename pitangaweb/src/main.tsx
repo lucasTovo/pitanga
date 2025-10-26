@@ -6,17 +6,37 @@ import "./main.css";
 import { App } from "./App";
 import { updateUser } from "./infra/data/shcool.rest";
 import { keycloak, initOptions } from "./infra/data/keycloack";
+import { useAuth } from "./auth/hook/useAuth";
+import { useEffect, useState } from "react";
 
 const root = document.getElementById("root")!;
 
-const onAuthSuccess = (event: string) => {
-  if (event === 'onAuthSuccess') {
-    updateUser();
+function AppInitializer() {
+  const { initialized } = useAuth();
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    if (!initialized) return;
+
+    const syncUser = async () => {
+      if (keycloak.authenticated) {
+        await updateUser();
+      }
+      setReady(true);
+    };
+
+    syncUser();
+  }, [initialized, keycloak.authenticated]);
+
+  if (!ready) {
+    return <div>Carregando...</div>;
   }
+
+  return <App />;
 }
 
 ReactDOM.createRoot(root).render(
-  <ReactKeycloakProvider authClient={keycloak} initOptions={initOptions} onEvent={onAuthSuccess}>
-    <App />
+  <ReactKeycloakProvider authClient={keycloak} initOptions={initOptions}>
+    <AppInitializer />
   </ReactKeycloakProvider>
 );
