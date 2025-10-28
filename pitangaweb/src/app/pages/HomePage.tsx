@@ -1,30 +1,30 @@
 import { useEffect, useState } from 'react';
-import { Link, Navigate, useLoaderData, useNavigate } from 'react-router-dom';
-
-import { useAuth } from '@/auth/hook/useAuth';
-
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Link } from 'react-router-dom';
+import { LogOutIcon, UserIcon } from 'lucide-react';
 
 import { Challenge } from '@/types/challenges.types';
-import { SchoolClass, User, UserRole } from '@/types/schoolClass.types';
+import { SchoolClass, UserRole } from '@/types/schoolClass.types';
 
 import { listSchoolClasses } from '@/infra/data/shcool.rest';
 import { listChallenges } from '@/infra/data/challenges.rest';
+
+import { useAuth } from '@/auth/hook/useAuth';
+import { useUser } from '../layouts/RootLayout';
+
 import { Badge } from '@/components/ui/badge';
-import { LogOutIcon, UserIcon } from 'lucide-react';
-import { Avatar, AvatarFallback, AvatarImage } from '@radix-ui/react-avatar';
+import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 
 export function HomePage() {
-  const navigate = useNavigate();
-  const user = useLoaderData() as User;
   const [challenges, setChallenges] = useState<Challenge[]>([]);
   const [schoolClasses, setSchoolClasses] = useState<SchoolClass[]>([]);
   const [activeTab, setActiveTab] = useState('challenges');
   const [loadingChallenges, setLoadingChallenges] = useState(true);
   const [loadingSchoolClasses, setLoadingSchoolClasses] = useState(true);
 
+  const { user } = useUser();
   const isTeacher = user.role === UserRole.TEACHER;
 
   const { logout } = useAuth();
@@ -72,7 +72,9 @@ export function HomePage() {
         <CardHeader className='flex-row'>
           <Avatar className="w-16 h-16 object-cover mr-4">
             <AvatarImage className='rounded-full' src="https://github.com/shadcn.png" alt="@shadcn" />
-            <AvatarFallback>CN</AvatarFallback>
+            <AvatarFallback>
+              <UserIcon className='rounded-full border' size='md'></UserIcon>
+            </AvatarFallback>
           </Avatar>
 
           <div>
@@ -105,28 +107,40 @@ export function HomePage() {
         </TabsList>
 
         {/* Aba de desafios */}
-        <TabsContent value="challenges" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <TabsContent
+          value="challenges"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
+        >
           {challenges.map(ch => (
-            <Link key={ch.id} to={'/challenges/' + ch.id}>
+            <Link
+              key={ch.id}
+              to={'/challenges/' + ch.id}
+              className="block transition-transform hover:scale-[1.02]"
+            >
               <Card key={ch.id}>
-                <CardHeader>
+                <CardHeader className='pb-3'>
                   <CardTitle>{ch.title}</CardTitle>
-                  <p>{ch.level}</p>
+                  <CardDescription>
+                    <div dangerouslySetInnerHTML={{ __html: ch.description }} />
+                  </CardDescription>
                 </CardHeader>
-                <CardContent>
-                  <div dangerouslySetInnerHTML={{ __html: ch.description }} />
-                  {isTeacher && <button className="btn btn-primary mt-2">Criar Novo Desafio</button>}
-                </CardContent>
+                <CardFooter>{ch.level}</CardFooter>
               </Card>
             </Link>
           ))}
-          <Button className="self-start" onClick={() => navigate("/create-challenge")}>
-            + Adicionar Desafio
+
+          <Button asChild>
+            <Link to={'/create-challenge'}>
+              + Adicionar Desafio
+            </Link>
           </Button>
         </TabsContent>
 
         {/* Aba de turmas */}
-        <TabsContent value="classes" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <TabsContent
+          value="classes"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
+        >
           {schoolClasses.map(cls => (
             <Link
               key={cls.id}
@@ -136,14 +150,17 @@ export function HomePage() {
               <Card key={cls.id}>
                 <CardHeader>
                   <CardTitle>{cls.name}</CardTitle>
-                  <p>{cls.description}</p>
-                  <p>Alunos: {cls.count.students} | Desafios: {cls.count.challenges}</p>
+                  <CardDescription>{cls.description}</CardDescription>
                 </CardHeader>
+                <CardFooter>
+                  Alunos: {cls.count.students} | Desafios: {cls.count.challenges}
+                </CardFooter>
               </Card>
             </Link>
           ))}
+
           {isTeacher && (
-            <Button asChild className="self-start">
+            <Button asChild>
               <Link to={'/create-class'}>
                 + Adicionar Turma
               </Link>
