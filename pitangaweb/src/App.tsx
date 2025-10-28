@@ -1,16 +1,18 @@
 import { StrictMode } from "react";
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
 
-import { ChallengeEditor } from "./app/pages/ChallengeEditor";
-import { CreateChallenge } from "./app/pages/CreateChallenge";
-import { ErrorPage } from "./app/pages/ErrorPage";
+import { getChallengeSolution } from './infra/data/challenges.rest';
+import { getLoggedUser, getSchoolClass } from './infra/data/shcool.rest';
 
-import SchoolClass from "./app/pages/SchoolClass";
-import { useAuth } from "./auth/hook/useAuth";
-import { HomePage } from "./app/pages/HomePage";
-import { CreateSchoolClass } from "./app/pages/CreateSchoolClass";
-import { getChallengeSolution } from "./infra/data/challenges.rest";
-import { getLoggedUser, getSchoolClass } from "./infra/data/shcool.rest";
+import { ThemeProvider } from '@/components/theme-provider';
+import { useAuth } from './auth/hook/useAuth';
+import { HomePage } from './app/pages/HomePage';
+import { Colors } from './app/pages/Colors';
+import { ErrorPage } from './app/pages/ErrorPage';
+import { CreateChallenge } from './app/pages/CreateChallenge';
+import { CreateSchoolClass } from './app/pages/CreateSchoolClass';
+import { ChallengeEditor } from './app/pages/ChallengeEditor';
+import SchoolClass from './app/pages/SchoolClass';
 
 const basename = import.meta.env.BASE_URL ?? "/pitanga-tcc";
 
@@ -55,6 +57,10 @@ export const App = () => {
         element: <SchoolClass />,
         loader: getSchoolClass,
         errorElement: <ErrorPage />,
+      },
+      {
+        path: "/colors-test",
+        element: <Colors />,
       }
     ],
     { basename }
@@ -62,7 +68,9 @@ export const App = () => {
 
   return (
     <StrictMode>
-      <RouterProvider router={router} />
+      <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+        <RouterProvider router={router} />
+      </ThemeProvider>
     </StrictMode>
   );
 }

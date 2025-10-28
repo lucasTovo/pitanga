@@ -1,118 +1,190 @@
 * {
     margin: 0;
 }
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-
-
 @layer base {
   :root {
+    /* NEUTRAL */
+    --neutral-50: 208 15% 98%;
+    --neutral-100: 208 14% 95%;
+    --neutral-200: 208 12% 90%;
+    --neutral-300: 208 10% 82%;
+    --neutral-400: 208 8% 68%;
+    --neutral-500: 208 7% 55%; /* base */
+    --neutral-600: 208 7% 42%;
+    --neutral-700: 208 6% 32%;
+    --neutral-800: 208 5% 21%;
+    --neutral-900: 208 4% 12%;
 
-    --background: 0 0% 100%;
+    /* PRIMARY (azul principal) */
+    --primary-50: 208 79% 92%;
+    --primary-100: 208 79% 85%;
+    --primary-200: 208 79% 75%;
+    --primary-300: 208 79% 65%;
+    --primary-400: 208 79% 57%;
+    --primary-500: 208 79% 51%; /* base */
+    --primary-600: 208 79% 44%;
+    --primary-700: 208 79% 36%;
+    --primary-800: 208 79% 28%;
+    --primary-900: 208 79% 21%;
 
-    --foreground: 222.2 84% 4.9%;
+    /* SECONDARY (azul claro) */
+    --secondary-50: 207 90% 96%;
+    --secondary-100: 207 90% 90%;
+    --secondary-200: 207 90% 82%;
+    --secondary-300: 207 90% 74%;
+    --secondary-400: 207 90% 68%;
+    --secondary-500: 207 90% 77%; /* base */
+    --secondary-600: 207 90% 63%;
+    --secondary-700: 207 90% 53%;
+    --secondary-800: 207 90% 44%;
+    --secondary-900: 207 90% 35%;
 
-    --card: 0 0% 100%;
+    /* ACCENT (laranja complementar) */
+    --accent-50: 28 79% 90%;
+    --accent-100: 28 79% 80%;
+    --accent-200: 28 79% 70%;
+    --accent-300: 28 79% 60%;
+    --accent-400: 28 79% 55%;
+    --accent-500: 28 79% 51%; /* base */
+    --accent-600: 28 79% 45%;
+    --accent-700: 28 79% 38%;
+    --accent-800: 28 79% 30%;
+    --accent-900: 28 79% 22%;
 
-    --card-foreground: 222.2 84% 4.9%;
+    /* COMPLEMENTARY (pitanga, apenas logo) */
+    --complementary: 352 70% 50%; /* base */
 
-    --popover: 0 0% 100%;
+    /* SUCCESS */
+    --success-50: 122 39% 92%;
+    --success-100: 122 39% 84%;
+    --success-200: 122 39% 72%;
+    --success-300: 122 39% 61%;
+    --success-400: 122 39% 54%;
+    --success-500: 122 39% 49%; /* base */
+    --success-600: 122 39% 42%;
+    --success-700: 122 39% 34%;
+    --success-800: 122 39% 28%;
+    --success-900: 122 39% 20%;
 
-    --popover-foreground: 222.2 84% 4.9%;
+    /* ERROR */
+    --error-50: 0 66% 92%;
+    --error-100: 0 66% 84%;
+    --error-200: 0 66% 74%;
+    --error-300: 0 66% 63%;
+    --error-400: 0 66% 55%;
+    --error-500: 0 66% 47%; /* base */
+    --error-600: 0 66% 40%;
+    --error-700: 0 66% 33%;
+    --error-800: 0 66% 26%;
+    --error-900: 0 66% 18%;
 
-    --primary: 222.2 47.4% 11.2%;
+    /* WARNING */
+    --warning-50: 45 100% 92%;
+    --warning-100: 45 100% 86%;
+    --warning-200: 45 100% 77%;
+    --warning-300: 45 100% 67%;
+    --warning-400: 45 100% 59%;
+    --warning-500: 45 100% 51%; /* base */
+    --warning-600: 45 100% 45%;
+    --warning-700: 45 100% 38%;
+    --warning-800: 45 100% 30%;
+    --warning-900: 45 100% 23%;
 
-    --primary-foreground: 210 40% 98%;
+    --background: var(--neutral-50);
+    --foreground: var(--neutral-900);
 
-    --secondary: 210 40% 96.1%;
+    --primary: var(--primary-500);
+    --primary-foreground: var(--neutral-900);
 
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: var(--secondary-500);
+    --secondary-foreground: var(--neutral-900);
 
-    --muted: 210 40% 96.1%;
+    --accent: var(--accent-500);
+    --accent-foreground: var(--neutral-900);
 
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --warning: var(--warning-500);
+    --warning-foreground: var(--neutral-900);
 
-    --accent: 210 40% 96.1%;
+    --success: var(--success-500);
+    --success-foreground: var(--neutral-900);
 
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --error: var(--error-500);
+    --error-foreground: var(--neutral-900);
 
-    --destructive: 0 84.2% 60.2%;
+    --destructive: var(--error-500);
+    --destructive-foreground: var(--neutral-50);
 
-    --destructive-foreground: 210 40% 98%;
+    --card: var(--neutral-50);
+    --card-foreground: var(--neutral-800);
 
-    --border: 214.3 31.8% 91.4%;
+    --popover: var(--neutral-50);
+    --popover-foreground: var(--neutral-800);
 
-    --input: 214.3 31.8% 91.4%;
+    --muted: var(--neutral-100);
+    --muted-foreground: var(--neutral-500);
 
-    --ring: 222.2 84% 4.9%;
+    --border: var(--neutral-200);
+    --input: var(--neutral-200);
+    --ring: var(--primary-500);
 
     --chart-1: 12 76% 61%;
-
     --chart-2: 173 58% 39%;
-
     --chart-3: 197 37% 24%;
-
     --chart-4: 43 74% 66%;
-
     --chart-5: 27 87% 67%;
 
     --radius: 0.5rem
   }
   .dark {
+    --background: var(--neutral-900);
+    --foreground: var(--neutral-50);
 
-    --background: 222.2 84% 4.9%;
+    --primary: var(--primary-300);
+    --primary-foreground: var(--neutral-800);
 
-    --foreground: 210 40% 98%;
+    --secondary: var(--secondary-200);
+    --secondary-foreground: var(--neutral-800);
 
-    --card: 222.2 84% 4.9%;
+    --accent: var(--accent-400);
+    --accent-foreground: var(--neutral-800);
 
-    --card-foreground: 210 40% 98%;
+    --warning: var(--warning-400);
+    --warning-foreground: var(--neutral-800);
 
-    --popover: 222.2 84% 4.9%;
+    --success: var(--success-400);
+    --success-foreground: var(--neutral-800);
 
-    --popover-foreground: 210 40% 98%;
+    --error: var(--error-400);
+    --error-foreground: var(--neutral-100);
 
-    --primary: 210 40% 98%;
+    --destructive: var(--error-400);
+    --destructive-foreground: var(--neutral-100);
 
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --card: var(--neutral-800);
+    --card-foreground: var(--neutral-100);
 
-    --secondary: 217.2 32.6% 17.5%;
+    --popover: var(--neutral-800);
+    --popover-foreground: var(--neutral-100);
 
-    --secondary-foreground: 210 40% 98%;
+    --muted: var(--neutral-800);
+    --muted-foreground: var(--neutral-100);
 
-    --muted: 217.2 32.6% 17.5%;
-
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-
-    --input: 217.2 32.6% 17.5%;
-
-    --ring: 212.7 26.8% 83.9%;
+    --border: var(--neutral-700);
+    --input: var(--neutral-700);
+    --ring: var(--primary-300);
 
     --chart-1: 220 70% 50%;
-
     --chart-2: 160 60% 45%;
-
     --chart-3: 30 80% 55%;
-
     --chart-4: 280 65% 60%;
-
     --chart-5: 340 75% 55%
   }
 }
-
-
 
 @layer base {
   * {
