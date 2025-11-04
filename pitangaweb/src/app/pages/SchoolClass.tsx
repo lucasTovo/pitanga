@@ -1,17 +1,19 @@
 import { useEffect, useState } from 'react';
-import { useLoaderData } from 'react-router-dom';
-import { DialogOverlay } from '@radix-ui/react-dialog';
+import { useLoaderData, useNavigate } from 'react-router-dom';
+import { ArrowLeftFromLineIcon, ClipboardListIcon, UserIcon } from 'lucide-react';
 
 import type { SchoolClass, User } from '@/types/schoolClass.types';
-import type { Challenge } from '@/types/challenges.types';
+import type { Challenge, ChallengeLevel } from '@/types/challenges.types';
 
-import { addChallengeToSchoolClass, addStudentToSchoolClass, getUser, listUsers } from '@/infra/data/shcool.rest';
 import { getChallengeById, listChallenges } from '@/infra/data/challenges.rest';
+import { addChallengeToSchoolClass, addStudentToSchoolClass, getUser, listUsers } from '@/infra/data/shcool.rest';
 
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Card, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 
 type Tab = 'students' | 'challenges';
@@ -28,6 +30,8 @@ export default function SchoolClass() {
   const [loadingAllStudents, setLoadingAllStudents] = useState(true);
   const [loadingChallenges, setLoadingChallenges] = useState(true);
   const [loadingMyChallenges, setLoadingMyChallenges] = useState(true);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     async function getClassStudents() {
@@ -117,6 +121,13 @@ export default function SchoolClass() {
     return allStudents.filter(student => !assignedIds.has(student.id));
   }
 
+  const difficultyLevelStyles: Record<ChallengeLevel, string> = {
+    EASY: "bg-success text-success-foreground",
+    MEDIUM: "bg-warning text-warning-foreground",
+    HARD: "bg-accent text-accent-foreground",
+    PRO: "bg-complementary text-complementary-foreground",
+  }
+
   const dialogContent: Record<Tab, { button: string; title: string; loadingMsg: string }> = {
     students: {
       button: '+ Adicionar aluno á turma',
@@ -138,71 +149,94 @@ export default function SchoolClass() {
   }
 
   return (
-    <div className="p-6 space-y-6">
-      <Card className="w-full">
-        <CardHeader>
-          <CardTitle>{schoolClass.name}</CardTitle>
-          <CardDescription>
-            <p className="text-sm text-muted-foreground">Desafios: {classChallenges.length}</p>
-            <p className="text-sm text-muted-foreground">Alunos: {classStudents.length}</p>
-          </CardDescription>
-        </CardHeader>
-      </Card>
+    <div className="p-3 space-y-6 flex flex-col h-screen">
+      <div className='flex gap-2'>
+        <Button
+          className='h-auto'
+          onClick={() => navigate(-1)}
+        >
+          <ArrowLeftFromLineIcon/>
+        </Button>
+
+        <Card className="w-full">
+          <CardHeader>
+            <CardTitle>{schoolClass.name}</CardTitle>
+          </CardHeader>
+          <CardFooter>
+            <Badge variant="secondary" className='mr-2 text-sm font-bold'>
+              <UserIcon className='mr-1'/>
+              {classChallenges.length}
+            </Badge>
+            <Badge variant="secondary" className='text-sm font-bold'>
+              <ClipboardListIcon className='mr-1'/>
+              {classStudents.length}
+            </Badge>
+          </CardFooter>
+        </Card>
+      </div>
 
       {/* Abas */}
-      <Tabs defaultValue={tab} onValueChange={(value) => setTab(value as Tab)} className="space-y-4">
-        <TabsList>
+      <Tabs defaultValue={tab} onValueChange={(value) => setTab(value as Tab)} className="flex flex-col flex-1 space-y-4 overflow-hidden">
+        <TabsList className='gap-6'>
           <TabsTrigger value="students">Alunos</TabsTrigger>
           <TabsTrigger value="challenges">Desafios</TabsTrigger>
         </TabsList>
 
         {/* Aba Alunos */}
-        <TabsContent value="students">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Nome</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Desafios Concluídos</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {classStudents.map((student: User) => (
-                <TableRow key={student.id}>
-                  <TableCell>{student.name}</TableCell>
-                  <TableCell>{student.email}</TableCell>
-                  {/* <TableCell>{student.completedChallenges}/{classInfo.totalChallenges}</TableCell> */}
+        <TabsContent value="students" className='data-[state=active]:flex flex-col flex-1 overflow-hidden'>
+          <ScrollArea className="flex flex-col flex-1">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Nome</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead className="text-right">Desafios Concluídos</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {classStudents.map((student: User) => (
+                  <TableRow key={student.id}>
+                    <TableCell>{student.name}</TableCell>
+                    <TableCell>{student.email}</TableCell>
+                    {/* <TableCell>{student.completedChallenges}/{classInfo.totalChallenges}</TableCell> */}
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </ScrollArea>
         </TabsContent>
 
         {/* Aba Desafios */}
-        <TabsContent value="challenges">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Desafio</TableHead>
-                <TableHead>Dificuldade</TableHead>
-                <TableHead>Alunos que resolveram</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {classChallenges.map((challenge: Challenge) => (
-                <TableRow key={challenge.id}>
-                  <TableCell>{challenge.title}</TableCell>
-                  <TableCell>{challenge.level}</TableCell>
-                  {/* <TableCell>{challenge.completedBy}/{classInfo.totalStudents}</TableCell> */}
+        <TabsContent value="challenges" className='data-[state=active]:flex flex-col flex-1 overflow-hidden'>
+          <ScrollArea className="flex flex-col flex-1">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Desafio</TableHead>
+                  <TableHead>Dificuldade</TableHead>
+                  <TableHead className="text-right">Alunos que resolveram</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {classChallenges.map((challenge: Challenge) => (
+                  <TableRow key={challenge.id}>
+                    <TableCell>{challenge.title}</TableCell>
+                    <TableCell>
+                      <Badge className={`${difficultyLevelStyles[challenge.level]}`}>
+                        {challenge.level}
+                      </Badge>
+                    </TableCell>
+                    {/* <TableCell>{challenge.completedBy}/{classInfo.totalStudents}</TableCell> */}
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </ScrollArea>
         </TabsContent>
       </Tabs>
 
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-        <DialogTrigger asChild>
+        <DialogTrigger asChild className='block w-full max-w-sm mx-auto'>
           <Button variant="outline">{dialogContent[tab].button}</Button>
         </DialogTrigger>
         <DialogContent className="sm:max-w-2xl w-full max-h-[70vh] overflow-hidden">
