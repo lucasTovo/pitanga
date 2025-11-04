@@ -13,6 +13,7 @@ import lombok.Getter;
 public class ChallengeResponse {
     private UUID id;
     private String title;
+    private String description;
     private ChallengeLevel level;
     private SolutionStatus status;
 }
