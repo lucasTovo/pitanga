@@ -56,8 +56,17 @@
     --accent-800: 28 79% 30%;
     --accent-900: 28 79% 22%;
 
-    /* COMPLEMENTARY (pitanga, apenas logo) */
-    --complementary: 352 70% 50%; /* base */
+    /* COMPLEMENTARY (pitanga) */
+    --complementary-50: 352 70% 94%;
+    --complementary-100: 352 70% 86%;
+    --complementary-200: 352 70% 76%;
+    --complementary-300: 352 70% 66%;
+    --complementary-400: 352 70% 58%;
+    --complementary-500: 352 70% 50%; /* base */
+    --complementary-600: 352 70% 43%;
+    --complementary-700: 352 70% 36%;
+    --complementary-800: 352 70% 28%;
+    --complementary-900: 352 70% 21%;
 
     /* SUCCESS */
     --success-50: 122 39% 92%;
@@ -107,11 +116,14 @@
     --accent: var(--accent-500);
     --accent-foreground: var(--neutral-900);
 
-    --warning: var(--warning-500);
-    --warning-foreground: var(--neutral-900);
+    --complementary: var(--complementary-500);
+    --complementary-foreground: var(--neutral-50);
 
     --success: var(--success-500);
     --success-foreground: var(--neutral-900);
+
+    --warning: var(--warning-500);
+    --warning-foreground: var(--neutral-900);
 
     --error: var(--error-500);
     --error-foreground: var(--neutral-900);
@@ -153,11 +165,14 @@
     --accent: var(--accent-400);
     --accent-foreground: var(--neutral-800);
 
-    --warning: var(--warning-400);
-    --warning-foreground: var(--neutral-800);
+    --complementary: var(--complementary-400);
+    --complementary-foreground: var(--neutral-100);
 
     --success: var(--success-400);
     --success-foreground: var(--neutral-800);
+
+    --warning: var(--warning-400);
+    --warning-foreground: var(--neutral-800);
 
     --error: var(--error-400);
     --error-foreground: var(--neutral-100);
