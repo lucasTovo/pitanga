@@ -12,8 +12,9 @@ import { ErrorPage } from './app/pages/ErrorPage';
 import { CreateChallenge } from './app/pages/CreateChallenge';
 import { CreateSchoolClass } from './app/pages/CreateSchoolClass';
 import { ChallengeEditor } from './app/pages/ChallengeEditor';
-import SchoolClass from './app/pages/SchoolClass';
+
 import { RootLayout, rootLoader } from "./app/layouts/RootLayout";
+import { SchoolClassPage } from "./app/pages/SchoolClassPage";
 
 const basename = import.meta.env.BASE_URL ?? "/pitanga-tcc";
 
@@ -56,7 +57,7 @@ export const App = () => {
           },
           {
             path: "/classes/:classId",
-            element: <SchoolClass />,
+            element: <SchoolClassPage />,
             loader: getSchoolClass,
           },
           {

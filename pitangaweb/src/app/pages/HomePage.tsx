@@ -19,7 +19,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 
-export function HomePage() {
+export const HomePage = () => {
   const [challenges, setChallenges] = useState<Challenge[]>([]);
   const [classes, setClasses] = useState<SchoolClass[]>([]);
   const [activeTab, setActiveTab] = useState('challenges');
@@ -75,7 +75,7 @@ export function HomePage() {
   if (loadingSchoolClasses) return <p>Carregando turmas...</p>;
 
   return (
-    <div className="p-3 space-y-6 flex flex-col h-screen">
+    <div className="space-y-6 flex flex-col h-screen">
       {/* Topo com informações do usuário */}
       <Card className="w-full">
         <CardHeader className='flex-row p-3 sm:p-6'>

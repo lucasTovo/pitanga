@@ -18,7 +18,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 
 type Tab = 'students' | 'challenges';
 
-export default function SchoolClass() {
+export const SchoolClassPage = () => {
   const schoolClass = useLoaderData() as SchoolClass;
   const [classStudents, setClassStudents] = useState<User[]>([]);
   const [allStudents, setAllStudents] = useState<User[]>([]);

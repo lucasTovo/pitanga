@@ -16,7 +16,7 @@ export const RootLayout = () => {
 
   return (
     <main
-      className="mx-auto w-full max-w-7xl"
+      className="p-3 mx-auto w-full max-w-7xl"
     >
       <Outlet context={{ user } satisfies ContextType} />
     </main>
