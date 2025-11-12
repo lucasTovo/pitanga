@@ -75,7 +75,7 @@ export const HomePage = () => {
   if (loadingSchoolClasses) return <p>Carregando turmas...</p>;
 
   return (
-    <div className="space-y-6 flex flex-col h-screen">
+    <div className="space-y-6 flex flex-col h-full">
       {/* Topo com informações do usuário */}
       <Card className="w-full">
         <CardHeader className='flex-row p-3 sm:p-6'>
@@ -134,10 +134,10 @@ export const HomePage = () => {
                   className="
                     block
                     w-full
-                    sm:w-1/2
-                    lg:w-1/3
-                    xl:w-1/4
-                    flex-grow
+                    flex-grow-0
+                    flex-shrink-0
+                    sm:w-[calc(50%-1rem)]
+                    lg:w-[calc(33.333%-1rem)]
                     transition-transform origin-center hover:scale-[1.02]
                   "
                 >
