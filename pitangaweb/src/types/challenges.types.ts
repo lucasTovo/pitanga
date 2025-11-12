@@ -18,3 +18,10 @@ export interface Challenge {
   creatorId: string;
   status: SolutionStatus;
 }
+
+export interface ChallengeDTO {
+  title: string;
+  description: string;
+  baseCode: string;
+  validations: { input: string; output: string; }[];
+}

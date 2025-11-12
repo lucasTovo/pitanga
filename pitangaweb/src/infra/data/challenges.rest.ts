@@ -1,6 +1,6 @@
 import { Params, redirect } from 'react-router-dom';
 
-import { Challenge } from '@/types/challenges.types';
+import { Challenge, ChallengeDTO } from '@/types/challenges.types';
 import { Solution } from '@/types/solutions.types';
 import { Page } from '@/types/common.types';
 
@@ -49,16 +49,9 @@ export async function getChallengeSolution({ params }: { params: Params }) {
   }
 }
 
-type ChallengeSaveCommand = {
-  title: string;
-  description: string;
-  baseCode: string;
-  validations: { input: string; output: string; }[];
-};
-
-export async function saveChallenge(props: ChallengeSaveCommand) {
+export async function saveChallenge(body: ChallengeDTO) {
   const res = await challengesApi.post<Challenge>('/challenges', {
-    ...props,
+    ...body,
     creatorId: "2", // cuidado se o tipo for string
   });
 

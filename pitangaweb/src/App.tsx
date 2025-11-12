@@ -9,10 +9,9 @@ import { useAuth } from './auth/hook/useAuth';
 import { HomePage } from './app/pages/HomePage';
 import { Colors } from './app/pages/Colors';
 import { ErrorPage } from './app/pages/ErrorPage';
-import { CreateChallenge } from './app/pages/CreateChallenge';
+import { CreateChallengePage } from './app/pages/CreateChallengePage';
 import { CreateSchoolClass } from './app/pages/CreateSchoolClass';
 import { ChallengeEditor } from './app/pages/ChallengeEditor';
-
 import { RootLayout, rootLoader } from "./app/layouts/RootLayout";
 import { SchoolClassPage } from "./app/pages/SchoolClassPage";
 
@@ -44,7 +43,7 @@ export const App = () => {
           },
           {
             path: "/create-challenge",
-            element: <CreateChallenge />,
+            element: <CreateChallengePage />,
           },
           {
             path: "/challenges/:challengeId",
