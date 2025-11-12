@@ -1,14 +1,16 @@
 
 import { useKeycloak } from "@react-keycloak/web";
 
-export function useAuth() {
+export const useAuth = () => {
   const { keycloak, initialized } = useKeycloak();
 
   return {
     initialized,
     isAuthenticated: keycloak.authenticated,
-    userName: keycloak.tokenParsed?.preferred_username,
     userId: keycloak.tokenParsed?.sub,
+    userName: keycloak.tokenParsed?.name,
+    userEmail: keycloak.tokenParsed?.email,
+    userPreferredUsername: keycloak.tokenParsed?.preferred_username,
     roles: keycloak.tokenParsed?.realm_access?.roles || [],
     token: keycloak.token,
     logout: () => keycloak.logout(),
@@ -16,7 +18,7 @@ export function useAuth() {
   };
 }
 
-export function getToken() {
+export const getToken = () => {
   const { keycloak } = useKeycloak();
   return keycloak.token;
 }

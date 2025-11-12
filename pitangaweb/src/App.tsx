@@ -1,17 +1,23 @@
 import { StrictMode } from "react";
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
 
-import { ChallengesList } from "./app/pages/ChallengesList";
-import { ChallengeEditor } from "./app/pages/ChallengeEditor";
-import { CreateChallenge } from "./app/pages/CreateChallenge";
-import { ErrorPage } from "./app/pages/ErrorPage";
+import { getChallengeSolution } from './infra/data/challenges.rest';
+import { getSchoolClass } from './infra/data/shcool.rest';
 
-import { getChallengeSolution, listChallenges } from "./infra/data/pitanga.rest";
-import { useAuth } from "./auth/hook/useAuth";
+import { ThemeProvider } from '@/components/theme-provider';
+import { useAuth } from './auth/hook/useAuth';
+import { HomePage } from './app/pages/HomePage';
+import { Colors } from './app/pages/Colors';
+import { ErrorPage } from './app/pages/ErrorPage';
+import { CreateChallengePage } from './app/pages/CreateChallengePage';
+import { CreateSchoolClass } from './app/pages/CreateSchoolClass';
+import { ChallengeEditor } from './app/pages/ChallengeEditor';
+import { RootLayout, rootLoader } from "./app/layouts/RootLayout";
+import { SchoolClassPage } from "./app/pages/SchoolClassPage";
 
 const basename = import.meta.env.BASE_URL ?? "/pitanga-tcc";
 
-export function App() {
+export const App = () => {
   const { initialized, isAuthenticated, login } = useAuth();
 
   if (!initialized) {
@@ -27,27 +33,47 @@ export function App() {
     [
       {
         path: "/",
-        element: <ChallengesList />,
-        loader: listChallenges,
+        element: <RootLayout />,
+        loader: rootLoader,
         errorElement: <ErrorPage />,
-      },
-      {
-        path: "/challenge/:challengeId",
-        element: <ChallengeEditor />,
-        loader: getChallengeSolution,
-        errorElement: <ErrorPage />,
-      },
-      {
-        path: "/create-challenge",
-        element: <CreateChallenge />,
-      },
+        children: [
+          {
+            index: true,
+            element: <HomePage />,
+          },
+          {
+            path: "/create-challenge",
+            element: <CreateChallengePage />,
+          },
+          {
+            path: "/challenges/:challengeId",
+            element: <ChallengeEditor />,
+            loader: getChallengeSolution,
+          },
+          {
+            path: "/create-class",
+            element: <CreateSchoolClass />,
+          },
+          {
+            path: "/classes/:classId",
+            element: <SchoolClassPage />,
+            loader: getSchoolClass,
+          },
+          {
+            path: "/colors-test",
+            element: <Colors />,
+          },
+        ],
+      }
     ],
     { basename }
   );
 
   return (
     <StrictMode>
-      <RouterProvider router={router} />
+      <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+        <RouterProvider router={router} />
+      </ThemeProvider>
     </StrictMode>
   );
 }

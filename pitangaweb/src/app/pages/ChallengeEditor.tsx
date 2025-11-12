@@ -1,17 +1,22 @@
-import { Challenge } from '../../domain/problem';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLoaderData } from 'react-router-dom';
-import { Solution } from '../../domain/problem/solution';
-import { ValidationContainer } from '../components/validation';
+
+import type { Solution } from '@/types/solutions.types';
+import type { Challenge } from '@/types/challenges.types';
+import type { ValidationResult } from '@/types/validations.type';
+
+import { saveSolution } from '@/infra/data/challenges.rest';
+import { debounce } from '@/infra/utils/debounce';
+
 import { ToolTray } from '../components/tool-tray';
-import { useEffect, useRef, useState } from 'react';
-import { saveSolution } from '../../infra/data/pitanga.rest';
+import { Editor } from '../components/editor/editor';
+import { ValidationContainer } from '../components/validation';
 import { DescriptionModal } from '../components/description-modal';
 import { EditorConfigContext, defaultEditorConfig } from '../components/editor/editor-config.context';
-import { Editor } from '../components/editor/editor';
-import { debounce } from '../../infra/utils/debounce';
+
 
 export const ChallengeEditor = () => {
-  const {challenge, solution: currentSolution} = useLoaderData() as {
+  const { challenge, solution: currentSolution } = useLoaderData() as {
     challenge: Challenge,
     solution?: Solution
   };
@@ -45,6 +50,16 @@ export const ChallengeEditor = () => {
     executeCodeListener.current(code);
   };
 
+  // useMemo para não recalcular toda hora
+  const displayedTests: ValidationResult[] = useMemo(() => {
+    return solution?.validationResults
+      ?? challenge.validations.map(v => ({
+        ...v,
+        output: '',
+        status: null
+      }));
+  }, [solution, challenge.validations]);
+
   return (
     <>
       <ToolTray
@@ -59,13 +74,12 @@ export const ChallengeEditor = () => {
         description={challenge.description}
       />
       <EditorConfigContext.Provider value={defaultEditorConfig}>
-        <Editor customContent={code} onChangeCode={persistCode}/>
+        <Editor customContent={code} onChangeCode={persistCode} />
         <ValidationContainer
           isSaving={isSaving}
           solutionChanged={code !== solution?.code}
           saveCode={() => executeCode(code)}
-          validations={challenge.validationResults}
-          results={solution?.validationResults}
+          results={displayedTests}
         />
       </EditorConfigContext.Provider>
     </>

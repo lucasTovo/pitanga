@@ -47,6 +47,7 @@ public class ChallengesService {
             return ChallengeResponse.builder()
                 .id(challenge.getId())
                 .title(challenge.getTitle())
+                .description(challenge.getDescription())
                 .level(challenge.getLevel())
                 .status(SolutionStatus.getStatus(solutions, check))
                 .build();

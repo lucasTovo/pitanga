@@ -26,7 +26,7 @@ public class JwtSecurity {
 
     CorsConfigurationSource configurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000", "https://githiago-f.github.io"));
+        configuration.setAllowedOrigins(Arrays.asList("https://localhost:3000", "https://githiago-f.github.io"));
         configuration.setAllowedMethods(Arrays.asList("*"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
