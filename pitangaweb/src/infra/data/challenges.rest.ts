@@ -6,16 +6,16 @@ import { Page } from '@/types/common.types';
 
 import { challengesApi } from './base';
 
-export async function listChallenges() {
-  type Short = Page<Challenge>;
-  const challengesRaw = await challengesApi.get<Short>('/challenges');
+export const listChallenges = async ({pageParam = 0}): Promise<Page<Challenge>> => {
+  const { data } = await challengesApi.get<Page<Challenge>>(
+    `/challenges?page=${pageParam}&size=25`
+  );
 
-  if(!challengesRaw.data?.content) {
-    throw new Error('Could not load page');
+  if (!data?.content) {
+    throw new Error('Could not load challenges');
   }
 
-  const challenges = challengesRaw.data?.content
-  return challenges;
+  return data; // contém content, number, last, totalPages, etc.
 }
 
 export async function getChallengeById(id: string) {

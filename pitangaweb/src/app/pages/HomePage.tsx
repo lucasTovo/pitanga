@@ -1,18 +1,19 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ClipboardListIcon, LogOutIcon, UserIcon } from 'lucide-react';
 
-import { SchoolClass, UserRole } from '@/types/schoolClass.types';
-import { Challenge, ChallengeLevel } from '@/types/challenges.types';
+import { SchoolClass, UserRole } from '@/types/school-class.types';
+import { ChallengeLevel } from '@/types/challenges.types';
 
 import { listSchoolClasses } from '@/infra/data/shcool.rest';
-import { listChallenges } from '@/infra/data/challenges.rest';
 
-import { useAuth } from '@/auth/hook/useAuth';
+import { useAuth } from '@/hooks/useAuth';
 import { useUser } from '../layouts/RootLayout';
+import { useChallenges } from '@/hooks/useChallenges';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Spinner } from "@/components/ui/spinner"
 import { ModeToggle } from '@/components/mode-toggle';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -20,34 +21,41 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 
 export const HomePage = () => {
-  const [challenges, setChallenges] = useState<Challenge[]>([]);
   const [classes, setClasses] = useState<SchoolClass[]>([]);
   const [activeTab, setActiveTab] = useState('challenges');
-  const [loadingChallenges, setLoadingChallenges] = useState(true);
   const [loadingSchoolClasses, setLoadingSchoolClasses] = useState(true);
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } = useChallenges();
 
   const { user } = useUser();
   const isTeacher = user.role === UserRole.TEACHER;
+
+  const challenges = data?.pages.flatMap((page) => page.content) ?? [];
+
+  const observer = useRef<IntersectionObserver | null>(null);
+  const lastItemRef = useCallback(
+    (node: HTMLAnchorElement | null) => {
+      if (!hasNextPage) return; // evita observar se já chegou ao fim
+
+      // desconecta o observador anterior
+      if (observer.current) observer.current.disconnect();
+
+      // cria um novo observer
+      observer.current = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting) {
+          fetchNextPage();
+        }
+      });
+
+      // começa a observar o novo nó
+      if (node) observer.current.observe(node);
+    },
+    [hasNextPage, fetchNextPage]
+  );
 
   const { logout } = useAuth();
   const handleLogout = () => {
     logout();
   };
-
-  useEffect(() => {
-    async function getChallenges() {
-      setLoadingChallenges(true);
-      try {
-        const userChallenges = await listChallenges(); // ajustar se precisar filtrar por criador
-        setChallenges(userChallenges);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoadingChallenges(false);
-      }
-    }
-    getChallenges();
-  }, []);
 
   useEffect(() => {
     async function getSchoolClasses() {
@@ -71,8 +79,9 @@ export const HomePage = () => {
     PRO: "bg-complementary text-complementary-foreground",
   }
 
-  if (loadingChallenges) return <p>Carregando desafios...</p>;
   if (loadingSchoolClasses) return <p>Carregando turmas...</p>;
+  if (status === 'pending') return <p>Carregando desafios...</p>;
+  if (status === 'error') return <p>Erro ao carregar desafios.</p>;
 
   return (
     <div className="space-y-6 flex flex-col h-full">
@@ -127,35 +136,43 @@ export const HomePage = () => {
         >
           <ScrollArea className="flex flex-col flex-1">
             <div className="flex flex-wrap gap-4">
-              {challenges.map(ch => (
-                <Link
-                  key={ch.id}
-                  to={'/challenges/' + ch.id}
-                  className="
-                    block
-                    w-full
-                    flex-grow-0
-                    flex-shrink-0
-                    sm:w-[calc(50%-1rem)]
-                    lg:w-[calc(33.333%-1rem)]
-                    transition-transform origin-center hover:scale-[1.02]
-                  "
-                >
-                  <Card className='h-full'>
-                    <CardHeader className='pb-3'>
-                      <CardTitle>{ch.title}</CardTitle>
-                      <CardDescription>
-                        <div dangerouslySetInnerHTML={{ __html: ch.description }} />
-                      </CardDescription>
-                    </CardHeader>
-                    <CardFooter>
-                      <Badge className={`${difficultyLevelStyles[ch.level]}`}>
-                        {ch.level}
-                      </Badge>
-                    </CardFooter>
-                  </Card>
-                </Link>
-              ))}
+              {challenges.map((ch, index) => {
+                const isLast = index === challenges.length - 1;
+                return(
+                  <Link
+                    key={ch.id}
+                    ref={isLast ? lastItemRef : null}
+                    to={'/challenges/' + ch.id}
+                    className="
+                      block
+                      w-full
+                      flex-grow-0
+                      flex-shrink-0
+                      sm:w-[calc(50%-1rem)]
+                      lg:w-[calc(33.333%-1rem)]
+                      transition-transform origin-center hover:scale-[1.02]
+                    "
+                  >
+                    <Card className='h-full'>
+                      <CardHeader className='pb-3'>
+                        <CardTitle>{ch.title}</CardTitle>
+                        <CardDescription>
+                          <div dangerouslySetInnerHTML={{ __html: ch.description }} />
+                        </CardDescription>
+                      </CardHeader>
+                      <CardFooter>
+                        <Badge className={`${difficultyLevelStyles[ch.level]}`}>
+                          {ch.level}
+                        </Badge>
+                      </CardFooter>
+                    </Card>
+                  </Link>
+                )
+              })}
+
+              {isFetchingNextPage && (
+                <Spinner className='m-auto' />
+              )}
             </div>
           </ScrollArea>
 

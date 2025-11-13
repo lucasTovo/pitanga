@@ -1,21 +1,27 @@
 import { StrictMode } from "react";
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
-import { getChallengeSolution } from './infra/data/challenges.rest';
-import { getSchoolClass } from './infra/data/shcool.rest';
+import { getChallengeSolution } from "./infra/data/challenges.rest";
+import { getSchoolClass } from "./infra/data/shcool.rest";
 
-import { ThemeProvider } from '@/components/theme-provider';
-import { useAuth } from './auth/hook/useAuth';
-import { HomePage } from './app/pages/HomePage';
-import { Colors } from './app/pages/Colors';
-import { ErrorPage } from './app/pages/ErrorPage';
-import { CreateChallengePage } from './app/pages/CreateChallengePage';
-import { CreateSchoolClass } from './app/pages/CreateSchoolClass';
-import { ChallengeEditor } from './app/pages/ChallengeEditor';
-import { RootLayout, rootLoader } from "./app/layouts/RootLayout";
+import { useAuth } from "./hooks/useAuth";
+
+import { Colors } from "./app/pages/Colors";
+import { HomePage } from "./app/pages/HomePage";
+import { ErrorPage } from "./app/pages/ErrorPage";
+import { ChallengeEditor } from "./app/pages/ChallengeEditor";
 import { SchoolClassPage } from "./app/pages/SchoolClassPage";
+import { CreateSchoolClass } from "./app/pages/CreateSchoolClass";
+import { RootLayout, rootLoader } from "./app/layouts/RootLayout";
+import { CreateChallengePage } from "./app/pages/CreateChallengePage";
+
+import { ThemeProvider } from "@/components/theme-provider";
 
 const basename = import.meta.env.BASE_URL ?? "/pitanga-tcc";
+
+// 🔹 Cria o cliente do React Query
+const queryClient = new QueryClient();
 
 export const App = () => {
   const { initialized, isAuthenticated, login } = useAuth();
@@ -64,16 +70,18 @@ export const App = () => {
             element: <Colors />,
           },
         ],
-      }
+      },
     ],
     { basename }
   );
 
   return (
     <StrictMode>
-      <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-        <RouterProvider router={router} />
-      </ThemeProvider>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+          <RouterProvider router={router} />
+        </ThemeProvider>
+      </QueryClientProvider>
     </StrictMode>
   );
-}
+};
