@@ -87,26 +87,28 @@ export const HomePage = () => {
     <div className="space-y-6 flex flex-col h-full">
       {/* Topo com informações do usuário */}
       <Card className="w-full">
-        <CardHeader className='flex-row p-3 sm:p-6'>
-          <Avatar className="w-16 h-16 object-cover mr-4">
-            <AvatarImage className='rounded-full' src="https://github.com/shadcn.png" alt="@shadcn" />
-            <AvatarFallback>
-              <UserIcon className='rounded-full border'/>
-            </AvatarFallback>
-          </Avatar>
+        <CardHeader className='relative flex-row space-y-0 p-3 sm:p-5 pt-8 pb-6'>
+          <div className='flex items-center'>
+            <Avatar className="w-14 h-14 object-cover mr-3">
+              <AvatarImage className='rounded-full' src="https://github.com/shadcn.png" alt="@shadcn" />
+              <AvatarFallback>
+                <UserIcon className='rounded-full border'/>
+              </AvatarFallback>
+            </Avatar>
 
-          <div>
-            <CardTitle>{user.name}</CardTitle>
-            <CardDescription>
-              <p className="text-sm text-muted-foreground">{user.email}</p>
-              <Badge variant="secondary" className="mt-1">
-                <UserIcon className="w-4 h-4" />
-                {isTeacher ? 'Professor' : 'Aluno'}
-              </Badge>
-            </CardDescription>
+            <div>
+              <CardTitle>{user.name}</CardTitle>
+              <CardDescription>
+                <p className="text-sm text-muted-foreground">{user.email}</p>
+                <Badge variant="secondary" className="mt-1">
+                  <UserIcon className="w-4 h-4" />
+                  {isTeacher ? 'Professor' : 'Aluno'}
+                </Badge>
+              </CardDescription>
+            </div>
           </div>
 
-          <div className="ml-auto flex gap-2 ">
+          <div className="absolute top-3 right-3 flex gap-2">
             <ModeToggle />
             <Button
               variant="destructive"
