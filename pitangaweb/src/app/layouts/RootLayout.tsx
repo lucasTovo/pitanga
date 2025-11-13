@@ -1,6 +1,6 @@
 import { Outlet, useLoaderData, useOutletContext } from 'react-router-dom';
 
-import { User } from '@/types/schoolClass.types';
+import { User } from '@/types/school-class.types';
 
 import { getLoggedUser } from '@/infra/data/shcool.rest';
 

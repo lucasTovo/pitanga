@@ -1,6 +1,6 @@
 import { Params } from "react-router-dom";
 
-import { SchoolClass, User } from "@/types/schoolClass.types";
+import { SchoolClass, User } from "@/types/school-class.types";
 
 import { classesApi } from "./base";
 

@@ -6,7 +6,7 @@ import "./main.css";
 import { App } from "./App";
 import { updateUser } from "./infra/data/shcool.rest";
 import { keycloak, initOptions } from "./infra/data/keycloack";
-import { useAuth } from "./auth/hook/useAuth";
+import { useAuth } from "./hooks/useAuth";
 import { useEffect, useState } from "react";
 
 const root = document.getElementById("root")!;

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useLoaderData, useNavigate } from 'react-router-dom';
 import { ArrowLeftFromLineIcon, ClipboardListIcon, UserIcon } from 'lucide-react';
 
-import type { SchoolClass, User } from '@/types/schoolClass.types';
+import type { SchoolClass, User } from '@/types/school-class.types';
 import type { Challenge, ChallengeLevel } from '@/types/challenges.types';
 
 import { getChallengeById, listChallenges } from '@/infra/data/challenges.rest';
