@@ -143,7 +143,7 @@ export const SchoolClassPage = () => {
   }
 
   return (
-    <div className="p-3 space-y-6 flex flex-col h-screen">
+    <div className="p-3 space-y-6 flex flex-col h-full">
       <div className='flex gap-2'>
         <Button
           className='h-auto'

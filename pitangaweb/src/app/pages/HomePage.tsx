@@ -190,10 +190,10 @@ export const HomePage = () => {
                   className="
                     block
                     w-full
-                    sm:w-1/2
-                    lg:w-1/3
-                    xl:w-1/4
-                    flex-grow
+                    flex-grow-0
+                    flex-shrink-0
+                    sm:w-[calc(50%-1rem)]
+                    lg:w-[calc(33.333%-1rem)]
                     transition-transform origin-center hover:scale-[1.02]
                   "
                 >
@@ -219,7 +219,7 @@ export const HomePage = () => {
           </ScrollArea>
 
           {isTeacher && (
-            <Button asChild className='my-4'>
+            <Button asChild className='my-4 w-full max-w-sm self-center'>
               <Link to={'/create-class'}>
                 + Adicionar Turma
               </Link>
