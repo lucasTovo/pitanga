@@ -1,15 +1,18 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLoaderData, useNavigate } from 'react-router-dom';
-import { ArrowLeftFromLineIcon, ClipboardListIcon, UserIcon } from 'lucide-react';
+import { ArrowLeftFromLineIcon, ClipboardListIcon, PlusIcon, UserIcon } from 'lucide-react';
 
 import type { SchoolClass, User } from '@/types/school-class.types';
-import type { Challenge, ChallengeLevel } from '@/types/challenges.types';
+import type { Challenge } from '@/types/challenges.types';
 
-import { getChallengeById, listChallenges } from '@/infra/data/challenges.rest';
+import { getChallengeById } from '@/infra/data/challenges.rest';
 import { addChallengeToSchoolClass, addStudentToSchoolClass, getUser, listUsers } from '@/infra/data/shcool.rest';
+
+import { useChallenges } from '@/hooks/useChallenges';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Spinner } from '@/components/ui/spinner';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Card, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -24,15 +27,37 @@ export const SchoolClassPage = () => {
   const [classStudents, setClassStudents] = useState<User[]>([]);
   const [allStudents, setAllStudents] = useState<User[]>([]);
   const [classChallenges, setClassChallenges] = useState<Challenge[]>([]);
-  const [myChallenges, setMyChallenges] = useState<Challenge[]>([]);
   const [tab, setTab] = useState<Tab>('students');
   const [modalOpen, setModalOpen] = useState(false);
   const [loadingStudents, setLoadingStudents] = useState(true);
   const [loadingAllStudents, setLoadingAllStudents] = useState(true);
   const [loadingChallenges, setLoadingChallenges] = useState(true);
-  const [loadingMyChallenges, setLoadingMyChallenges] = useState(true);
 
   const navigate = useNavigate();
+
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage } = useChallenges();
+  const myChallenges = data?.pages.flatMap((page) => page.content) ?? [];
+
+  const observer = useRef<IntersectionObserver | null>(null);
+  const lastItemRef = useCallback(
+    (node: HTMLDivElement | null) => {
+      if (!hasNextPage) return; // evita observar se já chegou ao fim
+
+      // desconecta o observador anterior
+      if (observer.current) observer.current.disconnect();
+
+      // cria um novo observer
+      observer.current = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting) {
+          fetchNextPage();
+        }
+      });
+
+      // começa a observar o novo nó
+      if (node) observer.current.observe(node);
+    },
+    [hasNextPage, fetchNextPage]
+  );
 
   useEffect(() => {
     async function getClassStudents() {
@@ -91,22 +116,6 @@ export const SchoolClassPage = () => {
     getClassChallenges();
   }, []);
 
-  useEffect(() => {
-    async function getMyChallenges() {
-      setLoadingMyChallenges(true);
-      try {
-        const challenges = await listChallenges();
-        setMyChallenges(challenges);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoadingMyChallenges(false);
-      }
-    }
-
-    getMyChallenges();
-  }, []);
-
   const handleAddchallenge = async (challenge: Challenge) => {
     await addChallengeToSchoolClass(schoolClass.id, challenge.id);
     setClassChallenges([...classChallenges, challenge])
@@ -124,12 +133,12 @@ export const SchoolClassPage = () => {
 
   const dialogContent: Record<Tab, { button: string; title: string; loadingMsg: string }> = {
     students: {
-      button: '+ Adicionar aluno á turma',
+      button: 'Adicionar aluno á turma',
       title: 'Escolha um aluno para adicionar',
       loadingMsg: 'Carregando alunos...',
     },
     challenges: {
-      button: '+ Adicionar desafio á turma',
+      button: 'Adicionar desafio á turma',
       title: 'Escolha um desafio para adicionar',
       loadingMsg: 'Carregando desafios...',
     }
@@ -229,46 +238,63 @@ export const SchoolClassPage = () => {
 
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
         <DialogTrigger asChild className='block w-full max-w-sm mx-auto'>
-          <Button variant="outline">{dialogContent[tab].button}</Button>
+          <Button variant="outline" className='flex'>
+            <PlusIcon />
+            {dialogContent[tab].button}
+          </Button>
         </DialogTrigger>
-        <DialogContent className="sm:max-w-2xl w-full max-h-[70vh] overflow-hidden">
+        <DialogContent className="sm:max-w-2xl w-full max-h-[70vh] flex flex-col flex-1 overflow-hidden">
           <DialogHeader>
             <DialogTitle>{dialogContent[tab].title}</DialogTitle>
             <DialogDescription></DialogDescription>
           </DialogHeader>
-          <div className="mt-4 overflow-y-auto px-2" style={{ maxHeight: 'calc(70vh - 6rem)' }}>
-            {tab === 'challenges' && (
-              loadingMyChallenges ? (
-                <p>{dialogContent[tab].loadingMsg}</p>
-              ) : myChallenges.map(challenge => (
-                <Card key={challenge.id} onClick={() => {
-                  handleAddchallenge(challenge)
-                  setModalOpen(false)
-                }}>
-                  <CardHeader>
-                    <CardTitle>{challenge.title}</CardTitle>
-                    <p>{challenge.level}</p>
-                  </CardHeader>
-                </Card>
-              ))
-            )}
+          <ScrollArea className="flex flex-col flex-1">
+            <div className="flex flex-col gap-4">
+              {tab === 'challenges' && (
+                <>
+                  {myChallenges.map((challenge, index) => {
+                    const isLast = index === myChallenges.length - 1;
+                    return(
+                      <Card
+                        key={challenge.id}
+                        ref={isLast ? lastItemRef : null}
+                        onClick={() => {
+                        handleAddchallenge(challenge)
+                        setModalOpen(false)
+                      }}>
+                        <CardHeader className='flex'>
+                          <CardTitle>{challenge.title}</CardTitle>
+                        </CardHeader>
+                        <CardFooter>
+                          <DifficultyLevelBadge level={challenge.level} />
+                        </CardFooter>
+                      </Card>
+                    )
+                  })}
 
-            {tab === 'students' && (
-              loadingAllStudents ? (
-                <p>{dialogContent[tab].loadingMsg}</p>
-              ) : filterAvailableUsers().map(student => (
-                <Card key={student.id} onClick={() => {
-                  handleAddStudent(student)
-                  setModalOpen(false)
-                }}>
-                  <CardHeader>
-                    <CardTitle>{student.name}</CardTitle>
-                    <p>{student.email}</p>
-                  </CardHeader>
-                </Card>
-              ))
-            )}
-          </div>
+                  {isFetchingNextPage && (
+                    <Spinner className='m-auto' />
+                  )}
+                </>
+              )}
+
+              {tab === 'students' && (
+                loadingAllStudents ? (
+                  <p>{dialogContent[tab].loadingMsg}</p>
+                ) : filterAvailableUsers().map(student => (
+                  <Card key={student.id} onClick={() => {
+                    handleAddStudent(student)
+                    setModalOpen(false)
+                  }}>
+                    <CardHeader>
+                      <CardTitle>{student.name}</CardTitle>
+                      <p>{student.email}</p>
+                    </CardHeader>
+                  </Card>
+                ))
+              )}
+            </div>
+          </ScrollArea>
         </DialogContent>
       </Dialog>
     </div>
