@@ -15,6 +15,7 @@ import { Card, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { DifficultyLevelBadge } from '../components/DifficultyLevelBadge';
 
 type Tab = 'students' | 'challenges';
 
@@ -121,13 +122,6 @@ export const SchoolClassPage = () => {
     return allStudents.filter(student => !assignedIds.has(student.id));
   }
 
-  const difficultyLevelStyles: Record<ChallengeLevel, string> = {
-    EASY: "bg-success text-success-foreground",
-    MEDIUM: "bg-warning text-warning-foreground",
-    HARD: "bg-accent text-accent-foreground",
-    PRO: "bg-complementary text-complementary-foreground",
-  }
-
   const dialogContent: Record<Tab, { button: string; title: string; loadingMsg: string }> = {
     students: {
       button: '+ Adicionar aluno á turma',
@@ -222,9 +216,7 @@ export const SchoolClassPage = () => {
                   <TableRow key={challenge.id}>
                     <TableCell>{challenge.title}</TableCell>
                     <TableCell>
-                      <Badge className={`${difficultyLevelStyles[challenge.level]}`}>
-                        {challenge.level}
-                      </Badge>
+                      <DifficultyLevelBadge level={challenge.level} />
                     </TableCell>
                     {/* <TableCell>{challenge.completedBy}/{classInfo.totalStudents}</TableCell> */}
                   </TableRow>

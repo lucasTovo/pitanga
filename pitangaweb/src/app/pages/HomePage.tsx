@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { ClipboardListIcon, LogOutIcon, UserIcon } from 'lucide-react';
 
 import { SchoolClass, UserRole } from '@/types/school-class.types';
-import { ChallengeLevel } from '@/types/challenges.types';
 
 import { listSchoolClasses } from '@/infra/data/shcool.rest';
 
@@ -19,6 +18,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { DifficultyLevelBadge } from '../components/DifficultyLevelBadge';
 
 export const HomePage = () => {
   const [classes, setClasses] = useState<SchoolClass[]>([]);
@@ -71,13 +71,6 @@ export const HomePage = () => {
     }
     getSchoolClasses();
   }, []);
-
-  const difficultyLevelStyles: Record<ChallengeLevel, string> = {
-    EASY: "bg-success text-success-foreground",
-    MEDIUM: "bg-warning text-warning-foreground",
-    HARD: "bg-accent text-accent-foreground",
-    PRO: "bg-complementary text-complementary-foreground",
-  }
 
   if (loadingSchoolClasses) return <p>Carregando turmas...</p>;
   if (status === 'pending') return <p>Carregando desafios...</p>;
@@ -163,9 +156,7 @@ export const HomePage = () => {
                         </CardDescription>
                       </CardHeader>
                       <CardFooter>
-                        <Badge className={`${difficultyLevelStyles[ch.level]}`}>
-                          {ch.level}
-                        </Badge>
+                        <DifficultyLevelBadge level={ch.level} />
                       </CardFooter>
                     </Card>
                   </Link>
