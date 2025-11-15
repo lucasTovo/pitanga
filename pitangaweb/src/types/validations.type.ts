@@ -5,7 +5,6 @@ export interface ValidationId {
 
 export interface ValidationBase {
   id: ValidationId;
-  challengeId: string;
   testInput: string;
   expectedOutput: string;
 }
@@ -15,7 +14,8 @@ export enum ValidationStatus {
   FAIL = "FAIL"
 }
 
-export interface ValidationResult extends ValidationBase {
+export interface ValidationResult extends Omit<ValidationBase, 'testInput'> {
+  input: string;
   output: string;
   status: ValidationStatus | null;
 }
