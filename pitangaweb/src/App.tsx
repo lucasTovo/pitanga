@@ -10,13 +10,13 @@ import { useAuth } from "./hooks/useAuth";
 import { Colors } from "./app/pages/Colors";
 import { HomePage } from "./app/pages/HomePage";
 import { ErrorPage } from "./app/pages/ErrorPage";
-import { ChallengeEditor } from "./app/pages/ChallengeEditor";
 import { SchoolClassPage } from "./app/pages/SchoolClassPage";
 import { CreateSchoolClass } from "./app/pages/CreateSchoolClass";
 import { RootLayout, rootLoader } from "./app/layouts/RootLayout";
 import { CreateChallengePage } from "./app/pages/CreateChallengePage";
 
 import { ThemeProvider } from "@/components/theme-provider";
+import { ChallengeEditorPage } from "./app/pages/ChallengeEditorPage";
 
 const basename = import.meta.env.BASE_URL ?? "/pitanga-tcc";
 
@@ -53,7 +53,7 @@ export const App = () => {
           },
           {
             path: "/challenges/:challengeId",
-            element: <ChallengeEditor />,
+            element: <ChallengeEditorPage />,
             loader: getChallengeSolution,
           },
           {

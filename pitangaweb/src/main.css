@@ -209,3 +209,8 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Restores default styling of elements */
+.revert-all * {
+  all: revert;
+}
