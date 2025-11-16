@@ -39,7 +39,7 @@ export const IOList = forwardRef<HTMLDivElement, IOListProps>(
       <div ref={ref} className="space-y-4">
         <div className="flex justify-between items-center">
           <h3 className="text-lg font-semibold">Validações</h3>
-          <Button variant="default" onClick={addIOItem}>
+          <Button type="button" variant="default" onClick={addIOItem}>
             <PlusIcon className="w-4 h-4 mr-2" />
             Adicionar validação
           </Button>
@@ -59,6 +59,7 @@ export const IOList = forwardRef<HTMLDivElement, IOListProps>(
                   Validação {index + 1}
                 </CardTitle>
                 <Button
+                  type="button"
                   variant="ghost"
                   size="icon"
                   className="absolute top-3 right-3 text-muted-foreground hover:text-destructive"

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { ClipboardListIcon, ListTodoIcon, LogOutIcon, PencilIcon, Trash2Icon, UserIcon } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { ClipboardListIcon, ListTodoIcon, LogOutIcon, PencilIcon, PlusIcon, Trash2Icon, UserIcon } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 
 import { Challenge } from '@/types/challenges.types';
@@ -24,7 +24,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { DifficultyLevelBadge } from '../components/DifficultyLevelBadge';
 
 export const HomePage = () => {
@@ -94,6 +94,10 @@ export const HomePage = () => {
     queryClient.invalidateQueries({ queryKey: ["challenges"] });
     setDialogOpen(false);
   };
+
+  const handleEditChallenge = (id: string) => {
+    navigate(`/challenges/${id}/edit`);
+  }
 
   if (loadingSchoolClasses) return <p>Carregando turmas...</p>;
   if (status === 'pending') return <p>Carregando desafios...</p>;
@@ -169,8 +173,10 @@ export const HomePage = () => {
                     >
                       <CardHeader className='px-6 py-4 flex flex-row space-y-0 justify-between'>
                         <div>
-                          <CardTitle className='mb-2 overflow-hidden text-ellipsis'>{ch.title}</CardTitle>
-                          <CardDescription className=''>
+                          <CardTitle className='mb-2 overflow-hidden text-ellipsis'>
+                            {ch.title}
+                          </CardTitle>
+                          <CardDescription>
                             <DifficultyLevelBadge level={ch.level} />
                           </CardDescription>
                         </div>
@@ -179,6 +185,7 @@ export const HomePage = () => {
                             size='icon'
                             variant="outline"
                             className="hover:bg-secondary"
+                            onClick={() => handleEditChallenge(ch.id)}
                           >
                             <PencilIcon />
                           </Button>
@@ -219,10 +226,9 @@ export const HomePage = () => {
             </div>
           </ScrollArea>
 
-          <Button asChild className='my-4 w-full max-w-sm self-center'>
-            <Link to={'/challenges/create'}>
-              + Adicionar Desafio
-            </Link>
+          <Button onClick={() => navigate('/challenges/create')} className='my-4 w-full max-w-sm self-center'>
+            <PlusIcon />
+            Adicionar Desafio
           </Button>
         </TabsContent>
 
@@ -269,10 +275,9 @@ export const HomePage = () => {
           </ScrollArea>
 
           {isTeacher && (
-            <Button asChild className='my-4 w-full max-w-sm self-center'>
-              <Link to={'/create-class'}>
-                + Adicionar Turma
-              </Link>
+            <Button onClick={() => navigate('/create-class')} className='my-4 w-full max-w-sm self-center'>
+              <PlusIcon />
+              Adicionar Turma
             </Button>
           )}
         </TabsContent>

@@ -15,6 +15,7 @@ import { CreateSchoolClass } from "./app/pages/CreateSchoolClass";
 import { RootLayout, rootLoader } from "./app/layouts/RootLayout";
 import { CreateChallengePage } from "./app/pages/CreateChallengePage";
 import { ChallengeEditorPage } from "./app/pages/ChallengeEditorPage";
+import { EditChallengePage } from "./app/pages/EditChallengePage";
 
 import { ThemeProvider } from "@/components/theme-provider";
 
@@ -55,6 +56,10 @@ export const App = () => {
             path: "/challenges/:challengeId",
             element: <ChallengeEditorPage />,
             loader: getChallengeSolution,
+          },
+          {
+            path: "/challenges/:id/edit",
+            element: <EditChallengePage />,
           },
           {
             path: "/create-class",

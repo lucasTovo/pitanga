@@ -88,3 +88,8 @@ export async function deleteChallenge(id: string) {
     return null;
   }
 }
+
+export async function updateChallenge(id: string, data: Partial<ChallengeDTO>) {
+  const response = await challengesApi.patch(`/challenges/${id}`, data);
+  return response.data;
+}
