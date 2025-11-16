@@ -1,19 +1,21 @@
-import { Button } from "@/components/ui/button"
-import { Card, CardHeader, CardTitle } from "@/components/ui/card"
-import { Challenge } from "@/types/challenges.types"
-import { Solution } from "@/types/solutions.types"
-import { ArrowLeftFromLineIcon } from "lucide-react"
-import { useLoaderData, useNavigate } from "react-router-dom"
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
-import { CodeEditor } from "../components/CodeEditor"
-import { useCallback, useMemo, useState } from "react"
-import { debounce } from "@/infra/utils/debounce"
-import { saveSolution } from "@/infra/data/challenges.rest"
-import { ValidationResult } from "@/types/validations.type"
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer"
-import { ValidationItem } from "../components/ValidationItem"
-import { DifficultyLevelBadge } from "../components/DifficultyLevelBadge"
-import { ValidationContainer } from "../components/validation"
+import { useCallback, useMemo, useState } from 'react';
+import { useLoaderData, useNavigate } from 'react-router-dom';
+import { ArrowLeftFromLineIcon } from 'lucide-react';
+
+import type { Solution } from '@/types/solutions.types';
+import type { Challenge } from '@/types/challenges.types';
+import type { ValidationResult } from '@/types/validations.type';
+
+import { debounce } from '@/infra/utils/debounce';
+import { saveSolution } from '@/infra/data/challenges.rest';
+
+import { Button } from '@/components/ui/button';
+import { CodeEditor } from '../components/CodeEditor';
+import { ValidationItem } from '../components/ValidationItem';
+import { Card, CardHeader, CardTitle } from '@/components/ui/card';
+import { DifficultyLevelBadge } from '../components/DifficultyLevelBadge';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from '@/components/ui/drawer';
 
 type ChallengeEditorStatus = 'idle' | 'saving' | 'running' | 'error';
 
@@ -98,7 +100,7 @@ export const ChallengeEditorPage = () => {
       <div className='flex gap-2'>
         <Button
           className='h-auto'
-          onClick={() => navigate(-1)}
+          onClick={() => navigate('/')}
         >
           <ArrowLeftFromLineIcon/>
         </Button>

@@ -220,7 +220,7 @@ export const HomePage = () => {
           </ScrollArea>
 
           <Button asChild className='my-4 w-full max-w-sm self-center'>
-            <Link to={'/create-challenge'}>
+            <Link to={'/challenges/create'}>
               + Adicionar Desafio
             </Link>
           </Button>
