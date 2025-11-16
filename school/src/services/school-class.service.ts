@@ -1,3 +1,4 @@
+import { AuthUser } from '../middlewares/auth.middleware';
 import * as repo from '../repositories/school-class.repository';
 import { CreateSchoolClassDTO, SchoolClassResponse, UpdateSchoolClassDTO } from '../types/schoolClass.types';
 
@@ -25,9 +26,9 @@ export const addChallengeToSchoolClass = async (schoolClassId: string, challenge
   }
 };
 
-export const listSchoolClasses = async (): Promise<SchoolClassResponse[]> => {
+export const listSchoolClasses = async (user: AuthUser): Promise<SchoolClassResponse[]> => {
     try {
-        return await repo.findAllSchoolClasses();
+        return await repo.findAllSchoolClasses(user);
     } catch (err: any) {
         throw new Error(`Failed to list school classes: ${err.message}`);
     }

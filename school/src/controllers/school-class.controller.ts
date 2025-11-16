@@ -35,9 +35,10 @@ export async function addChallengeToSchoolClass(req: Request, res: Response, nex
   }
 }
 
-export async function listSchoolClasses(_req: Request, res: Response, next: NextFunction) {
+export async function listSchoolClasses(req: Request, res: Response, next: NextFunction) {
   try {
-    const result = await service.listSchoolClasses();
+    const user = req.user;
+    const result = await service.listSchoolClasses(user);
     res.json(result);
   } catch (err: any) {
     next(err);

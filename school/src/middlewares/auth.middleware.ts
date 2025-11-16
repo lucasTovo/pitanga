@@ -2,6 +2,15 @@ import { Request, Response, NextFunction } from "express";
 import { jwtVerify, createRemoteJWKSet } from "jose";
 import logger from "../shared/logger";
 
+export interface AuthUser {
+  sub: string;
+  email: string;
+  preferred_username?: string;
+  realm_access: {
+    roles: string[];
+  };
+}
+
 // Extende o tipo Request para incluir a propriedade 'user'
 declare global {
     namespace Express {
@@ -25,7 +34,7 @@ export const authenticate = async (req: Request, res: Response, _next: NextFunct
 
     try {
         const { payload, protectedHeader } = await jwtVerify(token, JWKS, {
-            issuer: process.env.KEYCLOAK_ISSUER, 
+            issuer: process.env.KEYCLOAK_ISSUER,
             audience: 'account',
         });
 
