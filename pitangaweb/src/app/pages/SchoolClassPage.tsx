@@ -8,7 +8,7 @@ import type { Challenge } from '@/types/challenges.types';
 import { getChallengeById } from '@/infra/data/challenges.rest';
 import { addChallengeToSchoolClass, addStudentToSchoolClass, getUser, listUsers } from '@/infra/data/shcool.rest';
 
-import { useChallenges } from '@/hooks/useChallenges';
+import { useChallenges } from '@/app/hooks/useChallenges';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';

@@ -8,7 +8,7 @@ interface ActionDialogConfig {
   action?: () => Promise<any> | any;
 }
 
-export function useActionDialog() {
+export const useActionDialog = () => {
   const [open, setOpen] = useState(false);
   const [config, setConfig] = useState<ActionDialogConfig>({});
 

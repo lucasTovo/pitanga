@@ -9,7 +9,7 @@ import { deleteChallenge } from '@/infra/data/challenges.rest';
 import { deleteSchoolClass, listSchoolClasses } from '@/infra/data/shcool.rest';
 
 import { useAuth } from '@/hooks/useAuth';
-import { useChallenges } from '@/hooks/useChallenges';
+import { useChallenges } from '@/app/hooks/useChallenges';
 import { useUser } from '../layouts/RootLayout';
 
 import { Badge } from '@/components/ui/badge';
