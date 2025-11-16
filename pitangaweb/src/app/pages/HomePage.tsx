@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { ClipboardListIcon, LogOutIcon, UserIcon } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { ClipboardListIcon, ListTodoIcon, LogOutIcon, PencilIcon, Trash2Icon, UserIcon } from 'lucide-react';
 
 import { SchoolClass, UserRole } from '@/types/school-class.types';
 
@@ -19,12 +19,17 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { DifficultyLevelBadge } from '../components/DifficultyLevelBadge';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Separator } from '@/components/ui/separator';
+import { ButtonGroup } from '@/components/ui/button-group';
 
 export const HomePage = () => {
   const [classes, setClasses] = useState<SchoolClass[]>([]);
   const [activeTab, setActiveTab] = useState('challenges');
   const [loadingSchoolClasses, setLoadingSchoolClasses] = useState(true);
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } = useChallenges();
+
+  const navigate = useNavigate();
 
   const { user } = useUser();
   const isTeacher = user.role === UserRole.TEACHER;
@@ -33,7 +38,7 @@ export const HomePage = () => {
 
   const observer = useRef<IntersectionObserver | null>(null);
   const lastItemRef = useCallback(
-    (node: HTMLAnchorElement | null) => {
+    (node: HTMLDivElement | null) => {
       if (!hasNextPage) return; // evita observar se já chegou ao fim
 
       // desconecta o observador anterior
@@ -129,37 +134,55 @@ export const HomePage = () => {
           value="challenges"
           className='data-[state=active]:flex flex-col flex-1 overflow-hidden'
         >
-          <ScrollArea className="flex flex-col flex-1">
+          <ScrollArea className="flex flex-col flex-1" >
             <div className="flex flex-wrap gap-4">
               {challenges.map((ch, index) => {
                 const isLast = index === challenges.length - 1;
                 return(
-                  <Link
-                    key={ch.id}
-                    ref={isLast ? lastItemRef : null}
-                    to={'/challenges/' + ch.id}
-                    className="
-                      block
-                      w-full
-                      flex-grow-0
-                      flex-shrink-0
-                      sm:w-[calc(50%-1rem)]
-                      lg:w-[calc(33.333%-1rem)]
-                      transition-transform origin-center hover:scale-[1.02]
-                    "
-                  >
-                    <Card className='h-full'>
-                      <CardHeader className='pb-3'>
-                        <CardTitle>{ch.title}</CardTitle>
-                        <CardDescription>
-                          <div dangerouslySetInnerHTML={{ __html: ch.description }} />
-                        </CardDescription>
+                    <Card
+                      key={ch.id}
+                      ref={isLast ? lastItemRef : null}
+                      className="
+                        block
+                        w-full
+                        sm:w-[calc(50%-1rem)]
+                        lg:w-[calc(33.333%-1rem)]
+                      "
+                    >
+                      <CardHeader className='px-6 py-4 flex flex-row space-y-0 justify-between'>
+                        <div>
+                          <CardTitle className='mb-2 overflow-hidden text-ellipsis'>{ch.title}</CardTitle>
+                          <CardDescription className=''>
+                            <DifficultyLevelBadge level={ch.level} />
+                          </CardDescription>
+                        </div>
+                        <ButtonGroup>
+                          <Button variant="outline" size='icon'>
+                            <PencilIcon />
+                          </Button>
+                          <Button variant="outline" size='icon'>
+                            <Trash2Icon />
+                          </Button>
+                        </ButtonGroup>
                       </CardHeader>
-                      <CardFooter>
-                        <DifficultyLevelBadge level={ch.level} />
+                      <Separator className="" />
+                      <CardFooter className='px-6 py-2 flex justify-between'>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <Button disabled={!ch.description} size='sm'>
+                                <ListTodoIcon />
+                                Descrição
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className='p-4'>
+                              <div className='revert-all' dangerouslySetInnerHTML={{ __html: ch.description }} />
+                            </PopoverContent>
+                          </Popover>
+                          <Button onClick={() => navigate(`/challenges/${ch.id}`)} size='sm'>
+                            Acessar
+                          </Button>
                       </CardFooter>
                     </Card>
-                  </Link>
                 )
               })}
 

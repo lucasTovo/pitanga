@@ -6,3 +6,5 @@ export { ArrowLeftFromLine as ArrowLeftFromLineIcon } from 'lucide-react';
 export { Trash2 as Trash2Icon } from "lucide-react";
 export { Plus as PlusIcon } from "lucide-react";
 export { ChevronDown as ChevronDownIcon } from "lucide-react";
+export { ListTodo as ListTodoIcon } from "lucide-react";
+export { Pencil as PencilIcon } from "lucide-react";
