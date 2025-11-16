@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { ClipboardListIcon, ListTodoIcon, LogOutIcon, PencilIcon, Trash2Icon, UserIcon } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 
+import { Challenge } from '@/types/challenges.types';
 import { SchoolClass, UserRole } from '@/types/school-class.types';
 
 import { listSchoolClasses } from '@/infra/data/shcool.rest';
@@ -30,8 +31,10 @@ export const HomePage = () => {
   const [classes, setClasses] = useState<SchoolClass[]>([]);
   const [activeTab, setActiveTab] = useState('challenges');
   const [loadingSchoolClasses, setLoadingSchoolClasses] = useState(true);
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } = useChallenges();
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialogAction, setDialogAction] = useState<(() => void) | null>(null);
 
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } = useChallenges();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { user } = useUser();
@@ -81,9 +84,15 @@ export const HomePage = () => {
     [hasNextPage, fetchNextPage]
   );
 
-  const handleDelete = async (id: string) => {
-    await deleteChallenge(id);
-    queryClient.invalidateQueries({ queryKey: ["challenges"] }); // ⬅ força refetch
+  const handleDialog = (action: () => void) => {
+    setDialogOpen(true);
+    setDialogAction(() => action);
+  };
+
+  const handleDeleteChallenge = async (challenge: Challenge) => {
+    await deleteChallenge(challenge.id);
+    queryClient.invalidateQueries({ queryKey: ["challenges"] });
+    setDialogOpen(false);
   };
 
   if (loadingSchoolClasses) return <p>Carregando turmas...</p>;
@@ -166,36 +175,21 @@ export const HomePage = () => {
                           </CardDescription>
                         </div>
                         <ButtonGroup>
-                          <Button variant="outline" size='icon'>
+                          <Button
+                            size='icon'
+                            variant="outline"
+                            className="hover:bg-secondary"
+                          >
                             <PencilIcon />
                           </Button>
-                          <Dialog>
-                            <DialogTrigger asChild>
-                              <Button variant="outline" size='icon'>
-                              <Trash2Icon />
-                            </Button>
-                            </DialogTrigger>
-                            <DialogContent>
-                              <DialogHeader>
-                                <DialogTitle className='text-center'>Deletar desafio?</DialogTitle>
-                                <DialogDescription className='text-center'>
-                                  Esta ação não poderá ser revertida.
-                                  <br/>
-                                  O desafio será deletado permanentemente.
-                                </DialogDescription>
-                              </DialogHeader>
-                              <DialogFooter className="">
-                                <DialogClose asChild>
-                                  <Button type="button" variant="secondary">
-                                    Cancelar
-                                  </Button>
-                                </DialogClose>
-                                <Button onClick={() => handleDelete(ch.id)} type="button" variant="secondary">
-                                  Confirmar
-                                </Button>
-                              </DialogFooter>
-                            </DialogContent>
-                          </Dialog>
+                          <Button
+                            size='icon'
+                            variant="outline"
+                            className="hover:bg-destructive hover:text-destructive-foreground"
+                            onClick={() => handleDialog(() => handleDeleteChallenge(ch))}
+                          >
+                            <Trash2Icon />
+                          </Button>
                         </ButtonGroup>
                       </CardHeader>
                       <Separator className="" />
@@ -283,6 +277,29 @@ export const HomePage = () => {
           )}
         </TabsContent>
       </Tabs>
+
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className='text-center'>Excluir desafio?</DialogTitle>
+            <DialogDescription className='text-center'>
+              Esta ação não poderá ser revertida.
+              <br/>
+              O desafio será excluido permanentemente.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="">
+            <DialogClose asChild>
+              <Button variant="outline" className="hover:bg-secondary">
+                Cancelar
+              </Button>
+            </DialogClose>
+            <Button onClick={dialogAction ?? (() => {})} variant="destructive">
+              Excluir
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div >
   );
 }
