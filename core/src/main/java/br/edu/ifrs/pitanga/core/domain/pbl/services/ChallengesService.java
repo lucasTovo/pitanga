@@ -69,4 +69,12 @@ public class ChallengesService {
         challenge.setValidations(validations);
         return challenge;
     }
+
+    public boolean deleteById(UUID id) {
+        if (challengesRepository.existsById(id)) {
+            challengesRepository.deleteById(id);
+            return true;
+        }
+        return false;
+    }
 }

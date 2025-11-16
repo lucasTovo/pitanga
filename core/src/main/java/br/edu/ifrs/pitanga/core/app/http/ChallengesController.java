@@ -44,7 +44,13 @@ public class ChallengesController {
     @PatchMapping("/{challengeId}")
     public ResponseEntity<Challenge> updateById(@PathVariable UUID challengeId,
         @RequestBody ChallengeRequest request) {
-        return ResponseEntity.accepted().build();
+
+    @DeleteMapping("/{challengeId}")
+    public ResponseEntity<Void> deleteById(@PathVariable UUID challengeId) {
+        if (challengesService.deleteById(challengeId)) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.notFound().build();
     }
 
     @PostMapping()
