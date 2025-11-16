@@ -22,6 +22,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.DeleteMapping;
 
 @RestController
 @AllArgsConstructor
@@ -42,9 +43,20 @@ public class ChallengesController {
     }
 
     @PatchMapping("/{challengeId}")
-    public ResponseEntity<Challenge> updateById(@PathVariable UUID challengeId,
+    public ResponseEntity<Challenge> updateById(Authentication user, 
+        @PathVariable UUID challengeId,
         @RequestBody ChallengeRequest request) {
-        return ResponseEntity.accepted().build();
+        return challengesService.update(challengeId, request, user.getName())
+            .map(ResponseEntity.ok()::body)
+            .orElse(ResponseEntity.notFound().build());
+    }
+
+    @DeleteMapping("/{challengeId}")
+    public ResponseEntity<Void> deleteById(@PathVariable UUID challengeId) {
+        if (challengesService.deleteById(challengeId)) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.notFound().build();
     }
 
     @PostMapping()

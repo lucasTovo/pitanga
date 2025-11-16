@@ -15,8 +15,10 @@ import br.edu.ifrs.pitanga.core.domain.pbl.Challenge;
 import br.edu.ifrs.pitanga.core.domain.pbl.Validation;
 import br.edu.ifrs.pitanga.core.domain.pbl.services.commands.SaveChallengeCommand;
 import br.edu.ifrs.pitanga.core.domain.pbl.vo.SolutionStatus;
+import br.edu.ifrs.pitanga.core.domain.pbl.vo.ChallengeLevel;
 import br.edu.ifrs.pitanga.core.app.http.dto.ChallengePageableFilter;
 import br.edu.ifrs.pitanga.core.app.http.dto.ChallengeResponse;
+import br.edu.ifrs.pitanga.core.app.http.dto.ChallengeRequest;
 import br.edu.ifrs.pitanga.core.domain.repositories.ChallengesRepository;
 import br.edu.ifrs.pitanga.core.domain.repositories.SolutionsRepository;
 import br.edu.ifrs.pitanga.core.domain.repositories.ValidationsRepository;
@@ -68,5 +70,51 @@ public class ChallengesService {
             .collect(Collectors.toList());
         challenge.setValidations(validations);
         return challenge;
+    }
+
+    public Optional<Challenge> update(UUID id, ChallengeRequest request, String userId) {
+        return challengesRepository.findById(id).map(existingChallenge -> {
+            // Verifica se o usuário é o criador do challenge
+            if (!existingChallenge.getCreatorId().equals(userId)) {
+                return null;
+            }
+
+            // Atualiza os campos do challenge (partial update - apenas campos fornecidos)
+            Challenge updatedChallenge = Challenge.builder()
+                .id(existingChallenge.getId())
+                .title(request.title() != null ? request.title() : existingChallenge.getTitle())
+                .description(request.description() != null ? request.description() : existingChallenge.getDescription())
+                .baseCode(request.baseCode() != null ? request.baseCode() : existingChallenge.getBaseCode())
+                .level(request.level() != null ? ChallengeLevel.valueOf(request.level()) : existingChallenge.getLevel())
+                .creatorId(existingChallenge.getCreatorId())
+                .build();
+
+            // Atualiza validações se fornecidas
+            if (request.validations() != null && !request.validations().isEmpty()) {
+                // Remove validações antigas
+                if (existingChallenge.getValidations() != null) {
+                    validationsRepository.deleteAll(existingChallenge.getValidations());
+                }
+                // Cria novas validações
+                List<Validation> newValidations = request.transformValidations(updatedChallenge.getId())
+                    .stream()
+                    .map(validationsRepository::save)
+                    .collect(Collectors.toList());
+                updatedChallenge.setValidations(newValidations);
+            } else {
+                // Mantém as validações existentes se não foram fornecidas
+                updatedChallenge.setValidations(existingChallenge.getValidations());
+            }
+
+            return challengesRepository.save(updatedChallenge);
+        });
+    }
+
+    public boolean deleteById(UUID id) {
+        if (challengesRepository.existsById(id)) {
+            challengesRepository.deleteById(id);
+            return true;
+        }
+        return false;
     }
 }
