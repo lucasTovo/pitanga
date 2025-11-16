@@ -3,15 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import { ClipboardListIcon, ListTodoIcon, LogOutIcon, PencilIcon, PlusIcon, Trash2Icon, UserIcon } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 
-import { Challenge } from '@/types/challenges.types';
 import { SchoolClass, UserRole } from '@/types/school-class.types';
 
-import { deleteSchoolClass, listSchoolClasses } from '@/infra/data/shcool.rest';
 import { deleteChallenge } from '@/infra/data/challenges.rest';
+import { deleteSchoolClass, listSchoolClasses } from '@/infra/data/shcool.rest';
 
 import { useAuth } from '@/hooks/useAuth';
-import { useUser } from '../layouts/RootLayout';
 import { useChallenges } from '@/hooks/useChallenges';
+import { useUser } from '../layouts/RootLayout';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -24,7 +23,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { ActionDialog } from '../components/ActionDialog';
+import { useActionDialog } from '../hooks/useActionDialog';
 import { DifficultyLevelBadge } from '../components/DifficultyLevelBadge';
 import { SchoolClassFormDialog } from '../components/SchoolClassFormDialog';
 
@@ -32,16 +32,21 @@ export const HomePage = () => {
   const [classes, setClasses] = useState<SchoolClass[]>([]);
   const [activeTab, setActiveTab] = useState('challenges');
   const [loadingSchoolClasses, setLoadingSchoolClasses] = useState(true);
-  const [confirmationDialogOpen, setConfirmationDialogOpen] = useState(false);
-  const [confirmationDialogAction, setConfirmationDialogAction] = useState<(() => void) | null>(null);
   const [dialogSchoolClasFormOpen, setDialogSchoolClasFormOpen] = useState(false);
   const [dialogSchoolClasFormMode, setDialogSchoolClasFormMode] = useState<"create" | "edit">("create");
   const [selectedClass, setSelectedClass] = useState<SchoolClass | null>(null);
 
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } = useChallenges();
+  const {
+    open,
+    setOpen,
+    config,
+    showDialog,
+    handleConfirm
+  } = useActionDialog();
+  const { user } = useUser();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { user } = useUser();
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } = useChallenges();
 
   const isTeacher = user.role === UserRole.TEACHER;
 
@@ -112,25 +117,36 @@ export const HomePage = () => {
     return prev.map((c) => (c.id === response.id ? response : c));
   }
 
-  const handleConfirmationDialog = (action: () => void) => {
-    setConfirmationDialogOpen(true);
-    setConfirmationDialogAction(() => action);
-  };
+  function handleDeleteChallenge(id: string) {
+    showDialog({
+      title: 'Excluir desafio?',
+      description: `Esta ação não poderá ser revertida.
+        O desafio será excluido permanentemente.`,
+      confirmLabel: 'Excluir',
+      variant: 'destructive',
+      action: async () => {
+        await deleteChallenge(id);
+        queryClient.invalidateQueries({ queryKey: ['challenges'] });
+      },
+    });
+  }
 
-  const handleDeleteChallenge = async (challenge: Challenge) => {
-    await deleteChallenge(challenge.id);
-    queryClient.invalidateQueries({ queryKey: ["challenges"] });
-    setConfirmationDialogOpen(false);
-  };
+  function handleDeleteClass(id: string) {
+    showDialog({
+      title: 'Excluir turma?',
+      description: `Esta ação não poderá ser revertida.
+        A turma será excluida permanentemente.`,
+      confirmLabel: 'Excluir',
+      variant: 'destructive',
+      action: async () => {
+        await deleteSchoolClass(id);
+        setClasses((prev) => prev.filter((cls) => cls.id !== id)); //temporario
+      },
+    });
+  }
 
   const handleEditChallenge = (id: string) => {
     navigate(`/challenges/${id}/edit`);
-  }
-
-  const handleDeleteClass = async (schoolClass: SchoolClass) => {
-    await deleteSchoolClass(schoolClass.id);
-    setClasses((prev) => prev.filter((cls) => cls.id !== schoolClass.id)); //temporario
-    setConfirmationDialogOpen(false);
   }
 
   if (loadingSchoolClasses) return <p>Carregando turmas...</p>;
@@ -228,7 +244,7 @@ export const HomePage = () => {
                             size='icon'
                             variant="outline"
                             className="hover:bg-destructive hover:text-destructive-foreground"
-                            onClick={() => handleConfirmationDialog(() => handleDeleteChallenge(ch))}
+                            onClick={() => handleDeleteChallenge(ch.id)}
                           >
                             <Trash2Icon />
                           </Button>
@@ -308,7 +324,7 @@ export const HomePage = () => {
                           size='icon'
                           variant="outline"
                           className="hover:bg-destructive hover:text-destructive-foreground"
-                          onClick={() => handleConfirmationDialog(() => handleDeleteClass(cls))}
+                          onClick={() => handleDeleteClass(cls.id)}
                         >
                           <Trash2Icon />
                         </Button>
@@ -345,28 +361,15 @@ export const HomePage = () => {
         </TabsContent>
       </Tabs>
 
-      <Dialog open={confirmationDialogOpen} onOpenChange={setConfirmationDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle className='text-center'>Excluir desafio?</DialogTitle>
-            <DialogDescription className='text-center'>
-              Esta ação não poderá ser revertida.
-              <br/>
-              O desafio será excluido permanentemente.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter className="">
-            <DialogClose asChild>
-              <Button variant="outline" className="hover:bg-secondary">
-                Cancelar
-              </Button>
-            </DialogClose>
-            <Button onClick={confirmationDialogAction ?? (() => {})} variant="destructive">
-              Excluir
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ActionDialog
+        open={open}
+        onOpenChange={setOpen}
+        title={config.title}
+        description={config.description}
+        confirmLabel={config.confirmLabel}
+        variant={config.variant}
+        onConfirm={handleConfirm}
+      />
 
       <SchoolClassFormDialog
         mode={dialogSchoolClasFormMode}
