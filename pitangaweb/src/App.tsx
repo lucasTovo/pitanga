@@ -11,7 +11,6 @@ import { Colors } from "./app/pages/Colors";
 import { HomePage } from "./app/pages/HomePage";
 import { ErrorPage } from "./app/pages/ErrorPage";
 import { SchoolClassPage } from "./app/pages/SchoolClassPage";
-import { CreateSchoolClass } from "./app/pages/CreateSchoolClass";
 import { RootLayout, rootLoader } from "./app/layouts/RootLayout";
 import { CreateChallengePage } from "./app/pages/CreateChallengePage";
 import { ChallengeEditorPage } from "./app/pages/ChallengeEditorPage";
@@ -60,10 +59,6 @@ export const App = () => {
           {
             path: "/challenges/:id/edit",
             element: <EditChallengePage />,
-          },
-          {
-            path: "/create-class",
-            element: <CreateSchoolClass />,
           },
           {
             path: "/classes/:classId",

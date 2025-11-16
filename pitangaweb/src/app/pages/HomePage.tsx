@@ -6,7 +6,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Challenge } from '@/types/challenges.types';
 import { SchoolClass, UserRole } from '@/types/school-class.types';
 
-import { listSchoolClasses } from '@/infra/data/shcool.rest';
+import { deleteSchoolClass, listSchoolClasses } from '@/infra/data/shcool.rest';
 import { deleteChallenge } from '@/infra/data/challenges.rest';
 
 import { useAuth } from '@/hooks/useAuth';
@@ -26,13 +26,17 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { DifficultyLevelBadge } from '../components/DifficultyLevelBadge';
+import { SchoolClassFormDialog } from '../components/SchoolClassFormDialog';
 
 export const HomePage = () => {
   const [classes, setClasses] = useState<SchoolClass[]>([]);
   const [activeTab, setActiveTab] = useState('challenges');
   const [loadingSchoolClasses, setLoadingSchoolClasses] = useState(true);
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [dialogAction, setDialogAction] = useState<(() => void) | null>(null);
+  const [confirmationDialogOpen, setConfirmationDialogOpen] = useState(false);
+  const [confirmationDialogAction, setConfirmationDialogAction] = useState<(() => void) | null>(null);
+  const [dialogSchoolClasFormOpen, setDialogSchoolClasFormOpen] = useState(false);
+  const [dialogSchoolClasFormMode, setDialogSchoolClasFormMode] = useState<"create" | "edit">("create");
+  const [selectedClass, setSelectedClass] = useState<SchoolClass | null>(null);
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } = useChallenges();
   const navigate = useNavigate();
@@ -84,19 +88,49 @@ export const HomePage = () => {
     [hasNextPage, fetchNextPage]
   );
 
-  const handleDialog = (action: () => void) => {
-    setDialogOpen(true);
-    setDialogAction(() => action);
+  const handleCreateSchoolClass = () => {
+    setDialogSchoolClasFormMode("create");
+    setSelectedClass(null);
+    setDialogSchoolClasFormOpen(true);
+  }
+
+  const handleEditSchoolClass = (schoolClass: SchoolClass) => {
+    setDialogSchoolClasFormMode("edit");
+    setSelectedClass(schoolClass);
+    setDialogSchoolClasFormOpen(true);
+  }
+
+  const updateSchoolClassList = (
+    prev: any[],
+    response: any,
+    mode: "create" | "edit"
+  ) => {
+    if (mode === "create") {
+      return [...prev, response];
+    }
+
+    return prev.map((c) => (c.id === response.id ? response : c));
+  }
+
+  const handleConfirmationDialog = (action: () => void) => {
+    setConfirmationDialogOpen(true);
+    setConfirmationDialogAction(() => action);
   };
 
   const handleDeleteChallenge = async (challenge: Challenge) => {
     await deleteChallenge(challenge.id);
     queryClient.invalidateQueries({ queryKey: ["challenges"] });
-    setDialogOpen(false);
+    setConfirmationDialogOpen(false);
   };
 
   const handleEditChallenge = (id: string) => {
     navigate(`/challenges/${id}/edit`);
+  }
+
+  const handleDeleteClass = async (schoolClass: SchoolClass) => {
+    await deleteSchoolClass(schoolClass.id);
+    setClasses((prev) => prev.filter((cls) => cls.id !== schoolClass.id)); //temporario
+    setConfirmationDialogOpen(false);
   }
 
   if (loadingSchoolClasses) return <p>Carregando turmas...</p>;
@@ -165,14 +199,15 @@ export const HomePage = () => {
                       key={ch.id}
                       ref={isLast ? lastItemRef : null}
                       className="
-                        block
+                        flex
                         w-full
+                        flex-col
                         sm:w-[calc(50%-1rem)]
                         lg:w-[calc(33.333%-1rem)]
                       "
                     >
-                      <CardHeader className='px-6 py-4 flex flex-row space-y-0 justify-between'>
-                        <div>
+                      <CardHeader className='px-6 py-4 flex flex-row grow gap-2 space-y-0 justify-between'>
+                        <div className='flex flex-col justify-between'>
                           <CardTitle className='mb-2 overflow-hidden text-ellipsis'>
                             {ch.title}
                           </CardTitle>
@@ -193,13 +228,13 @@ export const HomePage = () => {
                             size='icon'
                             variant="outline"
                             className="hover:bg-destructive hover:text-destructive-foreground"
-                            onClick={() => handleDialog(() => handleDeleteChallenge(ch))}
+                            onClick={() => handleConfirmationDialog(() => handleDeleteChallenge(ch))}
                           >
                             <Trash2Icon />
                           </Button>
                         </ButtonGroup>
                       </CardHeader>
-                      <Separator className="" />
+                      <Separator/>
                       <CardFooter className='px-6 py-2 flex justify-between'>
                           <Popover>
                             <PopoverTrigger asChild>
@@ -239,43 +274,70 @@ export const HomePage = () => {
         >
           <ScrollArea className="flex flex-col flex-1">
             <div className="flex flex-wrap gap-4">
-              {classes.map(cls => (
-                <Link
-                  key={cls.id}
-                  to={`/classes/${cls.id}`}
-                  className="
-                    block
-                    w-full
-                    flex-grow-0
-                    flex-shrink-0
-                    sm:w-[calc(50%-1rem)]
-                    lg:w-[calc(33.333%-1rem)]
-                    transition-transform origin-center hover:scale-[1.02]
-                  "
-                >
-                  <Card className='h-full'>
-                    <CardHeader className='pb-3'>
-                      <CardTitle>{cls.name}</CardTitle>
-                      <CardDescription>{cls.description}</CardDescription>
+              {classes.map((cls, index) => {
+                const isLast = index === challenges.length - 1;
+                return(
+                  <Card
+                    key={cls.id}
+                    ref={isLast ? lastItemRef : null}
+                    className="
+                      flex
+                      w-full
+                      flex-col
+                      sm:w-[calc(50%-1rem)]
+                      lg:w-[calc(33.333%-1rem)]
+                    "
+                  >
+                    <CardHeader className='px-6 py-4 flex flex-row grow gap-2 space-y-0 justify-between'>
+                      <div>
+                        <CardTitle className='mb-2 overflow-hidden text-ellipsis'>
+                          {cls.name}
+                        </CardTitle>
+                        <CardDescription>{cls.description}</CardDescription>
+                      </div>
+                      <ButtonGroup>
+                        <Button
+                          size='icon'
+                          variant="outline"
+                          className="hover:bg-secondary"
+                          onClick={() => handleEditSchoolClass(cls)}
+                        >
+                          <PencilIcon />
+                        </Button>
+                        <Button
+                          size='icon'
+                          variant="outline"
+                          className="hover:bg-destructive hover:text-destructive-foreground"
+                          onClick={() => handleConfirmationDialog(() => handleDeleteClass(cls))}
+                        >
+                          <Trash2Icon />
+                        </Button>
+                      </ButtonGroup>
                     </CardHeader>
-                    <CardFooter>
-                      <Badge variant="secondary" className='mr-2 text-sm font-bold'>
-                        <UserIcon className='mr-1'/>
-                        {cls.count.students}
-                      </Badge>
-                      <Badge variant="secondary" className='text-sm font-bold'>
-                        <ClipboardListIcon className='mr-1'/>
-                        {cls.count.challenges}
-                      </Badge>
+                    <Separator />
+                    <CardFooter className='px-6 py-2 flex justify-between'>
+                      <div>
+                        <Badge variant="secondary" className='mr-2 text-sm font-bold'>
+                          <UserIcon className='mr-1'/>
+                          {cls.count.students}
+                        </Badge>
+                        <Badge variant="secondary" className='text-sm font-bold'>
+                          <ClipboardListIcon className='mr-1'/>
+                          {cls.count.challenges}
+                        </Badge>
+                      </div>
+                      <Button onClick={() => navigate(`/classes/${cls.id}`)} size='sm'>
+                        Acessar
+                      </Button>
                     </CardFooter>
                   </Card>
-                </Link>
-              ))}
+                )
+              })}
             </div>
           </ScrollArea>
 
           {isTeacher && (
-            <Button onClick={() => navigate('/create-class')} className='my-4 w-full max-w-sm self-center'>
+            <Button onClick={handleCreateSchoolClass} className='my-4 w-full max-w-sm self-center'>
               <PlusIcon />
               Adicionar Turma
             </Button>
@@ -283,7 +345,7 @@ export const HomePage = () => {
         </TabsContent>
       </Tabs>
 
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+      <Dialog open={confirmationDialogOpen} onOpenChange={setConfirmationDialogOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle className='text-center'>Excluir desafio?</DialogTitle>
@@ -299,12 +361,24 @@ export const HomePage = () => {
                 Cancelar
               </Button>
             </DialogClose>
-            <Button onClick={dialogAction ?? (() => {})} variant="destructive">
+            <Button onClick={confirmationDialogAction ?? (() => {})} variant="destructive">
               Excluir
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <SchoolClassFormDialog
+        mode={dialogSchoolClasFormMode}
+        open={dialogSchoolClasFormOpen}
+        onOpenChange={setDialogSchoolClasFormOpen}
+        initialData={selectedClass ?? null}
+        onSuccess={(response) => {
+        setClasses((prev) =>
+          updateSchoolClassList(prev, response, dialogSchoolClasFormMode)
+        );
+      }}
+      />
     </div >
   );
 }

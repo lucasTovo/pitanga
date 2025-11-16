@@ -17,7 +17,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Card, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { DifficultyLevelBadge } from '../components/DifficultyLevelBadge';
 
 type Tab = 'students' | 'challenges';
@@ -246,7 +246,6 @@ export const SchoolClassPage = () => {
         <DialogContent className="sm:max-w-2xl w-full max-h-[70vh] flex flex-col flex-1 overflow-hidden">
           <DialogHeader>
             <DialogTitle>{dialogContent[tab].title}</DialogTitle>
-            <DialogDescription></DialogDescription>
           </DialogHeader>
           <ScrollArea className="flex flex-col flex-1">
             <div className="flex flex-col gap-4">
