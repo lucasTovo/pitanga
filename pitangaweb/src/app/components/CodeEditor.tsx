@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { forwardRef, useEffect, useRef, useState } from 'react'
 import AceEditor from 'react-ace'
 
 import 'ace-builds/src-noconflict/mode-java'
@@ -35,43 +35,46 @@ type CodeEditorProps = {
   onChange: (code: string) => void
 }
 
-export const CodeEditor = ({
-  fontSize = 16,
-  value = '',
-  className = '',
-  onChange,
-}: CodeEditorProps) => {
-  const containerRef = useRef<HTMLDivElement>(null)
-  const { width, height } = useResizeObserver(containerRef)
+export const CodeEditor = forwardRef<HTMLDivElement, CodeEditorProps>(
+  ({ fontSize = 16, value = '', className = '', onChange }, ref) => {
+    const containerRef = useRef<HTMLDivElement>(null)
+    const { width, height } = useResizeObserver(containerRef)
 
-  return (
-    <div
-      ref={containerRef}
-      className={`relative w-full h-full min-h-[200px] rounded-xl overflow-hidden border border-border bg-background ${className}`}
-    >
-      <AceEditor
-        mode="java"
-        theme="chaos"
-        name="code-editor"
-        value={value}
-        fontSize={fontSize}
-        width={`${width}px`}
-        height={`${height}px`}
-        showPrintMargin={false}
-        setOptions={{
-          useWorker: false,
-          enableBasicAutocompletion: true,
-          enableLiveAutocompletion: true,
-          enableSnippets: true,
-          tabSize: 2,
-          showLineNumbers: true,
-        }}
-        editorProps={{ $blockScrolling: true }}
-        onChange={(val) => onChange(val)}
-        style={{
-          backgroundColor: 'transparent',
-        }}
-      />
-    </div>
-  )
-}
+    useEffect(() => {
+      if (!ref) return
+      if (typeof ref === 'function') ref(containerRef.current)
+      else ref.current = containerRef.current
+    }, [ref])
+
+    return (
+      <div
+        ref={containerRef}
+        className={`relative w-full h-full min-h-[200px] rounded-xl overflow-hidden border border-border bg-background ${className}`}
+      >
+        <AceEditor
+          mode="java"
+          theme="chaos"
+          name="code-editor"
+          value={value}
+          fontSize={fontSize}
+          width={`${width}px`}
+          height={`${height}px`}
+          showPrintMargin={false}
+          setOptions={{
+            useWorker: false,
+            enableBasicAutocompletion: true,
+            enableLiveAutocompletion: true,
+            // enableSnippets: true,
+            tabSize: 2,
+            showLineNumbers: true,
+          }}
+          editorProps={{ $blockScrolling: true }}
+          onChange={(val) => onChange(val)}
+          style={{
+            backgroundColor: 'transparent',
+          }}
+        />
+      </div>
+    );
+  }
+);
