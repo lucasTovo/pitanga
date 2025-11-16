@@ -75,3 +75,16 @@ export async function saveSolution(params: SaveCommand) {
   const solutionRaw = await challengesApi.get<Solution>(url);
   return solutionRaw.data;
 }
+
+export async function deleteChallenge(id: string) {
+  try {
+    const response = await challengesApi.delete<Challenge>(
+      `/challenges/${id}`,
+      { validateStatus: (status => status >= 200 && status < 400) }
+    );
+    return response.data;
+  } catch (error) {
+    console.error(`Error deleting challenge ${id}:`, error);
+    return null;
+  }
+}

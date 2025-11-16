@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ClipboardListIcon, ListTodoIcon, LogOutIcon, PencilIcon, Trash2Icon, UserIcon } from 'lucide-react';
+import { useQueryClient } from '@tanstack/react-query';
 
 import { SchoolClass, UserRole } from '@/types/school-class.types';
 
 import { listSchoolClasses } from '@/infra/data/shcool.rest';
+import { deleteChallenge } from '@/infra/data/challenges.rest';
 
 import { useAuth } from '@/hooks/useAuth';
 import { useUser } from '../layouts/RootLayout';
@@ -14,14 +16,15 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Spinner } from "@/components/ui/spinner"
 import { ModeToggle } from '@/components/mode-toggle';
+import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { ButtonGroup } from '@/components/ui/button-group';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { DifficultyLevelBadge } from '../components/DifficultyLevelBadge';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Separator } from '@/components/ui/separator';
-import { ButtonGroup } from '@/components/ui/button-group';
+import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { DifficultyLevelBadge } from '../components/DifficultyLevelBadge';
 
 export const HomePage = () => {
   const [classes, setClasses] = useState<SchoolClass[]>([]);
@@ -30,9 +33,30 @@ export const HomePage = () => {
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } = useChallenges();
 
   const navigate = useNavigate();
-
+  const queryClient = useQueryClient();
   const { user } = useUser();
+
   const isTeacher = user.role === UserRole.TEACHER;
+
+  const { logout } = useAuth();
+  const handleLogout = () => {
+    logout();
+  };
+
+  useEffect(() => {
+    async function getSchoolClasses() {
+      setLoadingSchoolClasses(true);
+      try {
+        const userSchoolClasses = await listSchoolClasses();
+        setClasses(userSchoolClasses);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoadingSchoolClasses(false);
+      }
+    }
+    getSchoolClasses();
+  }, []);
 
   const challenges = data?.pages.flatMap((page) => page.content) ?? [];
 
@@ -57,25 +81,10 @@ export const HomePage = () => {
     [hasNextPage, fetchNextPage]
   );
 
-  const { logout } = useAuth();
-  const handleLogout = () => {
-    logout();
+  const handleDelete = async (id: string) => {
+    await deleteChallenge(id);
+    queryClient.invalidateQueries({ queryKey: ["challenges"] }); // ⬅ força refetch
   };
-
-  useEffect(() => {
-    async function getSchoolClasses() {
-      setLoadingSchoolClasses(true);
-      try {
-        const userSchoolClasses = await listSchoolClasses();
-        setClasses(userSchoolClasses);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoadingSchoolClasses(false);
-      }
-    }
-    getSchoolClasses();
-  }, []);
 
   if (loadingSchoolClasses) return <p>Carregando turmas...</p>;
   if (status === 'pending') return <p>Carregando desafios...</p>;
@@ -160,9 +169,33 @@ export const HomePage = () => {
                           <Button variant="outline" size='icon'>
                             <PencilIcon />
                           </Button>
-                          <Button variant="outline" size='icon'>
-                            <Trash2Icon />
-                          </Button>
+                          <Dialog>
+                            <DialogTrigger asChild>
+                              <Button variant="outline" size='icon'>
+                              <Trash2Icon />
+                            </Button>
+                            </DialogTrigger>
+                            <DialogContent>
+                              <DialogHeader>
+                                <DialogTitle className='text-center'>Deletar desafio?</DialogTitle>
+                                <DialogDescription className='text-center'>
+                                  Esta ação não poderá ser revertida.
+                                  <br/>
+                                  O desafio será deletado permanentemente.
+                                </DialogDescription>
+                              </DialogHeader>
+                              <DialogFooter className="">
+                                <DialogClose asChild>
+                                  <Button type="button" variant="secondary">
+                                    Cancelar
+                                  </Button>
+                                </DialogClose>
+                                <Button onClick={() => handleDelete(ch.id)} type="button" variant="secondary">
+                                  Confirmar
+                                </Button>
+                              </DialogFooter>
+                            </DialogContent>
+                          </Dialog>
                         </ButtonGroup>
                       </CardHeader>
                       <Separator className="" />
