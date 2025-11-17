@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ClipboardListIcon, ListTodoIcon, LogOutIcon, PencilIcon, PlusIcon, Trash2Icon, UserIcon } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
@@ -6,11 +6,13 @@ import { useQueryClient } from '@tanstack/react-query';
 import { SchoolClass, UserRole } from '@/types/school-class.types';
 
 import { deleteSchoolClass } from '@/infra/data/school.rest';
-import { deleteSchoolClass, listSchoolClasses } from '@/infra/data/shcool.rest';
+import { orchestratorRest } from '@/infra/data/orchestrator.rest';
 
 import { useAuth } from '@/hooks/useAuth';
-import { useChallenges } from '@/app/hooks/useChallenges';
 import { useUser } from '../layouts/RootLayout';
+import { useChallenges } from '@/app/hooks/useChallenges';
+import { useActionDialog } from '../hooks/useActionDialog';
+import { useSchoolClasses } from '../hooks/useSchoolClasses';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -24,7 +26,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { ActionDialog } from '../components/ActionDialog';
-import { useActionDialog } from '../hooks/useActionDialog';
 import { DifficultyLevelBadge } from '../components/DifficultyLevelBadge';
 import { SchoolClassFormDialog } from '../components/SchoolClassFormDialog';
 
@@ -36,6 +37,17 @@ export const HomePage = () => {
   const [dialogSchoolClasFormMode, setDialogSchoolClasFormMode] = useState<"create" | "edit">("create");
   const [selectedClass, setSelectedClass] = useState<SchoolClass | null>(null);
 
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
+  const { logout } = useAuth();
+  const handleLogout = () => {
+    logout();
+  };
+
+  const { user } = useUser();
+  const isTeacher = user?.role === UserRole.TEACHER;
+
   const {
     open,
     setOpen,
@@ -43,32 +55,14 @@ export const HomePage = () => {
     showDialog,
     handleConfirm
   } = useActionDialog();
-  const { user } = useUser();
-  const navigate = useNavigate();
-  const queryClient = useQueryClient();
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } = useChallenges();
 
-  const isTeacher = user.role === UserRole.TEACHER;
-
-  const { logout } = useAuth();
-  const handleLogout = () => {
-    logout();
-  };
-
-  useEffect(() => {
-    async function getSchoolClasses() {
-      setLoadingSchoolClasses(true);
-      try {
-        const userSchoolClasses = await listSchoolClasses();
-        setClasses(userSchoolClasses);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoadingSchoolClasses(false);
-      }
-    }
-    getSchoolClasses();
-  }, []);
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    status
+  } = useChallenges();
 
   const challenges = data?.pages.flatMap((page) => page.content) ?? [];
 
@@ -125,7 +119,7 @@ export const HomePage = () => {
       confirmLabel: 'Excluir',
       variant: 'destructive',
       action: async () => {
-        await deleteChallenge(id);
+        await orchestratorRest.deleteChallengeCascade(id);
         queryClient.invalidateQueries({ queryKey: ['challenges'] });
       },
     });

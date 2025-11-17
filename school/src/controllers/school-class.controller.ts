@@ -75,8 +75,23 @@ export async function updateChallengesSchoolClass(req: Request, res: Response, n
 export async function deleteSchoolClass(req: Request, res: Response, next: NextFunction) {
   try {
     await service.deleteSchoolClass(req.params.id);
-    res.status(204).send();
   } catch (err: any) {
     next(err);
   }
 };
+
+export async function removeChallengeFromAllClasses(req: Request, res: Response) {
+  try {
+    const user = req.user;
+    const { challengeId } = req.params;
+
+    await service.removeChallengeFromAllClasses(user, challengeId);
+
+    return res.status(204).send();
+  } catch (error: any) {
+    console.error(error);
+    return res.status(500).json({
+      message: 'Erro ao remover desafio das turmas',
+    });
+  }
+}

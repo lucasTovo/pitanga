@@ -83,14 +83,16 @@ export async function addChallengeToSchoolClass(schoolClassId: string, challenge
 export async function findAllSchoolClasses(user: AuthUser): Promise<SchoolClassResponse[]> {
   const isTeacher = user.realm_access.roles.includes('teacher');
 
-  const condition = isTeacher ? { creatorId: user.sub } : { students: { some: { userId: user.sub } } };
+  const condition = isTeacher
+    ? { creatorId: user.sub }
+    : { students: { some: { userId: user.sub } } };
 
   const result = await prisma.schoolClass.findMany({
     where: condition,
     select: schoolClassSelect,
   });
 
-return result.map(mapToSchoolClassResponse);
+  return result.map(mapToSchoolClassResponse);
 }
 
 export async function findSchoolClassById(id: string): Promise<SchoolClassResponse | null> {
@@ -115,4 +117,20 @@ export async function updateSchoolClass(id: string, data: Partial<SchoolClass>):
 
 export async function deleteSchoolClass(id: string) {
     return await prisma.schoolClass.delete({ where: { id } });
+}
+
+export async function removeChallengeRelation(schoolClassId: string, challengeId: string) {
+  return prisma.schoolClass.update({
+    where: { id: schoolClassId },
+    data: {
+      challenges: {
+        delete: {
+          schoolClassId_challengeId: {
+            schoolClassId,
+            challengeId
+          }
+        }
+      }
+    }
+  });
 }

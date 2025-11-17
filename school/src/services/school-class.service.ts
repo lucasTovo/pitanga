@@ -57,3 +57,16 @@ export const deleteSchoolClass = async (id: string): Promise<void> => {
         throw new Error(`Failed to delete school class: ${err.message}`);
     }
 }
+
+export const removeChallengeFromAllClasses = async (
+  user: AuthUser,
+  challengeId: string
+) => {
+  const classes = await repo.findAllSchoolClasses(user);
+
+  for (const schoolClass of classes) {
+    if (schoolClass.challenges.includes(challengeId)) {
+      await repo.removeChallengeRelation(schoolClass.id, challengeId);
+    }
+  }
+};
