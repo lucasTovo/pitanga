@@ -75,6 +75,11 @@ export async function updateChallengesSchoolClass(req: Request, res: Response, n
 export async function deleteSchoolClass(req: Request, res: Response, next: NextFunction) {
   try {
     await service.deleteSchoolClass(req.params.id);
+
+    return res.status(200).json({
+      message: "School class deleted successfully",
+      id: req.params.id
+    });
   } catch (err: any) {
     next(err);
   }

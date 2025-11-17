@@ -116,7 +116,21 @@ export async function updateSchoolClass(id: string, data: Partial<SchoolClass>):
 }
 
 export async function deleteSchoolClass(id: string) {
-    return await prisma.schoolClass.delete({ where: { id } });
+  const schoolClass = await prisma.schoolClass.findUnique({
+    where: { id }
+  });
+
+  await prisma.schoolClassUser.deleteMany({
+    where: { schoolClassId: id }
+  });
+
+  await prisma.schoolClassChallenge.deleteMany({
+    where: { schoolClassId: id }
+  });
+
+  return await prisma.schoolClass.delete({
+    where: { id }
+  });
 }
 
 export async function removeChallengeRelation(schoolClassId: string, challengeId: string) {
