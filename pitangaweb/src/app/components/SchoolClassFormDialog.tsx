@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-import { createSchoolClass, updateSchoolClass } from "@/infra/data/shcool.rest";
+import { createSchoolClass, updateSchoolClass } from "@/infra/data/school.rest";
 
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";

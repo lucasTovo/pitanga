@@ -6,7 +6,7 @@ import type { SchoolClass, User } from '@/types/school-class.types';
 import type { Challenge } from '@/types/challenges.types';
 
 import { getChallengeById } from '@/infra/data/challenges.rest';
-import { addChallengeToSchoolClass, addStudentToSchoolClass, getUser, listUsers } from '@/infra/data/shcool.rest';
+import { addChallengeToSchoolClass, addStudentToSchoolClass, getUser, listUsers } from '@/infra/data/school.rest';
 
 import { useChallenges } from '@/app/hooks/useChallenges';
 
@@ -168,11 +168,11 @@ export const SchoolClassPage = () => {
           <CardFooter>
             <Badge variant="secondary" className='mr-2 text-sm font-bold'>
               <UserIcon className='mr-1'/>
-              {classChallenges.length}
+              {classStudents.length}
             </Badge>
             <Badge variant="secondary" className='text-sm font-bold'>
               <ClipboardListIcon className='mr-1'/>
-              {classStudents.length}
+              {classChallenges.length}
             </Badge>
           </CardFooter>
         </Card>

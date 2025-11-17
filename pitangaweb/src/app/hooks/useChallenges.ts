@@ -4,7 +4,7 @@ import { listChallenges } from '@/infra/data/challenges.rest';
 
 export const useChallenges = () => {
   return useInfiniteQuery({
-    queryKey: ["challenges"],
+    queryKey: ['challenges'],
     queryFn: listChallenges,
     initialPageParam: 0,
     getNextPageParam: (lastPage) =>

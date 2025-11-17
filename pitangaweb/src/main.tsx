@@ -4,7 +4,7 @@ import { ReactKeycloakProvider } from "@react-keycloak/web";
 import "./main.css";
 
 import { App } from "./App";
-import { updateUser } from "./infra/data/shcool.rest";
+import { updateUser } from "./infra/data/school.rest";
 import { keycloak, initOptions } from "./infra/data/keycloack";
 import { useAuth } from "./hooks/useAuth";
 import { useEffect, useState } from "react";

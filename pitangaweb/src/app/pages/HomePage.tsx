@@ -5,7 +5,7 @@ import { useQueryClient } from '@tanstack/react-query';
 
 import { SchoolClass, UserRole } from '@/types/school-class.types';
 
-import { deleteChallenge } from '@/infra/data/challenges.rest';
+import { deleteSchoolClass } from '@/infra/data/school.rest';
 import { deleteSchoolClass, listSchoolClasses } from '@/infra/data/shcool.rest';
 
 import { useAuth } from '@/hooks/useAuth';

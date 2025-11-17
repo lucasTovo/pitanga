@@ -2,7 +2,7 @@ import { Outlet, useLoaderData, useOutletContext } from 'react-router-dom';
 
 import { User } from '@/types/school-class.types';
 
-import { getLoggedUser } from '@/infra/data/shcool.rest';
+import { getLoggedUser } from '@/infra/data/school.rest';
 
 type ContextType = { user: User };
 
