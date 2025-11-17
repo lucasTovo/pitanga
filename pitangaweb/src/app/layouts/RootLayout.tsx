@@ -15,9 +15,7 @@ export const RootLayout = () => {
   const user = useLoaderData() as User;
 
   return (
-    <main
-      className="mx-auto w-full max-w-7xl p-3 h-screen"
-    >
+    <main className="mx-auto w-full max-w-7xl p-3 sm:p-6 h-screen">
       <Outlet context={{ user } satisfies ContextType} />
     </main>
   );

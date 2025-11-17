@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLoaderData, useNavigate } from 'react-router-dom';
-import { ArrowLeftFromLineIcon, ClipboardListIcon, PlusIcon, UserIcon } from 'lucide-react';
+import { ArrowLeftFromLineIcon, ClipboardListIcon, ListTodoIcon, PlusIcon, UserIcon } from 'lucide-react';
 
 import type { SchoolClass, User } from '@/types/school-class.types';
 import type { Challenge } from '@/types/challenges.types';
@@ -14,11 +14,13 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Card, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { DifficultyLevelBadge } from '../components/DifficultyLevelBadge';
+import { Separator } from '@/components/ui/separator';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 type Tab = 'students' | 'challenges';
 
@@ -152,20 +154,21 @@ export const SchoolClassPage = () => {
   }
 
   return (
-    <div className="p-3 space-y-6 flex flex-col h-full">
+    <div className="space-y-6 flex flex-col h-full">
       <div className='flex gap-2'>
         <Button
           className='h-auto'
-          onClick={() => navigate(-1)}
+          onClick={() => navigate('/')}
         >
           <ArrowLeftFromLineIcon/>
         </Button>
 
-        <Card className="w-full">
-          <CardHeader>
+        <Card className="w-full flex flex-col">
+          <CardHeader className='grow'>
             <CardTitle>{schoolClass.name}</CardTitle>
           </CardHeader>
-          <CardFooter>
+          <Separator/>
+          <CardFooter className='py-3 px-6'>
             <Badge variant="secondary" className='mr-2 text-sm font-bold'>
               <UserIcon className='mr-1'/>
               {classStudents.length}
@@ -243,7 +246,7 @@ export const SchoolClassPage = () => {
             {dialogContent[tab].button}
           </Button>
         </DialogTrigger>
-        <DialogContent className="sm:max-w-2xl w-full max-h-[70vh] flex flex-col flex-1 overflow-hidden">
+        <DialogContent className="sm:max-w-2x2 w-full max-h-[70vh] flex flex-col flex-1 overflow-hidden">
           <DialogHeader>
             <DialogTitle>{dialogContent[tab].title}</DialogTitle>
           </DialogHeader>
@@ -251,21 +254,46 @@ export const SchoolClassPage = () => {
             <div className="flex flex-col gap-4">
               {tab === 'challenges' && (
                 <>
-                  {myChallenges.map((challenge, index) => {
+                  {myChallenges.map((ch, index) => {
                     const isLast = index === myChallenges.length - 1;
                     return(
                       <Card
-                        key={challenge.id}
+                        key={ch.id}
                         ref={isLast ? lastItemRef : null}
-                        onClick={() => {
-                        handleAddchallenge(challenge)
-                        setModalOpen(false)
-                      }}>
-                        <CardHeader className='flex'>
-                          <CardTitle>{challenge.title}</CardTitle>
-                        </CardHeader>
-                        <CardFooter>
-                          <DifficultyLevelBadge level={challenge.level} />
+                        className="flex flex-col w-full"
+                      >
+                        <div className='px-6 py-4 flex items-center'>
+                          <CardHeader className='p-0 flex flex-col justify-between grow gap-2 space-y-0'>
+                            <CardTitle className='mb-2'>
+                              {ch.title}
+                            </CardTitle>
+                            <CardDescription>
+                              <DifficultyLevelBadge level={ch.level} />
+                            </CardDescription>
+                          </CardHeader>
+                          <Button
+                            size='sm'
+                            onClick={() => {
+                              handleAddchallenge(ch)
+                              setModalOpen(false)
+                            }}
+                          >
+                            Adicionar
+                          </Button>
+                        </div>
+                        <Separator/>
+                        <CardFooter className='px-6 py-2'>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <Button disabled={!ch.description} size='sm'>
+                                <ListTodoIcon />
+                                Descrição
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className='p-4'>
+                              <div className='revert-all' dangerouslySetInnerHTML={{ __html: ch.description }} />
+                            </PopoverContent>
+                          </Popover>
                         </CardFooter>
                       </Card>
                     )
@@ -281,14 +309,24 @@ export const SchoolClassPage = () => {
                 loadingAllStudents ? (
                   <p>{dialogContent[tab].loadingMsg}</p>
                 ) : filterAvailableUsers().map(student => (
-                  <Card key={student.id} onClick={() => {
-                    handleAddStudent(student)
-                    setModalOpen(false)
-                  }}>
-                    <CardHeader>
+                  <Card key={student.id} className='p-6 flex items-center justify-between'>
+                    <CardHeader className='p-0 space-y-0'>
                       <CardTitle>{student.name}</CardTitle>
-                      <p>{student.email}</p>
+                      <CardDescription>
+                        {student.email}
+                      </CardDescription>
                     </CardHeader>
+                    <CardFooter className='p-0'>
+                      <Button
+                        size='sm'
+                        onClick={() => {
+                          handleAddStudent(student)
+                          setModalOpen(false)
+                        }}
+                      >
+                        Adicionar
+                      </Button>
+                    </CardFooter>
                   </Card>
                 ))
               )}

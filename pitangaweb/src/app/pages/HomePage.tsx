@@ -210,7 +210,7 @@ export const HomePage = () => {
                     >
                       <CardHeader className='px-6 py-4 flex flex-row grow gap-2 space-y-0 justify-between'>
                         <div className='flex flex-col justify-between'>
-                          <CardTitle className='mb-2 overflow-hidden text-ellipsis'>
+                          <CardTitle className='mb-2'>
                             {ch.title}
                           </CardTitle>
                           <CardDescription>
@@ -240,7 +240,7 @@ export const HomePage = () => {
                       <CardFooter className='px-6 py-2 flex justify-between'>
                           <Popover>
                             <PopoverTrigger asChild>
-                              <Button disabled={!ch.description} size='sm'>
+                              <Button disabled={!ch.description.trim()} size='sm'>
                                 <ListTodoIcon />
                                 Descrição
                               </Button>
@@ -290,7 +290,7 @@ export const HomePage = () => {
                   >
                     <CardHeader className='px-6 py-4 flex flex-row grow gap-2 space-y-0 justify-between'>
                       <div>
-                        <CardTitle className='mb-2 overflow-hidden text-ellipsis'>
+                        <CardTitle className='mb-2'>
                           {cls.name}
                         </CardTitle>
                         <CardDescription>{cls.description}</CardDescription>
