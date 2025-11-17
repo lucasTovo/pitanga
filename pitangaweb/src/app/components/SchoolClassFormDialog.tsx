@@ -2,12 +2,12 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+
+import { SchoolClass } from "@/types/school-class.types";
 
 import { createSchoolClass, updateSchoolClass } from "@/infra/data/school.rest";
 
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -23,19 +23,20 @@ import {
   FormLabel,
   FormMessage
 } from "@/components/ui/form";
-import { SchoolClass } from "@/types/school-class.types";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 
 const FormSchema = z.object({
   name: z.string().min(1, "O nome é obrigatório."),
   description: z.string().optional(),
 });
 
-interface Props {
+interface SchoolClassFormDialogProps {
   mode: "create" | "edit";
   open: boolean;
   onOpenChange: (state: boolean) => void;
   initialData?: SchoolClass | null;
-  onSuccess?: (data: any) => void;
 }
 
 export function SchoolClassFormDialog({
@@ -43,8 +44,8 @@ export function SchoolClassFormDialog({
   open,
   onOpenChange,
   initialData,
-  onSuccess,
-}: Props) {
+}: SchoolClassFormDialogProps) {
+  const queryClient = useQueryClient();
 
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
@@ -71,22 +72,21 @@ export function SchoolClassFormDialog({
     }
   }, [open, mode, initialData, form]);
 
+  // --- 🔥 MUTATION DO REACT QUERY ---
+  const mutation = useMutation({
+    mutationFn: async (values: z.infer<typeof FormSchema>) => {
+      return mode === "create"
+        ? await createSchoolClass(values)
+        : await updateSchoolClass(initialData!.id, values);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['classes'] }); // 🔥 Atualiza lista depois de criar/editar
+      onOpenChange(false); // Fecha o dialog
+    },
+  });
+
   async function onSubmit(values: z.infer<typeof FormSchema>) {
-    try {
-      let result;
-
-      if (mode === "create") {
-        result = await createSchoolClass(values);
-      } else {
-        result = await updateSchoolClass(initialData!.id, values);
-      }
-
-      onSuccess?.(result);
-      onOpenChange(false);
-
-    } catch (err) {
-      console.error("Erro ao salvar turma:", err);
-    }
+    mutation.mutate(values);
   }
 
   return (
@@ -142,8 +142,12 @@ export function SchoolClassFormDialog({
             />
 
             {/* Botões */}
-            <Button className="w-full" type="submit">
-              {mode === "create" ? "Criar Turma" : "Salvar Alterações"}
+            <Button className="w-full" type="submit" disabled={mutation.isPending}>
+              {mutation.isPending
+                ? "Salvando..."
+                : mode === "create"
+                ? "Criar Turma"
+                : "Salvar Alterações"}
             </Button>
 
             <Button

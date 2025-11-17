@@ -30,9 +30,7 @@ import { DifficultyLevelBadge } from '../components/DifficultyLevelBadge';
 import { SchoolClassFormDialog } from '../components/SchoolClassFormDialog';
 
 export const HomePage = () => {
-  const [classes, setClasses] = useState<SchoolClass[]>([]);
   const [activeTab, setActiveTab] = useState('challenges');
-  const [loadingSchoolClasses, setLoadingSchoolClasses] = useState(true);
   const [dialogSchoolClasFormOpen, setDialogSchoolClasFormOpen] = useState(false);
   const [dialogSchoolClasFormMode, setDialogSchoolClasFormMode] = useState<"create" | "edit">("create");
   const [selectedClass, setSelectedClass] = useState<SchoolClass | null>(null);
@@ -55,6 +53,11 @@ export const HomePage = () => {
     showDialog,
     handleConfirm
   } = useActionDialog();
+
+  const {
+    data: classes,
+    isLoading: loadingSchoolClasses,
+  } = useSchoolClasses();
 
   const {
     data,
@@ -99,18 +102,6 @@ export const HomePage = () => {
     setDialogSchoolClasFormOpen(true);
   }
 
-  const updateSchoolClassList = (
-    prev: any[],
-    response: any,
-    mode: "create" | "edit"
-  ) => {
-    if (mode === "create") {
-      return [...prev, response];
-    }
-
-    return prev.map((c) => (c.id === response.id ? response : c));
-  }
-
   function handleDeleteChallenge(id: string) {
     showDialog({
       title: 'Excluir desafio?',
@@ -121,6 +112,7 @@ export const HomePage = () => {
       action: async () => {
         await orchestratorRest.deleteChallengeCascade(id);
         queryClient.invalidateQueries({ queryKey: ['challenges'] });
+        queryClient.invalidateQueries({ queryKey: ['classes'] });
       },
     });
   }
@@ -134,7 +126,7 @@ export const HomePage = () => {
       variant: 'destructive',
       action: async () => {
         await deleteSchoolClass(id);
-        setClasses((prev) => prev.filter((cls) => cls.id !== id)); //temporario
+        queryClient.invalidateQueries({ queryKey: ['classes'] });
       },
     });
   }
@@ -284,12 +276,10 @@ export const HomePage = () => {
         >
           <ScrollArea className="flex flex-col flex-1">
             <div className="flex flex-wrap gap-4">
-              {classes.map((cls, index) => {
-                const isLast = index === challenges.length - 1;
+              {classes?.map((cls) => {
                 return(
                   <Card
                     key={cls.id}
-                    ref={isLast ? lastItemRef : null}
                     className="
                       flex
                       w-full
@@ -370,11 +360,6 @@ export const HomePage = () => {
         open={dialogSchoolClasFormOpen}
         onOpenChange={setDialogSchoolClasFormOpen}
         initialData={selectedClass ?? null}
-        onSuccess={(response) => {
-        setClasses((prev) =>
-          updateSchoolClassList(prev, response, dialogSchoolClasFormMode)
-        );
-      }}
       />
     </div >
   );
