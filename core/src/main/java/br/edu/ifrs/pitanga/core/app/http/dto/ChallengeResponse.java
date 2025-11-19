@@ -8,12 +8,14 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
+@Getter
 @Builder
-@AllArgsConstructor @Getter
+@AllArgsConstructor
 public class ChallengeResponse {
     private UUID id;
     private String title;
     private String description;
     private ChallengeLevel level;
     private SolutionStatus status;
+    private boolean edited;
 }
