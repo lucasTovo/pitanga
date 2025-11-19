@@ -4,12 +4,6 @@ import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 
-import { IOList } from './IOList';
-import { CodeEditor } from './CodeEditor';
-import { TextEditor } from './TextEditor';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import {
   Form,
   FormControl,
@@ -18,6 +12,12 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { IOList } from '@/app/components/IOList';
+import { CodeEditor } from '@/app/components/CodeEditor';
+import { TextEditor } from '@/app/components/TextEditor';
 
 const DEFAULT_CODE = `public class Solution {
 \tpublic static void main(String[] args) {

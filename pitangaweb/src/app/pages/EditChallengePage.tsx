@@ -1,11 +1,14 @@
 import { useEffect, useState } from "react";
-import { ChallengeForm, ChallengeFormData } from "../components/ChallengeForm";
 import { useNavigate, useParams } from "react-router-dom";
-import { getChallengeById, updateChallenge } from "@/infra/data/challenges.rest";
-import { Spinner } from "@/components/ui/spinner";
-import { Challenge } from "@/types/challenges.types";
-import { Button } from "@/components/ui/button";
 import { ArrowLeftFromLineIcon } from "lucide-react";
+
+import { Challenge } from "@/types/challenges.types";
+
+import { getChallengeById, updateChallenge } from "@/infra/data/challenges.rest";
+
+import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
+import { ChallengeForm, ChallengeFormData } from "@/app/components/ChallengeForm";
 
 function adaptChallengeToForm(data: Challenge): ChallengeFormData {
   return {

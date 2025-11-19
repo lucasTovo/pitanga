@@ -4,7 +4,7 @@ import { ArrowLeftFromLineIcon } from 'lucide-react';
 import { saveChallenge } from '@/infra/data/challenges.rest';
 
 import { Button } from '@/components/ui/button';
-import { ChallengeForm, ChallengeFormData } from '../components/ChallengeForm';
+import { ChallengeForm, ChallengeFormData } from '@/app/components/ChallengeForm';
 
 export const CreateChallengePage = () => {
   const navigate = useNavigate();

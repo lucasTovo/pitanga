@@ -1,4 +1,5 @@
 import { forwardRef, useState } from "react";
+import { ChevronDownIcon } from "lucide-react";
 
 import type { ValidationResult, ValidationStatus } from "@/types/validations.type";
 
@@ -6,7 +7,6 @@ import { cn } from "@/lib/utils";
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { ChevronDownIcon } from "lucide-react";
 
 const STATUS_STYLES: Record<ValidationStatus | "null", string> = {
   null: "bg-neutral text-neutral-foreground",

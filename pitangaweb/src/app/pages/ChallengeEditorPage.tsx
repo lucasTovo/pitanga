@@ -9,13 +9,13 @@ import type { ValidationResult } from '@/types/validations.type';
 import { debounce } from '@/infra/utils/debounce';
 import { saveSolution } from '@/infra/data/challenges.rest';
 
-import { Button } from '@/components/ui/button';
-import { CodeEditor } from '../components/CodeEditor';
-import { ValidationItem } from '../components/ValidationItem';
 import { Card, CardHeader, CardTitle } from '@/components/ui/card';
-import { DifficultyLevelBadge } from '../components/DifficultyLevelBadge';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from '@/components/ui/drawer';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Button } from '@/components/ui/button';
+import { CodeEditor } from '@/app/components/CodeEditor';
+import { ValidationItem } from '@/app/components/ValidationItem';
+import { DifficultyLevelBadge } from '@/app/components/DifficultyLevelBadge';
 
 type ChallengeEditorStatus = 'idle' | 'saving' | 'running' | 'error';
 
