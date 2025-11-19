@@ -61,9 +61,6 @@ public class ChallengesService {
         UUID challengeId = Objects.requireNonNull(safeChallenge.getId(), "Challenge id must not be null");
         Integer solutions = solutionsRepository.countSolutionsForChallenge(userId, challengeId);
         Boolean check = solutionsRepository.solutionPassValidations(userId, challengeId);
-        boolean edited = safeChallenge.getUpdatedAt() != null
-            && safeChallenge.getCreatedAt() != null
-            && safeChallenge.getUpdatedAt().after(safeChallenge.getCreatedAt());
 
         return ChallengeResponse.builder()
             .id(challengeId)
@@ -71,7 +68,6 @@ public class ChallengesService {
             .description(safeChallenge.getDescription())
             .level(safeChallenge.getLevel())
             .status(SolutionStatus.getStatus(solutions, check))
-            .edited(edited)
             .build();
     }
 

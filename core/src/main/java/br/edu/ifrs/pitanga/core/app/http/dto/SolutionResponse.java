@@ -15,6 +15,7 @@ public class SolutionResponse {
     private SolutionId solutionId;
     private String code;
     private List<ValidationResult> validationResults;
+    private Boolean isUpToDate;
 
     public Boolean getPassValidations() {
         Boolean pass = validationResults.size() != 0;

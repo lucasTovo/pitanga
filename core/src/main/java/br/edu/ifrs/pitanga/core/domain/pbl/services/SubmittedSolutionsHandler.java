@@ -1,5 +1,6 @@
 package br.edu.ifrs.pitanga.core.domain.pbl.services;
 
+import java.util.Date;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
@@ -32,9 +33,13 @@ public class SubmittedSolutionsHandler {
             return Mono.empty();
         }
 
+        Challenge challenge = solution.getChallenge();
+        Boolean isUpToDate = calculateIsUpToDate(solution, challenge);
+
         SolutionResponse.SolutionResponseBuilder builder = SolutionResponse.builder()
             .solutionId(solution.getId())
-            .code(solution.getCode());
+            .code(solution.getCode())
+            .isUpToDate(isUpToDate);
 
         return getResults(solution, builder);
     }
@@ -75,10 +80,44 @@ public class SubmittedSolutionsHandler {
             solution = solutionsRepository.save(entity);
         }
 
+        Boolean isUpToDate = calculateIsUpToDate(entity, challenge);
+
         SolutionResponse.SolutionResponseBuilder builder = SolutionResponse.builder()
             .solutionId(entity.getId())
-            .code(entity.getCode());
+            .code(entity.getCode())
+            .isUpToDate(isUpToDate);
 
         return getResults(entity, builder);
+    }
+
+    /**
+     * Calcula se a solução está atualizada em relação ao desafio.
+     * Uma solução é considerada atualizada se seu createdAt é posterior ou igual
+     * ao updatedAt do desafio, considerando uma tolerância de 1 hora para diferenças
+     * de timestamp devido a possíveis pequenas variações de sincronização.
+     * 
+     * @param solution A solução a ser verificada
+     * @param challenge O desafio relacionado
+     * @return true se a solução está atualizada, false caso contrário
+     */
+    private Boolean calculateIsUpToDate(Solution solution, Challenge challenge) {
+        if(solution == null || challenge == null) {
+            return false;
+        }
+
+        Date solutionCreatedAt = solution.getCreatedAt();
+        Date challengeUpdatedAt = challenge.getUpdatedAt();
+
+        if(solutionCreatedAt == null || challengeUpdatedAt == null) {
+            return false;
+        }
+
+        // Tolerância de 1 hora (3600000 milissegundos) para diferenças de timestamp
+        long toleranceMillis = 3600000L; // 1 hora em milissegundos
+        long challengeUpdatedAtWithTolerance = challengeUpdatedAt.getTime() - toleranceMillis;
+        Date challengeUpdatedAtAdjusted = new Date(challengeUpdatedAtWithTolerance);
+
+        // A solução está atualizada se foi criada após o updatedAt do desafio (considerando a tolerância)
+        return solutionCreatedAt.compareTo(challengeUpdatedAtAdjusted) >= 0;
     }
 }

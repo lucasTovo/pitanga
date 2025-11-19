@@ -17,5 +17,4 @@ public class ChallengeResponse {
     private String description;
     private ChallengeLevel level;
     private SolutionStatus status;
-    private boolean edited;
 }
