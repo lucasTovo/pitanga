@@ -90,34 +90,18 @@ public class SubmittedSolutionsHandler {
         return getResults(entity, builder);
     }
 
-    /**
-     * Calcula se a solução está atualizada em relação ao desafio.
-     * Uma solução é considerada atualizada se seu createdAt é posterior ou igual
-     * ao updatedAt do desafio, considerando uma tolerância de 1 hora para diferenças
-     * de timestamp devido a possíveis pequenas variações de sincronização.
-     * 
-     * @param solution A solução a ser verificada
-     * @param challenge O desafio relacionado
-     * @return true se a solução está atualizada, false caso contrário
-     */
     private Boolean calculateIsUpToDate(Solution solution, Challenge challenge) {
-        if(solution == null || challenge == null) {
+        if (solution == null || challenge == null) {
             return false;
         }
 
         Date solutionCreatedAt = solution.getCreatedAt();
         Date challengeUpdatedAt = challenge.getUpdatedAt();
 
-        if(solutionCreatedAt == null || challengeUpdatedAt == null) {
+        if (solutionCreatedAt == null || challengeUpdatedAt == null) {
             return false;
         }
 
-        // Tolerância de 1 hora (3600000 milissegundos) para diferenças de timestamp
-        long toleranceMillis = 3600000L; // 1 hora em milissegundos
-        long challengeUpdatedAtWithTolerance = challengeUpdatedAt.getTime() - toleranceMillis;
-        Date challengeUpdatedAtAdjusted = new Date(challengeUpdatedAtWithTolerance);
-
-        // A solução está atualizada se foi criada após o updatedAt do desafio (considerando a tolerância)
-        return solutionCreatedAt.compareTo(challengeUpdatedAtAdjusted) >= 0;
+        return solutionCreatedAt.compareTo(challengeUpdatedAt) >= 0;
     }
 }

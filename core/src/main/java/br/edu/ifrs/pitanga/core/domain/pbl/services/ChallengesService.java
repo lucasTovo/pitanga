@@ -99,6 +99,7 @@ public class ChallengesService {
             .map(existingChallenge -> {
                 applyScalarUpdates(existingChallenge, safeRequest);
                 applyValidations(existingChallenge, safeRequest);
+                existingChallenge.touch();
                 return challengesRepository.save(existingChallenge);
             });
     }

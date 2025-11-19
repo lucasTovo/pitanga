@@ -68,4 +68,8 @@ public class Challenge {
     public void preUpdate() {
         updatedAt = new Date();
     }
+
+    public void touch() {
+        this.updatedAt = new Date();
+    }
 }
