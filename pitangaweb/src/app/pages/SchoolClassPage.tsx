@@ -5,14 +5,15 @@ import { ArrowLeftFromLineIcon, ClipboardListIcon, ListTodoIcon, PlusIcon, UserI
 import { User } from '@/types/school-class.types';
 import type { Challenge } from '@/types/challenges.types';
 
+import { useUser } from '@/app/hooks/useUser';
 import { useChallenges } from '@/app/hooks/useChallenges';
-import { useAllStudents } from '../hooks/useAllStudents';
-import { useSchoolClass } from '../hooks/useSchoolClass';
-import { useClassStudents } from '../hooks/useClassStudents';
-import { useClassChallenges } from '../hooks/useClassChallenges';
-import { useCompletedSummary } from '../hooks/useCompletedSummary';
-import { useAddStudentToSchoolClass } from '../hooks/useAddStudentToSchoolClass';
-import { useAddChallengeToSchoolClass } from '../hooks/useAddChallengeToSchoolClass';
+import { useAllStudents } from '@/app/hooks/useAllStudents';
+import { useSchoolClass } from '@/app/hooks/useSchoolClass';
+import { useClassStudents } from '@/app/hooks/useClassStudents';
+import { useClassChallenges } from '@/app/hooks/useClassChallenges';
+import { useCompletedSummary } from '@/app/hooks/useCompletedSummary';
+import { useAddStudentToSchoolClass } from '@/app/hooks/useAddStudentToSchoolClass';
+import { useAddChallengeToSchoolClass } from '@/app/hooks/useAddChallengeToSchoolClass';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -24,7 +25,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { DifficultyLevelBadge } from '../components/DifficultyLevelBadge';
+import { DifficultyLevelBadge } from '@/app/components/DifficultyLevelBadge';
 
 type Tab = 'students' | 'challenges';
 
@@ -34,6 +35,8 @@ export const SchoolClassPage = () => {
 
   const { classId } = useParams();
   const navigate = useNavigate();
+
+  const { isTeacher } = useUser();
 
   const {
     schoolClass,
@@ -191,6 +194,7 @@ export const SchoolClassPage = () => {
         {/* Aba Desafios */}
         <TabsContent value="challenges" className='data-[state=active]:flex flex-col flex-1 overflow-hidden'>
           <ScrollArea className="flex flex-col flex-1">
+          {isTeacher ?
             <Table>
               <TableHeader>
                 <TableRow>
@@ -211,6 +215,50 @@ export const SchoolClassPage = () => {
                 ))}
               </TableBody>
             </Table>
+          :
+            classChallenges.map((ch) => {
+                return(
+                    <Card
+                      key={ch.id}
+                      className="
+                        flex
+                        w-full
+                        flex-col
+                        sm:w-[calc(50%-1rem)]
+                        lg:w-[calc(33.333%-1rem)]
+                      "
+                    >
+                      <CardHeader className='px-6 py-4 flex flex-row grow gap-2 space-y-0 justify-between'>
+                        <div className='flex flex-col justify-between'>
+                          <CardTitle className='mb-2'>
+                            {ch.title}
+                          </CardTitle>
+                          <CardDescription>
+                            <DifficultyLevelBadge level={ch.level} />
+                          </CardDescription>
+                        </div>
+                      </CardHeader>
+                      <Separator/>
+                      <CardFooter className='px-6 py-2 flex justify-between'>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <Button disabled={!ch.description.trim()} size='sm'>
+                                <ListTodoIcon />
+                                Descrição
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className='p-4'>
+                              <div className='revert-all' dangerouslySetInnerHTML={{ __html: ch.description }} />
+                            </PopoverContent>
+                          </Popover>
+                          <Button onClick={() => navigate(`/challenges/${ch.id}`)} size='sm'>
+                            Acessar
+                          </Button>
+                      </CardFooter>
+                    </Card>
+                )
+              })
+            }
           </ScrollArea>
         </TabsContent>
       </Tabs>

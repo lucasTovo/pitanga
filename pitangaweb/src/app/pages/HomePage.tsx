@@ -1,18 +1,18 @@
 import { useCallback, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ClipboardListIcon, ListTodoIcon, LogOutIcon, PencilIcon, PlusIcon, Trash2Icon, UserIcon } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
+import { ClipboardListIcon, ListTodoIcon, LogOutIcon, PencilIcon, PlusIcon, Trash2Icon, UserIcon } from 'lucide-react';
 
-import { SchoolClass, UserRole } from '@/types/school-class.types';
+import { SchoolClass } from '@/types/school-class.types';
 
 import { deleteSchoolClass } from '@/infra/data/school.rest';
 import { orchestratorRest } from '@/infra/data/orchestrator.rest';
 
 import { useAuth } from '@/hooks/useAuth';
+import { useUser } from '@/app/hooks/useUser';
 import { useChallenges } from '@/app/hooks/useChallenges';
-import { useUser } from '../layouts/RootLayout';
-import { useActionDialog } from '../hooks/useActionDialog';
-import { useSchoolClassList } from '../hooks/useSchoolClassList';
+import { useActionDialog } from '@/app/hooks/useActionDialog';
+import { useSchoolClassList } from '@/app/hooks/useSchoolClassList';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -25,9 +25,9 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { ActionDialog } from '../components/ActionDialog';
-import { DifficultyLevelBadge } from '../components/DifficultyLevelBadge';
-import { SchoolClassFormDialog } from '../components/SchoolClassFormDialog';
+import { ActionDialog } from '@/app/components/ActionDialog';
+import { DifficultyLevelBadge } from '@/app/components/DifficultyLevelBadge';
+import { SchoolClassFormDialog } from '@/app/components/SchoolClassFormDialog';
 
 export const HomePage = () => {
   const [activeTab, setActiveTab] = useState('challenges');
@@ -43,8 +43,7 @@ export const HomePage = () => {
     logout();
   };
 
-  const { user } = useUser();
-  const isTeacher = user?.role === UserRole.TEACHER;
+  const { user, isTeacher } = useUser();
 
   const {
     open,
