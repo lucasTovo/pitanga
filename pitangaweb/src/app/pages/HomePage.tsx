@@ -9,10 +9,10 @@ import { deleteSchoolClass } from '@/infra/data/school.rest';
 import { orchestratorRest } from '@/infra/data/orchestrator.rest';
 
 import { useAuth } from '@/hooks/useAuth';
-import { useUser } from '../layouts/RootLayout';
 import { useChallenges } from '@/app/hooks/useChallenges';
+import { useUser } from '../layouts/RootLayout';
 import { useActionDialog } from '../hooks/useActionDialog';
-import { useSchoolClasses } from '../hooks/useSchoolClasses';
+import { useSchoolClassList } from '../hooks/useSchoolClassList';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -55,24 +55,21 @@ export const HomePage = () => {
   } = useActionDialog();
 
   const {
-    data: classes,
-    isLoading: loadingSchoolClasses,
-  } = useSchoolClasses();
+    schoolClassList,
+    schoolClassListIsLoading,
+  } = useSchoolClassList();
 
   const {
-    data,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-    status
+    challenges,
+    challengesFetchNextPage,
+    challengesHasNextPage,
+    challengesIsFetchingNextPage
   } = useChallenges();
-
-  const challenges = data?.pages.flatMap((page) => page.content) ?? [];
 
   const observer = useRef<IntersectionObserver | null>(null);
   const lastItemRef = useCallback(
     (node: HTMLDivElement | null) => {
-      if (!hasNextPage) return; // evita observar se já chegou ao fim
+      if (!challengesHasNextPage) return; // evita observar se já chegou ao fim
 
       // desconecta o observador anterior
       if (observer.current) observer.current.disconnect();
@@ -80,14 +77,14 @@ export const HomePage = () => {
       // cria um novo observer
       observer.current = new IntersectionObserver((entries) => {
         if (entries[0].isIntersecting) {
-          fetchNextPage();
+          challengesFetchNextPage();
         }
       });
 
       // começa a observar o novo nó
       if (node) observer.current.observe(node);
     },
-    [hasNextPage, fetchNextPage]
+    [challengesHasNextPage, challengesFetchNextPage]
   );
 
   const handleCreateSchoolClass = () => {
@@ -135,9 +132,7 @@ export const HomePage = () => {
     navigate(`/challenges/${id}/edit`);
   }
 
-  if (loadingSchoolClasses) return <p>Carregando turmas...</p>;
-  if (status === 'pending') return <p>Carregando desafios...</p>;
-  if (status === 'error') return <p>Erro ao carregar desafios.</p>;
+  if (schoolClassListIsLoading) return <p>Carregando turmas...</p>;
 
   return (
     <div className="space-y-6 flex flex-col h-full">
@@ -257,7 +252,7 @@ export const HomePage = () => {
                 )
               })}
 
-              {isFetchingNextPage && (
+              {challengesIsFetchingNextPage && (
                 <Spinner className='m-auto' />
               )}
             </div>
@@ -276,7 +271,7 @@ export const HomePage = () => {
         >
           <ScrollArea className="flex flex-col flex-1">
             <div className="flex flex-wrap gap-4">
-              {classes?.map((cls) => {
+              {schoolClassList?.map((cls) => {
                 return(
                   <Card
                     key={cls.id}

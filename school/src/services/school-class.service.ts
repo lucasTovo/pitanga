@@ -34,7 +34,7 @@ export const listSchoolClasses = async (user: AuthUser): Promise<SchoolClassResp
     }
 }
 
-export const getSchoolClass = async (id: string): Promise<SchoolClassResponse | null> => {
+export const getSchoolClassById = async (id: string): Promise<SchoolClassResponse | null> => {
     try {
         return await repo.findSchoolClassById(id);
     } catch (err: any) {

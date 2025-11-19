@@ -1,49 +1,84 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { useLoaderData, useNavigate } from 'react-router-dom';
+import { useCallback, useRef, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeftFromLineIcon, ClipboardListIcon, ListTodoIcon, PlusIcon, UserIcon } from 'lucide-react';
 
-import type { SchoolClass, User } from '@/types/school-class.types';
+import { User } from '@/types/school-class.types';
 import type { Challenge } from '@/types/challenges.types';
 
-import { getChallengeById } from '@/infra/data/challenges.rest';
-import { addChallengeToSchoolClass, addStudentToSchoolClass, getUser, listUsers } from '@/infra/data/school.rest';
-
 import { useChallenges } from '@/app/hooks/useChallenges';
+import { useAllStudents } from '../hooks/useAllStudents';
+import { useSchoolClass } from '../hooks/useSchoolClass';
+import { useClassStudents } from '../hooks/useClassStudents';
+import { useClassChallenges } from '../hooks/useClassChallenges';
+import { useCompletedSummary } from '../hooks/useCompletedSummary';
+import { useAddStudentToSchoolClass } from '../hooks/useAddStudentToSchoolClass';
+import { useAddChallengeToSchoolClass } from '../hooks/useAddChallengeToSchoolClass';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
+import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { DifficultyLevelBadge } from '../components/DifficultyLevelBadge';
-import { Separator } from '@/components/ui/separator';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 type Tab = 'students' | 'challenges';
 
 export const SchoolClassPage = () => {
-  const schoolClass = useLoaderData() as SchoolClass;
-  const [classStudents, setClassStudents] = useState<User[]>([]);
-  const [allStudents, setAllStudents] = useState<User[]>([]);
-  const [classChallenges, setClassChallenges] = useState<Challenge[]>([]);
   const [tab, setTab] = useState<Tab>('students');
   const [modalOpen, setModalOpen] = useState(false);
-  const [loadingStudents, setLoadingStudents] = useState(true);
-  const [loadingAllStudents, setLoadingAllStudents] = useState(true);
-  const [loadingChallenges, setLoadingChallenges] = useState(true);
 
+  const { classId } = useParams();
   const navigate = useNavigate();
 
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage } = useChallenges();
-  const myChallenges = data?.pages.flatMap((page) => page.content) ?? [];
+  const {
+    schoolClass,
+    schoolClassIsLoading,
+    schoolClassIsError
+  } = useSchoolClass(classId);
+
+  const {
+    classChallenges,
+    classChallengesIsLoading,
+    classChallengesIsError
+  } = useClassChallenges(schoolClass?.challenges);
+
+  const {
+    classStudents,
+    classStudentsIsLoading,
+    classStudentsIsError
+  } = useClassStudents(schoolClass?.students);
+
+  const {
+    allStudents,
+    allStudentsIsLoading,
+    allStudentsIsError
+  } = useAllStudents();
+
+  const {
+    completedSummary,
+    completedSummaryIsLoading,
+    completedSummaryIsError
+  } = useCompletedSummary(schoolClass?.students, schoolClass?.challenges);
+
+  const {
+    challenges: myChallenges,
+    challengesFetchNextPage,
+    challengesHasNextPage,
+    challengesIsFetchingNextPage
+  } = useChallenges();
+
+  const { addStudent, addingStudent } = useAddStudentToSchoolClass(schoolClass?.id);
+  const { addChallenge, addingChallenge } = useAddChallengeToSchoolClass(schoolClass?.id);
 
   const observer = useRef<IntersectionObserver | null>(null);
   const lastItemRef = useCallback(
     (node: HTMLDivElement | null) => {
-      if (!hasNextPage) return; // evita observar se já chegou ao fim
+      if (!challengesHasNextPage) return; // evita observar se já chegou ao fim
 
       // desconecta o observador anterior
       if (observer.current) observer.current.disconnect();
@@ -51,82 +86,15 @@ export const SchoolClassPage = () => {
       // cria um novo observer
       observer.current = new IntersectionObserver((entries) => {
         if (entries[0].isIntersecting) {
-          fetchNextPage();
+          challengesFetchNextPage();
         }
       });
 
       // começa a observar o novo nó
       if (node) observer.current.observe(node);
     },
-    [hasNextPage, fetchNextPage]
+    [challengesHasNextPage, challengesFetchNextPage]
   );
-
-  useEffect(() => {
-    async function getClassStudents() {
-      try {
-        const results = await Promise.all(schoolClass.students.map(id => getUser(id)));
-        const students = results.filter((u): u is User => Boolean(u));
-        setClassStudents(students);
-      } catch (err) {
-        console.error('Error fetching students:', err);
-      } finally {
-        setLoadingStudents(false);
-      }
-    }
-
-    if (!schoolClass?.students?.length) {
-      setLoadingStudents(false);
-      return;
-    }
-
-    getClassStudents();
-  }, []);
-
-  useEffect(() => {
-    async function getAllStudents() {
-      try {
-        const students = await listUsers();
-        setAllStudents(students);
-      } catch (err) {
-        console.error('Error fetching students:', err);
-      } finally {
-        setLoadingAllStudents(false);
-      }
-    }
-
-    getAllStudents();
-  }, []);
-
-  useEffect(() => {
-    async function getClassChallenges() {
-      try {
-        const results = await Promise.all(schoolClass.challenges.map(id => getChallengeById(id)));
-        const challenges = results.filter((u): u is Challenge => Boolean(u));
-        setClassChallenges(challenges);
-      } catch (err) {
-        console.error('Error fetching students:', err);
-      } finally {
-        setLoadingChallenges(false);
-      }
-    }
-
-    if (!schoolClass?.challenges?.length) {
-      setLoadingChallenges(false);
-      return;
-    }
-
-    getClassChallenges();
-  }, []);
-
-  const handleAddchallenge = async (challenge: Challenge) => {
-    await addChallengeToSchoolClass(schoolClass.id, challenge.id);
-    setClassChallenges([...classChallenges, challenge])
-  }
-
-  const handleAddStudent = async (student: User) => {
-    await addStudentToSchoolClass(schoolClass.id, student.id);
-    setClassStudents([...classStudents, student]);
-  }
 
   const filterAvailableUsers = () => {
     const assignedIds = new Set(classStudents.map(student => student.id));
@@ -146,12 +114,20 @@ export const SchoolClassPage = () => {
     }
   }
 
-  if (loadingStudents || loadingAllStudents) return <p>Carregando alunos...</p>;
-  if (loadingChallenges) return <p>Carregando desafios...</p>;
+  if (schoolClassIsLoading) return <p>Carregando...</p>;
+  if (schoolClassIsError || !schoolClass) return <p>Erro</p>;
 
-  if (!schoolClass) {
-    return <p className="text-center text-red-500">Turma não encontrada</p>;
-  }
+  if (schoolClassIsLoading ||
+    classChallengesIsLoading ||
+    classStudentsIsLoading ||
+    allStudentsIsLoading
+  ) return <p>Carregando...</p>;
+
+  if (schoolClassIsError ||
+    classChallengesIsError ||
+    classStudentsIsError ||
+    allStudentsIsError
+  ) return <p>Erro</p>;
 
   return (
     <div className="space-y-6 flex flex-col h-full">
@@ -204,7 +180,7 @@ export const SchoolClassPage = () => {
                   <TableRow key={student.id}>
                     <TableCell>{student.name}</TableCell>
                     <TableCell>{student.email}</TableCell>
-                    {/* <TableCell>{student.completedChallenges}/{classInfo.totalChallenges}</TableCell> */}
+                    <TableCell className="text-right">{`${completedSummary?.[student.id].count}/${classChallenges.length}`}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -274,7 +250,7 @@ export const SchoolClassPage = () => {
                           <Button
                             size='sm'
                             onClick={() => {
-                              handleAddchallenge(ch)
+                              addChallenge({ challengeId: ch.id })
                               setModalOpen(false)
                             }}
                           >
@@ -299,14 +275,14 @@ export const SchoolClassPage = () => {
                     )
                   })}
 
-                  {isFetchingNextPage && (
+                  {challengesIsFetchingNextPage && (
                     <Spinner className='m-auto' />
                   )}
                 </>
               )}
 
               {tab === 'students' && (
-                loadingAllStudents ? (
+                allStudentsIsLoading ? (
                   <p>{dialogContent[tab].loadingMsg}</p>
                 ) : filterAvailableUsers().map(student => (
                   <Card key={student.id} className='p-6 flex items-center justify-between'>
@@ -320,7 +296,7 @@ export const SchoolClassPage = () => {
                       <Button
                         size='sm'
                         onClick={() => {
-                          handleAddStudent(student)
+                          addStudent({ studentId: student.id })
                           setModalOpen(false)
                         }}
                       >

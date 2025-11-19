@@ -3,7 +3,6 @@ import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import { getChallengeSolution } from "./infra/data/challenges.rest";
-import { getSchoolClass } from "./infra/data/school.rest";
 
 import { useAuth } from "./hooks/useAuth";
 
@@ -63,7 +62,6 @@ export const App = () => {
           {
             path: "/classes/:classId",
             element: <SchoolClassPage />,
-            loader: getSchoolClass,
           },
           {
             path: "/colors-test",

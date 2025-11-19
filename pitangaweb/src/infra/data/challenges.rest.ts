@@ -10,22 +10,12 @@ export const listChallenges = async ({pageParam = 0}): Promise<Page<Challenge>> 
   const { data } = await challengesApi.get<Page<Challenge>>(
     `/challenges?page=${pageParam}&size=25`
   );
-
-  if (!data?.content) {
-    throw new Error('Could not load challenges');
-  }
-
-  return data; // contém content, number, last, totalPages, etc.
+  return data;
 }
 
 export async function getChallengeById(id: string) {
-  try {
-    const response = await challengesApi.get<Challenge>(`/challenges/${id}`);
-    return response.data;
-  } catch (error) {
-    console.error(`Error fetching challenge ${id}:`, error);
-    return null;
-  }
+  const response = await challengesApi.get<Challenge>(`/challenges/${id}`);
+  return response.data;
 }
 
 export async function getChallengeSolution({ params }: { params: Params }) {
@@ -91,5 +81,22 @@ export async function deleteChallenge(id: string) {
 
 export async function updateChallenge(id: string, data: Partial<ChallengeDTO>) {
   const response = await challengesApi.patch(`/challenges/${id}`, data);
+  return response.data;
+}
+
+interface CompletedChallengesCountDTO {
+  studentIds: string[];
+  challengeIds: string[];
+}
+
+interface CompletedChallengesCount {
+  count: number;
+  completedChallenges: string[];
+}
+
+export async function getCompletedChallengesCount(
+  {studentIds, challengeIds}: CompletedChallengesCountDTO
+): Promise<Record<string, CompletedChallengesCount>> {
+  const response = await challengesApi.post('/solutions/completion-summary', {studentIds, challengeIds});
   return response.data;
 }

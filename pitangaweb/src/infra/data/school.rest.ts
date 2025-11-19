@@ -1,27 +1,15 @@
-import { Params } from "react-router-dom";
-
 import { SchoolClass, User } from "@/types/school-class.types";
 
 import { classesApi } from "./base";
 
 export async function listSchoolClasses() {
-  try {
-    const response = await classesApi.get<SchoolClass[]>('/classes');
-    return response.data;
-  } catch (error) {
-    console.error('Error listing school classes:', error);
-    return [];
-  }
+  const response = await classesApi.get<SchoolClass[]>('/classes');
+  return response.data;
 }
 
-export async function getSchoolClass({ params }: { params: Params }) {
-  try {
-    const response = await classesApi.get<SchoolClass>(`/classes/${params.classId}`);
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching school class:', error);
-    return null;
-  }
+export async function getSchoolClassById(classId: string) {
+  const response = await classesApi.get<SchoolClass>(`/classes/${classId}`);
+  return response.data;
 }
 
 export async function createSchoolClass(data: { name: string; description?: string }) {
@@ -34,27 +22,17 @@ export async function createSchoolClass(data: { name: string; description?: stri
 }
 
 export async function addStudentToSchoolClass(schoolClassId: string, studentId: string) {
-  try {
-    const response = await classesApi.post<SchoolClass>(`/classes/${schoolClassId}/students`, {
-      studentId,
-    });
-    return response.data;
-  } catch (error) {
-    console.error("Error adding student to school class:", error);
-    return null;
-  }
+  const response = await classesApi.post<SchoolClass>(`/classes/${schoolClassId}/students`, {
+    studentId,
+  });
+  return response.data;
 }
 
 export async function addChallengeToSchoolClass(schoolClassId: string, challengeId: string) {
-  try {
-    const response = await classesApi.post<SchoolClass>(`/classes/${schoolClassId}/challenges`, {
-      challengeId,
-    });
-    return response.data;
-  } catch (error) {
-    console.error("Error adding challenge to school class:", error);
-    return null;
-  }
+  const response = await classesApi.post<SchoolClass>(`/classes/${schoolClassId}/challenges`, {
+    challengeId,
+  });
+  return response.data;
 }
 
 export async function updateSchoolClass(id: string, data: { name?: string; description?: string }) {
@@ -86,13 +64,8 @@ export async function removeChallengeFromAllClasses(id: string) {
 // ---------------------- USERS ----------------------
 
 export async function listUsers() {
-  try {
-    const response = await classesApi.get<User[]>("/users");
-    return response.data;
-  } catch (error) {
-    console.error("Error listing users:", error);
-    return [];
-  }
+  const response = await classesApi.get<User[]>("/users");
+  return response.data;
 }
 
 export async function getLoggedUser() {
@@ -106,13 +79,8 @@ export async function getLoggedUser() {
 }
 
 export async function getUser(id: string) {
-  try {
-    const response = await classesApi.get<User>(`/users/${id}`);
-    return response.data;
-  } catch (error) {
-    console.error("Error fetching user:", error);
-    return null;
-  }
+  const response = await classesApi.get<User>(`/users/${id}`);
+  return response.data;
 }
 
 export async function updateUser() {
