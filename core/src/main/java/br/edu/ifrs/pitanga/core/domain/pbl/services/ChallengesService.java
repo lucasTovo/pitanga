@@ -4,7 +4,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.Objects;
 
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.domain.Page;
@@ -31,39 +33,53 @@ public class ChallengesService {
     private final ValidationsRepository validationsRepository;
     private final SolutionsRepository solutionsRepository;
 
+    @SuppressWarnings("null")
     public Page<ChallengeResponse> findAndFilter(String userId, ChallengePageableFilter filter) {
-        Pageable pageable = filter.getPage();
+        Objects.requireNonNull(userId, "userId must not be null");
+        ChallengePageableFilter safeFilter = Objects.requireNonNull(filter, "filter must not be null");
+        Pageable pageable = safeFilter.getPage();
 
         // Combina o spec do filtro com o filtro pelo creatorId
         Specification<Challenge> spec = Specification
-                .where(filter.getSpec())
+                .where(safeFilter.getSpec())
                 .and((root, query, cb) -> cb.equal(root.get("creatorId"), userId));
 
         Page<Challenge> page = challengesRepository.findAll(spec, pageable);
         long total = page.getTotalElements();
 
-        List<ChallengeResponse> content = page.getContent().stream().map(challenge -> {
-            Integer solutions = solutionsRepository.countSolutionsForChallenge(userId, challenge.getId());
-            Boolean check = solutionsRepository.solutionPassValidations(userId, challenge.getId());
-
-            return ChallengeResponse.builder()
-                .id(challenge.getId())
-                .title(challenge.getTitle())
-                .description(challenge.getDescription())
-                .level(challenge.getLevel())
-                .status(SolutionStatus.getStatus(solutions, check))
-                .build();
-        }).toList();
+        List<Challenge> challenges = Objects.requireNonNull(page.getContent(), "page content must not be null");
+        List<ChallengeResponse> content = challenges.stream()
+            .map(challenge -> buildChallengeResponse(userId, challenge))
+            .toList();
 
         return new PageImpl<>(content, pageable, total);
     }
 
-    public Optional<Challenge> findById(UUID id) {
-        return challengesRepository.findById(id);
+    @SuppressWarnings("null")
+    private ChallengeResponse buildChallengeResponse(String userId, Challenge challenge) {
+        Challenge safeChallenge = Objects.requireNonNull(challenge, "Challenge must not be null");
+        UUID challengeId = Objects.requireNonNull(safeChallenge.getId(), "Challenge id must not be null");
+        Integer solutions = solutionsRepository.countSolutionsForChallenge(userId, challengeId);
+        Boolean check = solutionsRepository.solutionPassValidations(userId, challengeId);
+
+        return ChallengeResponse.builder()
+            .id(challengeId)
+            .title(safeChallenge.getTitle())
+            .description(safeChallenge.getDescription())
+            .level(safeChallenge.getLevel())
+            .status(SolutionStatus.getStatus(solutions, check))
+            .build();
     }
 
+    public Optional<Challenge> findById(UUID id) {
+        UUID safeId = Objects.requireNonNull(id, "challenge id must not be null");
+        return challengesRepository.findById(safeId);
+    }
+
+    @SuppressWarnings("null")
     public Challenge handle(SaveChallengeCommand command) {
-        Challenge challenge = challengesRepository.save(command.toEntity());
+        SaveChallengeCommand safeCommand = Objects.requireNonNull(command, "command must not be null");
+        Challenge challenge = challengesRepository.save(safeCommand.toEntity());
         List<Validation> validations = command.request()
             .transformValidations(challenge.getId())
             .stream().map(validationsRepository::save)
@@ -72,49 +88,61 @@ public class ChallengesService {
         return challenge;
     }
 
+    @SuppressWarnings("null")
     public Optional<Challenge> update(UUID id, ChallengeRequest request, String userId) {
-        return challengesRepository.findById(id).map(existingChallenge -> {
-            // Verifica se o usuário é o criador do challenge
-            if (!existingChallenge.getCreatorId().equals(userId)) {
-                return null;
-            }
+        UUID safeId = Objects.requireNonNull(id, "challenge id must not be null");
+        ChallengeRequest safeRequest = Objects.requireNonNull(request, "request must not be null");
+        Objects.requireNonNull(userId, "userId must not be null");
 
-            // Atualiza os campos do challenge (partial update - apenas campos fornecidos)
-            Challenge updatedChallenge = Challenge.builder()
-                .id(existingChallenge.getId())
-                .title(request.title() != null ? request.title() : existingChallenge.getTitle())
-                .description(request.description() != null ? request.description() : existingChallenge.getDescription())
-                .baseCode(request.baseCode() != null ? request.baseCode() : existingChallenge.getBaseCode())
-                .level(request.level() != null ? ChallengeLevel.valueOf(request.level()) : existingChallenge.getLevel())
-                .creatorId(existingChallenge.getCreatorId())
-                .build();
-
-            // Atualiza validações se fornecidas
-            if (request.validations() != null && !request.validations().isEmpty()) {
-                // Remove validações antigas
-                if (existingChallenge.getValidations() != null) {
-                    validationsRepository.deleteAll(existingChallenge.getValidations());
-                }
-                // Cria novas validações
-                List<Validation> newValidations = request.transformValidations(updatedChallenge.getId())
-                    .stream()
-                    .map(validationsRepository::save)
-                    .collect(Collectors.toList());
-                updatedChallenge.setValidations(newValidations);
-            } else {
-                // Mantém as validações existentes se não foram fornecidas
-                updatedChallenge.setValidations(existingChallenge.getValidations());
-            }
-
-            return challengesRepository.save(updatedChallenge);
-        });
+        return challengesRepository.findById(safeId)
+            .filter(existingChallenge -> Objects.equals(existingChallenge.getCreatorId(), userId))
+            .map(existingChallenge -> {
+                applyScalarUpdates(existingChallenge, safeRequest);
+                applyValidations(existingChallenge, safeRequest);
+                existingChallenge.touch();
+                return challengesRepository.save(existingChallenge);
+            });
     }
 
     public boolean deleteById(UUID id) {
-        if (challengesRepository.existsById(id)) {
-            challengesRepository.deleteById(id);
+        UUID safeId = Objects.requireNonNull(id, "challenge id must not be null");
+        try {
+            challengesRepository.deleteById(safeId);
             return true;
+        } catch (EmptyResultDataAccessException ex) {
+            return false;
         }
-        return false;
+    }
+
+    private void applyScalarUpdates(Challenge challenge, ChallengeRequest request) {
+        if (request.title() != null) {
+            challenge.setTitle(request.title());
+        }
+        if (request.description() != null) {
+            challenge.setDescription(request.description());
+        }
+        if (request.baseCode() != null) {
+            challenge.setBaseCode(request.baseCode());
+        }
+        if (request.level() != null) {
+            challenge.setLevel(ChallengeLevel.valueOf(request.level()));
+        }
+    }
+
+    @SuppressWarnings("null")
+    private void applyValidations(Challenge challenge, ChallengeRequest request) {
+        if (request.validations() == null || request.validations().isEmpty()) {
+            return;
+        }
+
+        List<Validation> existingValidations = challenge.getValidations();
+        if (existingValidations != null && !existingValidations.isEmpty()) {
+            validationsRepository.deleteAll(existingValidations);
+        }
+
+        List<Validation> newValidations = request.transformValidations(challenge.getId()).stream()
+            .map(validationsRepository::save)
+            .collect(Collectors.toList());
+        challenge.setValidations(newValidations);
     }
 }

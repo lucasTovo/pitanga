@@ -1,5 +1,6 @@
 package br.edu.ifrs.pitanga.core.domain.pbl;
 
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -29,8 +30,46 @@ public class Challenge {
     @OneToMany(mappedBy = "id.challengeId", fetch = FetchType.EAGER, cascade = { CascadeType.ALL })
     private List<Validation> validations;
     private String creatorId;
+    @Column(name = "created_at", updatable = false, insertable = false)
+    private Date createdAt;
+    @Column(name = "updated_at")
+    private Date updatedAt;
 
     public void setValidations(List<Validation> validations) {
         this.validations = validations;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public void setBaseCode(String baseCode) {
+        this.baseCode = baseCode;
+    }
+
+    public void setLevel(ChallengeLevel level) {
+        this.level = level;
+    }
+
+    @PrePersist
+    public void prePersist() {
+        Date now = new Date();
+        if (createdAt == null) {
+            createdAt = now;
+        }
+        updatedAt = now;
+    }
+
+    @PreUpdate
+    public void preUpdate() {
+        updatedAt = new Date();
+    }
+
+    public void touch() {
+        this.updatedAt = new Date();
     }
 }

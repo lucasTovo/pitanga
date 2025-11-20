@@ -1,5 +1,6 @@
 package br.edu.ifrs.pitanga.core.domain.pbl.services;
 
+import java.util.Date;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
@@ -32,9 +33,13 @@ public class SubmittedSolutionsHandler {
             return Mono.empty();
         }
 
+        Challenge challenge = solution.getChallenge();
+        Boolean isUpToDate = calculateIsUpToDate(solution, challenge);
+
         SolutionResponse.SolutionResponseBuilder builder = SolutionResponse.builder()
             .solutionId(solution.getId())
-            .code(solution.getCode());
+            .code(solution.getCode())
+            .isUpToDate(isUpToDate);
 
         return getResults(solution, builder);
     }
@@ -75,10 +80,28 @@ public class SubmittedSolutionsHandler {
             solution = solutionsRepository.save(entity);
         }
 
+        Boolean isUpToDate = calculateIsUpToDate(entity, challenge);
+
         SolutionResponse.SolutionResponseBuilder builder = SolutionResponse.builder()
             .solutionId(entity.getId())
-            .code(entity.getCode());
+            .code(entity.getCode())
+            .isUpToDate(isUpToDate);
 
         return getResults(entity, builder);
+    }
+
+    private Boolean calculateIsUpToDate(Solution solution, Challenge challenge) {
+        if (solution == null || challenge == null) {
+            return false;
+        }
+
+        Date solutionCreatedAt = solution.getCreatedAt();
+        Date challengeUpdatedAt = challenge.getUpdatedAt();
+
+        if (solutionCreatedAt == null || challengeUpdatedAt == null) {
+            return false;
+        }
+
+        return solutionCreatedAt.compareTo(challengeUpdatedAt) >= 0;
     }
 }

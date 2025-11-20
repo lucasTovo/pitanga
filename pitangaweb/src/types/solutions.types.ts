@@ -18,4 +18,5 @@ export interface Solution {
   solutionId: SolutionId;
   challenge: Challenge;
   validationResults: ValidationResult[];
+  isUpToDate?: boolean;
 }
