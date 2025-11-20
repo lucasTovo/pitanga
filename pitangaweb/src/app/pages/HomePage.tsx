@@ -241,7 +241,11 @@ export const HomePage = () => {
                           </Button>
                         </ButtonGroup>
 
-                        <Button onClick={() => navigate(`/challenges/${ch.id}`)} size='sm'>
+                        <Button
+                          size='sm'
+                          className='font-semibold'
+                          onClick={() => navigate(`/challenges/${ch.id}`)}
+                        >
                           Acessar o desafio
                           <ArrowUpRightIcon />
                         </Button>
@@ -324,7 +328,11 @@ export const HomePage = () => {
                           <PencilIcon />
                         </Button>
                       </ButtonGroup>
-                      <Button onClick={() => navigate(`/classes/${cls.id}`)} size='sm'>
+                      <Button
+                        size='sm'
+                        className='font-semibold'
+                        onClick={() => navigate(`/classes/${cls.id}`)}
+                      >
                         Acessar turma
                         <ArrowUpRightIcon />
                       </Button>

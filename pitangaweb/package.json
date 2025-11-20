@@ -27,6 +27,7 @@
     "@radix-ui/react-toggle-group": "^1.1.11",
     "@react-keycloak/web": "^3.4.0",
     "@tanstack/react-query": "^5.90.8",
+    "@tanstack/react-table": "^8.21.3",
     "ace-builds": "^1.32.6",
     "axios": "^1.6.8",
     "class-transformer": "^0.5.1",

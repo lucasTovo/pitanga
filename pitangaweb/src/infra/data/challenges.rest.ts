@@ -89,7 +89,7 @@ interface CompletedChallengesCountDTO {
   challengeIds: string[];
 }
 
-interface CompletedChallengesCount {
+export interface CompletedChallengesCount {
   count: number;
   completedChallenges: string[];
 }

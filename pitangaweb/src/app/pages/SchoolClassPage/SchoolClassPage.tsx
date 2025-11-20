@@ -2,9 +2,6 @@ import { useCallback, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeftFromLineIcon, ClipboardListIcon, ListTodoIcon, PlusIcon, UserIcon } from 'lucide-react';
 
-import { User } from '@/types/school-class.types';
-import type { Challenge } from '@/types/challenges.types';
-
 import { useUser } from '@/app/hooks/useUser';
 import { useChallenges } from '@/app/hooks/useChallenges';
 import { useAllStudents } from '@/app/hooks/useAllStudents';
@@ -15,6 +12,9 @@ import { useCompletedSummary } from '@/app/hooks/useCompletedSummary';
 import { useAddStudentToSchoolClass } from '@/app/hooks/useAddStudentToSchoolClass';
 import { useAddChallengeToSchoolClass } from '@/app/hooks/useAddChallengeToSchoolClass';
 
+import { studentsColumns } from '@/app/pages/SchoolClassPage/studentsColumns';
+import { challengesColumns } from '@/app/pages/SchoolClassPage/challengesColumns';
+
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
@@ -23,8 +23,8 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { DataTable } from '@/app/components/DataTable';
 import { DifficultyLevelBadge } from '@/app/components/DifficultyLevelBadge';
 
 type Tab = 'students' | 'challenges';
@@ -190,26 +190,11 @@ export const SchoolClassPage = () => {
           className='data-[state=active]:flex flex-col flex-1 overflow-hidden'
         >
           <ScrollArea className="flex flex-col flex-1">
-            <Table className='rounded-lg bg-neutral-50 dark:bg-neutral-800 overflow-hidden'>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nome</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead className="text-right">Desafios Concluídos</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {classStudents.map((student: User) => (
-                  <TableRow key={student.id} className='hover:dark:bg-neutral-700'>
-                    <TableCell>{student.name}</TableCell>
-                    <TableCell>{student.email}</TableCell>
-                    <TableCell className="text-right">
-                      {`${completedSummary?.[student.id].count}/${classChallenges.length}`}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+            <DataTable
+              columns={studentsColumns(completedSummary, classChallenges.length)}
+              data={classStudents}
+              searchPlaceholder="Buscar aluno..."
+            />
           </ScrollArea>
         </TabsContent>
 
@@ -220,28 +205,11 @@ export const SchoolClassPage = () => {
         >
           <ScrollArea className="flex flex-col flex-1">
             {isTeacher ?
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Desafio</TableHead>
-                    <TableHead>Dificuldade</TableHead>
-                    <TableHead className="text-right">Alunos que resolveram</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {classChallenges.map((challenge: Challenge) => (
-                    <TableRow key={challenge.id}>
-                      <TableCell>{challenge.title}</TableCell>
-                      <TableCell>
-                        <DifficultyLevelBadge level={challenge.level} />
-                      </TableCell>
-                      <TableCell className="text-right">
-                        {getStudentsSolvedCount(challenge.id)}/{schoolClass.students.length}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+              <DataTable
+                columns={challengesColumns(getStudentsSolvedCount, schoolClass.students.length)}
+                data={classChallenges}
+                searchPlaceholder="Buscar desafio..."
+              />
             :
               <div className="flex flex-wrap gap-4">
                 {classChallenges.map((ch) => {
@@ -270,23 +238,23 @@ export const SchoolClassPage = () => {
                       </CardHeader>
                       <Separator/>
                       <CardFooter className='px-6 py-2 flex justify-between'>
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <Button disabled={!ch.description.trim()} size='sm'>
-                                <ListTodoIcon />
-                                Descrição
-                              </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className='p-4'>
-                              <div
-                                className='revert-all'
-                                dangerouslySetInnerHTML={{ __html: ch.description }}
-                              />
-                            </PopoverContent>
-                          </Popover>
-                          <Button onClick={() => navigate(`/challenges/${ch.id}`)} size='sm'>
-                            Acessar
-                          </Button>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button disabled={!ch.description.trim()} size='sm'>
+                              <ListTodoIcon />
+                              Descrição
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className='p-4'>
+                            <div
+                              className='revert-all'
+                              dangerouslySetInnerHTML={{ __html: ch.description }}
+                            />
+                          </PopoverContent>
+                        </Popover>
+                        <Button onClick={() => navigate(`/challenges/${ch.id}`)} size='sm'>
+                          Acessar
+                        </Button>
                       </CardFooter>
                     </Card>
                   )
@@ -299,7 +267,7 @@ export const SchoolClassPage = () => {
 
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
         <DialogTrigger asChild className='block w-full max-w-sm mx-auto'>
-          <Button variant="outline" className='flex'>
+          <Button className='flex'>
             <PlusIcon />
             {dialogContent[tab].button}
           </Button>

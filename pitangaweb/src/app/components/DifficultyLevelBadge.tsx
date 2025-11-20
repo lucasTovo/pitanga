@@ -2,7 +2,7 @@ import { ChallengeLevel } from "@/types/challenges.types";
 
 import { Badge } from "@/components/ui/badge"
 
-const difficultyLevelStyles: Record<ChallengeLevel, {label: string, style: string}> = {
+export const difficultyLevelStyles: Record<ChallengeLevel, {label: string, style: string}> = {
   EASY: {
     label: 'Fácil',
     style: 'text-success border-success',
