@@ -5,19 +5,19 @@ import { Badge } from "@/components/ui/badge"
 const difficultyLevelStyles: Record<ChallengeLevel, {label: string, style: string}> = {
   EASY: {
     label: 'Fácil',
-    style: 'bg-success text-success-foreground',
+    style: 'text-success border-success',
   },
   MEDIUM: {
     label: 'Médio',
-    style: 'bg-warning text-warning-foreground',
+    style: 'text-warning border-warning',
   },
   HARD: {
     label: 'Difícil',
-    style: 'bg-accent text-accent-foreground',
+    style: 'text-accent border-accent',
   },
   PRO: {
     label: 'PRO',
-    style: 'bg-complementary text-complementary-foreground',
+    style: 'text-complementary border-complementary',
   },
 }
 
@@ -28,7 +28,7 @@ interface DifficultyLevelBadgeProps {
 
 export const DifficultyLevelBadge = ({level, className}: DifficultyLevelBadgeProps) => {
   return (
-    <Badge className={`${difficultyLevelStyles[level].style} ${className}`}>
+    <Badge variant='outline' className={`tracking-widest font-bold border-2 ${difficultyLevelStyles[level].style} ${className}`}>
       {difficultyLevelStyles[level].label}
     </Badge>
   )
