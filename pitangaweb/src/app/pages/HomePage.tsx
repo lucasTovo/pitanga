@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { ArrowUpRightIcon, ClipboardListIcon, LogOutIcon, PencilIcon, PlusIcon, Trash2Icon, UserIcon } from 'lucide-react';
@@ -12,6 +12,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useUser } from '@/app/hooks/useUser';
 import { useChallenges } from '@/app/hooks/useChallenges';
 import { useActionDialog } from '@/app/hooks/useActionDialog';
+import { useInfiniteScroll } from '@/app/hooks/useInfiniteScroll';
 import { useSchoolClassList } from '@/app/hooks/useSchoolClassList';
 
 import { Badge } from '@/components/ui/badge';
@@ -64,26 +65,11 @@ export const HomePage = () => {
     challengesIsFetchingNextPage
   } = useChallenges();
 
-  const observer = useRef<IntersectionObserver | null>(null);
-  const lastItemRef = useCallback(
-    (node: HTMLDivElement | null) => {
-      if (!challengesHasNextPage) return; // evita observar se já chegou ao fim
-
-      // desconecta o observador anterior
-      if (observer.current) observer.current.disconnect();
-
-      // cria um novo observer
-      observer.current = new IntersectionObserver((entries) => {
-        if (entries[0].isIntersecting) {
-          challengesFetchNextPage();
-        }
-      });
-
-      // começa a observar o novo nó
-      if (node) observer.current.observe(node);
-    },
-    [challengesHasNextPage, challengesFetchNextPage]
-  );
+  const { lastElementRef } = useInfiniteScroll({
+    hasNextPage: challengesHasNextPage,
+    isFetching: challengesIsFetchingNextPage,
+    onLoadMore: challengesFetchNextPage
+  });
 
   const handleCreateSchoolClass = () => {
     setDialogSchoolClasFormMode("create");
@@ -192,7 +178,7 @@ export const HomePage = () => {
                 return(
                     <Card
                       key={ch.id}
-                      ref={isLast ? lastItemRef : null}
+                      ref={isLast ? lastElementRef : null}
                       className="
                         flex
                         w-full

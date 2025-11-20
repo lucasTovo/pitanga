@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react';
+import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeftFromLineIcon, ClipboardListIcon, ListTodoIcon, PlusIcon, UserIcon } from 'lucide-react';
 
@@ -7,6 +7,7 @@ import { useChallenges } from '@/app/hooks/useChallenges';
 import { useAllStudents } from '@/app/hooks/useAllStudents';
 import { useSchoolClass } from '@/app/hooks/useSchoolClass';
 import { useClassStudents } from '@/app/hooks/useClassStudents';
+import { useInfiniteScroll } from '@/app/hooks/useInfiniteScroll';
 import { useClassChallenges } from '@/app/hooks/useClassChallenges';
 import { useCompletedSummary } from '@/app/hooks/useCompletedSummary';
 import { useAddStudentToSchoolClass } from '@/app/hooks/useAddStudentToSchoolClass';
@@ -78,26 +79,11 @@ export const SchoolClassPage = () => {
   const { addStudent, addingStudent } = useAddStudentToSchoolClass(schoolClass?.id);
   const { addChallenge, addingChallenge } = useAddChallengeToSchoolClass(schoolClass?.id);
 
-  const observer = useRef<IntersectionObserver | null>(null);
-  const lastItemRef = useCallback(
-    (node: HTMLDivElement | null) => {
-      if (!challengesHasNextPage) return; // evita observar se já chegou ao fim
-
-      // desconecta o observador anterior
-      if (observer.current) observer.current.disconnect();
-
-      // cria um novo observer
-      observer.current = new IntersectionObserver((entries) => {
-        if (entries[0].isIntersecting) {
-          challengesFetchNextPage();
-        }
-      });
-
-      // começa a observar o novo nó
-      if (node) observer.current.observe(node);
-    },
-    [challengesHasNextPage, challengesFetchNextPage]
-  );
+  const { lastElementRef } = useInfiniteScroll({
+    hasNextPage: challengesHasNextPage,
+    isFetching: challengesIsFetchingNextPage,
+    onLoadMore: challengesFetchNextPage
+  });
 
   const filterAvailableUsers = () => {
     const assignedIds = new Set(classStudents.map(student => student.id));
@@ -285,7 +271,7 @@ export const SchoolClassPage = () => {
                     return(
                       <Card
                         key={ch.id}
-                        ref={isLast ? lastItemRef : null}
+                        ref={isLast ? lastElementRef : null}
                         className="flex flex-col w-full"
                       >
                         <div className='px-6 py-4 flex items-center'>
