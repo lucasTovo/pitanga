@@ -2,8 +2,11 @@ import { forwardRef, useEffect, useRef, useState } from 'react'
 import AceEditor from 'react-ace'
 
 import 'ace-builds/src-noconflict/mode-java'
-import 'ace-builds/src-noconflict/theme-chaos'
+import 'ace-builds/src-noconflict/theme-chrome'
+import 'ace-builds/src-noconflict/theme-dracula'
 import 'ace-builds/src-noconflict/ext-language_tools'
+
+import { ResolvedTheme, useTheme } from '@/components/theme-provider'
 
 function useResizeObserver(ref: React.RefObject<HTMLElement>) {
   const [size, setSize] = useState({ width: 0, height: 0 })
@@ -28,6 +31,11 @@ function useResizeObserver(ref: React.RefObject<HTMLElement>) {
   return size
 }
 
+const editorTheme: Record<ResolvedTheme, string> = {
+  light: 'chrome',
+  dark: 'dracula',
+}
+
 type CodeEditorProps = {
   fontSize?: number
   value?: string
@@ -39,6 +47,7 @@ export const CodeEditor = forwardRef<HTMLDivElement, CodeEditorProps>(
   ({ fontSize = 16, value = '', className = '', onChange }, ref) => {
     const containerRef = useRef<HTMLDivElement>(null)
     const { width, height } = useResizeObserver(containerRef)
+    const { resolvedTheme } = useTheme();
 
     useEffect(() => {
       if (!ref) return
@@ -49,11 +58,11 @@ export const CodeEditor = forwardRef<HTMLDivElement, CodeEditorProps>(
     return (
       <div
         ref={containerRef}
-        className={`relative w-full h-full min-h-[200px] rounded-xl overflow-hidden border border-border bg-background ${className}`}
+        className={`relative w-full h-full min-h-[500px] rounded-xl overflow-hidden border border-border ${className}`}
       >
         <AceEditor
           mode="java"
-          theme="chaos"
+          theme={editorTheme[resolvedTheme]}
           name="code-editor"
           value={value}
           fontSize={fontSize}
@@ -64,15 +73,11 @@ export const CodeEditor = forwardRef<HTMLDivElement, CodeEditorProps>(
             useWorker: false,
             enableBasicAutocompletion: true,
             enableLiveAutocompletion: true,
-            // enableSnippets: true,
             tabSize: 2,
             showLineNumbers: true,
           }}
           editorProps={{ $blockScrolling: true }}
           onChange={(val) => onChange(val)}
-          style={{
-            backgroundColor: 'transparent',
-          }}
         />
       </div>
     );
