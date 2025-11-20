@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
 
 interface Props {
   open: boolean;
@@ -29,9 +29,11 @@ export function ActionDialog({
         </DialogHeader>
 
         <DialogFooter className="gap-2">
-          <Button variant="outline" className="hover:bg-secondary">
-            Cancelar
-          </Button>
+          <DialogClose asChild>
+            <Button variant="outline" className="hover:bg-secondary">
+              Cancelar
+            </Button>
+          </DialogClose>
 
           <Button variant={variant} onClick={onConfirm}>
             {confirmLabel}
