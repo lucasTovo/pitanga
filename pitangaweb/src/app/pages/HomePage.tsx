@@ -177,7 +177,7 @@ export const HomePage = () => {
         className="flex flex-col flex-1 space-y-4 overflow-hidden"
       >
         <TabsList className='gap-6'>
-          <TabsTrigger value="challenges">Desafios</TabsTrigger>
+          <TabsTrigger value="challenges">Meus desafios</TabsTrigger>
           <TabsTrigger value="classes">Turmas</TabsTrigger>
         </TabsList>
 
@@ -202,7 +202,9 @@ export const HomePage = () => {
                         lg:w-[calc(33.333%-1rem)]
                       "
                     >
-                      <CardHeader className='px-6 py-4 flex flex-row grow gap-2 space-y-0 justify-between'>
+                      <CardHeader
+                        className='px-6 py-4 flex flex-row grow gap-2 space-y-0 justify-between'
+                      >
                         <div className='flex flex-col justify-between'>
                           <CardTitle className='mb-2'>
                             {ch.title}
@@ -240,7 +242,10 @@ export const HomePage = () => {
                               </Button>
                             </PopoverTrigger>
                             <PopoverContent className='p-4'>
-                              <div className='revert-all' dangerouslySetInnerHTML={{ __html: ch.description }} />
+                              <div
+                                className='revert-all'
+                                dangerouslySetInnerHTML={{ __html: ch.description }}
+                              />
                             </PopoverContent>
                           </Popover>
                           <Button onClick={() => navigate(`/challenges/${ch.id}`)} size='sm'>
@@ -257,7 +262,10 @@ export const HomePage = () => {
             </div>
           </ScrollArea>
 
-          <Button onClick={() => navigate('/challenges/create')} className='my-4 w-full max-w-sm self-center'>
+          <Button
+            className='my-4 w-full max-w-sm self-center'
+            onClick={() => navigate('/challenges/create')}
+          >
             <PlusIcon />
             Adicionar Desafio
           </Button>
@@ -282,7 +290,9 @@ export const HomePage = () => {
                       lg:w-[calc(33.333%-1rem)]
                     "
                   >
-                    <CardHeader className='px-6 py-4 flex flex-row grow gap-2 space-y-0 justify-between'>
+                    <CardHeader
+                      className='px-6 py-4 flex flex-row grow gap-2 space-y-0 justify-between'
+                    >
                       <div>
                         <CardTitle className='mb-2'>
                           {cls.name}
@@ -331,7 +341,10 @@ export const HomePage = () => {
           </ScrollArea>
 
           {isTeacher && (
-            <Button onClick={handleCreateSchoolClass} className='my-4 w-full max-w-sm self-center'>
+            <Button
+              onClick={handleCreateSchoolClass}
+              className='my-4 w-full max-w-sm self-center'
+            >
               <PlusIcon />
               Adicionar Turma
             </Button>

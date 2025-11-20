@@ -104,6 +104,17 @@ export const SchoolClassPage = () => {
     return allStudents.filter(student => !assignedIds.has(student.id));
   }
 
+  const getStudentsSolvedCount = (challengeId: string) => {
+    if (!completedSummary) return 0;
+
+    return Object.values(completedSummary).reduce((count, student) => {
+      if (student.completedChallenges?.includes(challengeId)) {
+        return count + 1;
+      }
+      return count;
+    }, 0);
+  }
+
   const dialogContent: Record<Tab, { button: string; title: string; loadingMsg: string }> = {
     students: {
       button: 'Adicionar aluno á turma',
@@ -161,14 +172,21 @@ export const SchoolClassPage = () => {
       </div>
 
       {/* Abas */}
-      <Tabs defaultValue={tab} onValueChange={(value) => setTab(value as Tab)} className="flex flex-col flex-1 space-y-4 overflow-hidden">
+      <Tabs
+        defaultValue={tab}
+        onValueChange={(value) => setTab(value as Tab)}
+        className="flex flex-col flex-1 space-y-4 overflow-hidden"
+      >
         <TabsList className='gap-6'>
           <TabsTrigger value="students">Alunos</TabsTrigger>
           <TabsTrigger value="challenges">Desafios</TabsTrigger>
         </TabsList>
 
         {/* Aba Alunos */}
-        <TabsContent value="students" className='data-[state=active]:flex flex-col flex-1 overflow-hidden'>
+        <TabsContent
+          value="students"
+          className='data-[state=active]:flex flex-col flex-1 overflow-hidden'
+        >
           <ScrollArea className="flex flex-col flex-1">
             <Table>
               <TableHeader>
@@ -183,7 +201,9 @@ export const SchoolClassPage = () => {
                   <TableRow key={student.id}>
                     <TableCell>{student.name}</TableCell>
                     <TableCell>{student.email}</TableCell>
-                    <TableCell className="text-right">{`${completedSummary?.[student.id].count}/${classChallenges.length}`}</TableCell>
+                    <TableCell className="text-right">
+                      {`${completedSummary?.[student.id].count}/${classChallenges.length}`}
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -192,32 +212,38 @@ export const SchoolClassPage = () => {
         </TabsContent>
 
         {/* Aba Desafios */}
-        <TabsContent value="challenges" className='data-[state=active]:flex flex-col flex-1 overflow-hidden'>
+        <TabsContent
+          value="challenges"
+          className='data-[state=active]:flex flex-col flex-1 overflow-hidden'
+        >
           <ScrollArea className="flex flex-col flex-1">
-          {isTeacher ?
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Desafio</TableHead>
-                  <TableHead>Dificuldade</TableHead>
-                  <TableHead className="text-right">Alunos que resolveram</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {classChallenges.map((challenge: Challenge) => (
-                  <TableRow key={challenge.id}>
-                    <TableCell>{challenge.title}</TableCell>
-                    <TableCell>
-                      <DifficultyLevelBadge level={challenge.level} />
-                    </TableCell>
-                    {/* <TableCell>{challenge.completedBy}/{classInfo.totalStudents}</TableCell> */}
+            {isTeacher ?
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Desafio</TableHead>
+                    <TableHead>Dificuldade</TableHead>
+                    <TableHead className="text-right">Alunos que resolveram</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          :
-            classChallenges.map((ch) => {
-                return(
+                </TableHeader>
+                <TableBody>
+                  {classChallenges.map((challenge: Challenge) => (
+                    <TableRow key={challenge.id}>
+                      <TableCell>{challenge.title}</TableCell>
+                      <TableCell>
+                        <DifficultyLevelBadge level={challenge.level} />
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {getStudentsSolvedCount(challenge.id)}/{schoolClass.students.length}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            :
+              <div className="flex flex-wrap gap-4">
+                {classChallenges.map((ch) => {
+                  return(
                     <Card
                       key={ch.id}
                       className="
@@ -228,7 +254,9 @@ export const SchoolClassPage = () => {
                         lg:w-[calc(33.333%-1rem)]
                       "
                     >
-                      <CardHeader className='px-6 py-4 flex flex-row grow gap-2 space-y-0 justify-between'>
+                      <CardHeader
+                        className='px-6 py-4 flex flex-row grow gap-2 space-y-0 justify-between'
+                      >
                         <div className='flex flex-col justify-between'>
                           <CardTitle className='mb-2'>
                             {ch.title}
@@ -248,7 +276,10 @@ export const SchoolClassPage = () => {
                               </Button>
                             </PopoverTrigger>
                             <PopoverContent className='p-4'>
-                              <div className='revert-all' dangerouslySetInnerHTML={{ __html: ch.description }} />
+                              <div
+                                className='revert-all'
+                                dangerouslySetInnerHTML={{ __html: ch.description }}
+                              />
                             </PopoverContent>
                           </Popover>
                           <Button onClick={() => navigate(`/challenges/${ch.id}`)} size='sm'>
@@ -256,8 +287,9 @@ export const SchoolClassPage = () => {
                           </Button>
                       </CardFooter>
                     </Card>
-                )
-              })
+                  )
+                })}
+              </div>
             }
           </ScrollArea>
         </TabsContent>
