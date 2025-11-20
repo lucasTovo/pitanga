@@ -17,7 +17,11 @@ import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 public class JwtSecurity {
     @Bean SecurityWebFilterChain filterChain(ServerHttpSecurity http) throws Exception {
         return http
-            .authorizeExchange(ex -> ex.anyExchange().authenticated())
+            .authorizeExchange(ex -> ex
+                // Allow GET requests to challenges (public challenges will be filtered in service layer)
+                .pathMatchers("/challenges/**").permitAll()
+                // All other endpoints require authentication
+                .anyExchange().authenticated())
             .oauth2ResourceServer((rs) -> rs.jwt(Customizer.withDefaults()))
             .cors(cors -> cors.configurationSource(configurationSource()))
             .csrf(csrf -> csrf.disable())

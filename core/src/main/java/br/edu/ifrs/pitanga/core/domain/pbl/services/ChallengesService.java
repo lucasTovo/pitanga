@@ -35,14 +35,27 @@ public class ChallengesService {
 
     @SuppressWarnings("null")
     public Page<ChallengeResponse> findAndFilter(String userId, ChallengePageableFilter filter) {
-        Objects.requireNonNull(userId, "userId must not be null");
         ChallengePageableFilter safeFilter = Objects.requireNonNull(filter, "filter must not be null");
         Pageable pageable = safeFilter.getPage();
 
-        // Combina o spec do filtro com o filtro pelo creatorId
+        // Build spec: public challenges OR private challenges of the creator
         Specification<Challenge> spec = Specification
                 .where(safeFilter.getSpec())
-                .and((root, query, cb) -> cb.equal(root.get("creatorId"), userId));
+                .and((root, query, cb) -> {
+                    if (userId != null) {
+                        // Authenticated: show public challenges OR private challenges of the creator
+                        return cb.or(
+                            cb.equal(root.get("isPublic"), true),
+                            cb.and(
+                                cb.equal(root.get("isPublic"), false),
+                                cb.equal(root.get("creatorId"), userId)
+                            )
+                        );
+                    } else {
+                        // Not authenticated: only public challenges
+                        return cb.equal(root.get("isPublic"), true);
+                    }
+                });
 
         Page<Challenge> page = challengesRepository.findAll(spec, pageable);
         long total = page.getTotalElements();
@@ -74,6 +87,19 @@ public class ChallengesService {
     public Optional<Challenge> findById(UUID id) {
         UUID safeId = Objects.requireNonNull(id, "challenge id must not be null");
         return challengesRepository.findById(safeId);
+    }
+
+    public Optional<Challenge> findById(UUID id, String userId) {
+        UUID safeId = Objects.requireNonNull(id, "challenge id must not be null");
+        return challengesRepository.findById(safeId)
+            .filter(challenge -> {
+                // Public challenges are readable by anyone
+                if (Boolean.TRUE.equals(challenge.getIsPublic())) {
+                    return true;
+                }
+                // Private challenges are only readable by the creator
+                return userId != null && Objects.equals(challenge.getCreatorId(), userId);
+            });
     }
 
     @SuppressWarnings("null")
@@ -126,6 +152,9 @@ public class ChallengesService {
         }
         if (request.level() != null) {
             challenge.setLevel(ChallengeLevel.valueOf(request.level()));
+        }
+        if (request.isPublic() != null) {
+            challenge.setIsPublic(request.isPublic());
         }
     }
 

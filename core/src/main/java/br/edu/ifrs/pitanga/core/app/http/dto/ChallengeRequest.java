@@ -16,7 +16,8 @@ public record ChallengeRequest(
     String description,
     String baseCode,
     String level,
-    List<ValidationDTO> validations
+    List<ValidationDTO> validations,
+    Boolean isPublic
 ) {
     public List<Validation> transformValidations(UUID challengeId) {
         List<Validation> aValidations = new ArrayList<>();
@@ -43,6 +44,7 @@ public record ChallengeRequest(
             .creatorId(userId)
             .baseCode(baseCode())
             .level(ChallengeLevel.valueOf(level()))
+            .isPublic(isPublic() != null ? isPublic() : true)
             .build();
     }
 }
