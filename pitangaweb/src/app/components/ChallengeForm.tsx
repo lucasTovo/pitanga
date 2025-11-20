@@ -1,7 +1,8 @@
 // React e bibliotecas externas
 import { useEffect } from 'react';
-import { z } from 'zod';
 import { useForm } from 'react-hook-form';
+import { useNavigate } from 'react-router-dom';
+import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 
 import {
@@ -48,6 +49,8 @@ interface ChallengeFormProps {
 }
 
 export const ChallengeForm = ({ onSubmit, initialValues, mode }: ChallengeFormProps) => {
+  const navigate = useNavigate();
+
   const form = useForm<ChallengeFormData>({
       resolver: zodResolver(challengeSchema),
       defaultValues: {
@@ -177,7 +180,14 @@ export const ChallengeForm = ({ onSubmit, initialValues, mode }: ChallengeFormPr
         />
 
         {/* BOTÃO CRIAR*/}
-        <div className="flex justify-end pt-4">
+        <div className="flex justify-end gap-4 pt-4">
+          <Button
+            variant='outline'
+            onClick={() => navigate('/')}
+          >
+            Cancelar
+          </Button>
+
           <Button type="submit">
             {mode === 'edit' ? 'Salvar alterações' : 'Criar'}
           </Button>
