@@ -1,7 +1,7 @@
 import { useCallback, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
-import { ClipboardListIcon, ListTodoIcon, LogOutIcon, PencilIcon, PlusIcon, Trash2Icon, UserIcon } from 'lucide-react';
+import { ArrowUpRightIcon, ClipboardListIcon, LogOutIcon, PencilIcon, PlusIcon, Trash2Icon, UserIcon } from 'lucide-react';
 
 import { SchoolClass } from '@/types/school-class.types';
 
@@ -23,7 +23,6 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { ButtonGroup } from '@/components/ui/button-group';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { ActionDialog } from '@/app/components/ActionDialog';
 import { DifficultyLevelBadge } from '@/app/components/DifficultyLevelBadge';
@@ -205,23 +204,24 @@ export const HomePage = () => {
                       <CardHeader
                         className='px-6 py-4 flex flex-row grow gap-2 space-y-0 justify-between'
                       >
-                        <div className='flex flex-col justify-between'>
-                          <CardTitle className='mb-2'>
-                            {ch.title}
+                        <div className='w-full flex flex-col justify-between'>
+                          <CardTitle className='flex justify-between items-start gap-2'>
+                            <span>{ch.title}</span>
+                            <DifficultyLevelBadge level={ch.level}/>
                           </CardTitle>
-                          <CardDescription>
-                            <DifficultyLevelBadge level={ch.level} />
-                          </CardDescription>
+                          {ch.description &&
+                            <CardDescription className='mt-2 max-h-10 overflow-hidden'>
+                              <div
+                                className='revert-all description-container multiline-ellipsis'
+                                dangerouslySetInnerHTML={{ __html: ch.description }}
+                              />
+                            </CardDescription>
+                          }
                         </div>
+                      </CardHeader>
+                      <Separator/>
+                      <CardFooter className='px-6 py-2 flex justify-between'>
                         <ButtonGroup>
-                          <Button
-                            size='icon'
-                            variant="outline"
-                            className="hover:bg-secondary"
-                            onClick={() => handleEditChallenge(ch.id)}
-                          >
-                            <PencilIcon />
-                          </Button>
                           <Button
                             size='icon'
                             variant="outline"
@@ -230,27 +230,21 @@ export const HomePage = () => {
                           >
                             <Trash2Icon />
                           </Button>
-                        </ButtonGroup>
-                      </CardHeader>
-                      <Separator/>
-                      <CardFooter className='px-6 py-2 flex justify-between'>
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <Button disabled={!ch.description.trim()} size='sm'>
-                                <ListTodoIcon />
-                                Descrição
-                              </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className='p-4'>
-                              <div
-                                className='revert-all'
-                                dangerouslySetInnerHTML={{ __html: ch.description }}
-                              />
-                            </PopoverContent>
-                          </Popover>
-                          <Button onClick={() => navigate(`/challenges/${ch.id}`)} size='sm'>
-                            Acessar
+
+                          <Button
+                            size='icon'
+                            variant="outline"
+                            className="hover:bg-secondary"
+                            onClick={() => handleEditChallenge(ch.id)}
+                          >
+                            <PencilIcon />
                           </Button>
+                        </ButtonGroup>
+
+                        <Button onClick={() => navigate(`/challenges/${ch.id}`)} size='sm'>
+                          Acessar o desafio
+                          <ArrowUpRightIcon />
+                        </Button>
                       </CardFooter>
                     </Card>
                 )
@@ -299,15 +293,20 @@ export const HomePage = () => {
                         </CardTitle>
                         <CardDescription>{cls.description}</CardDescription>
                       </div>
+                      <div className='flex flex-col sm:flex-row gap-2 items-start'>
+                        <Badge variant="outline" className='text-sm font-bold text-primary border-2 border-primary'>
+                          <UserIcon className='mr-1' />
+                          {cls.count.students}
+                        </Badge>
+                        <Badge variant="outline" className='text-sm font-bold text-primary border-2 border-primary'>
+                          <ClipboardListIcon className='mr-1'/>
+                          {cls.count.challenges}
+                        </Badge>
+                      </div>
+                    </CardHeader>
+                    <Separator />
+                    <CardFooter className='px-6 py-2 flex justify-between'>
                       <ButtonGroup>
-                        <Button
-                          size='icon'
-                          variant="outline"
-                          className="hover:bg-secondary"
-                          onClick={() => handleEditSchoolClass(cls)}
-                        >
-                          <PencilIcon />
-                        </Button>
                         <Button
                           size='icon'
                           variant="outline"
@@ -316,22 +315,18 @@ export const HomePage = () => {
                         >
                           <Trash2Icon />
                         </Button>
+                        <Button
+                          size='icon'
+                          variant="outline"
+                          className="hover:bg-secondary"
+                          onClick={() => handleEditSchoolClass(cls)}
+                        >
+                          <PencilIcon />
+                        </Button>
                       </ButtonGroup>
-                    </CardHeader>
-                    <Separator />
-                    <CardFooter className='px-6 py-2 flex justify-between'>
-                      <div>
-                        <Badge variant="secondary" className='mr-2 text-sm font-bold'>
-                          <UserIcon className='mr-1'/>
-                          {cls.count.students}
-                        </Badge>
-                        <Badge variant="secondary" className='text-sm font-bold'>
-                          <ClipboardListIcon className='mr-1'/>
-                          {cls.count.challenges}
-                        </Badge>
-                      </div>
                       <Button onClick={() => navigate(`/classes/${cls.id}`)} size='sm'>
-                        Acessar
+                        Acessar turma
+                        <ArrowUpRightIcon />
                       </Button>
                     </CardFooter>
                   </Card>

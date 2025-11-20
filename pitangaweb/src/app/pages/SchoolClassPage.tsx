@@ -159,14 +159,16 @@ export const SchoolClassPage = () => {
           </CardHeader>
           <Separator/>
           <CardFooter className='py-3 px-6'>
-            <Badge variant="secondary" className='mr-2 text-sm font-bold'>
-              <UserIcon className='mr-1'/>
-              {classStudents.length}
-            </Badge>
-            <Badge variant="secondary" className='text-sm font-bold'>
-              <ClipboardListIcon className='mr-1'/>
-              {classChallenges.length}
-            </Badge>
+            <div className='flex flex-row gap-2 items-start'>
+              <Badge variant="outline" className='text-sm font-bold text-primary border-2 border-primary'>
+                <UserIcon className='mr-1' />
+                {schoolClass.students.length}
+              </Badge>
+              <Badge variant="outline" className='text-sm font-bold text-primary border-2 border-primary'>
+                <ClipboardListIcon className='mr-1'/>
+                {schoolClass.challenges.length}
+              </Badge>
+            </div>
           </CardFooter>
         </Card>
       </div>
@@ -188,7 +190,7 @@ export const SchoolClassPage = () => {
           className='data-[state=active]:flex flex-col flex-1 overflow-hidden'
         >
           <ScrollArea className="flex flex-col flex-1">
-            <Table>
+            <Table className='rounded-lg bg-neutral-50 dark:bg-neutral-800 overflow-hidden'>
               <TableHeader>
                 <TableRow>
                   <TableHead>Nome</TableHead>
@@ -198,7 +200,7 @@ export const SchoolClassPage = () => {
               </TableHeader>
               <TableBody>
                 {classStudents.map((student: User) => (
-                  <TableRow key={student.id}>
+                  <TableRow key={student.id} className='hover:dark:bg-neutral-700'>
                     <TableCell>{student.name}</TableCell>
                     <TableCell>{student.email}</TableCell>
                     <TableCell className="text-right">

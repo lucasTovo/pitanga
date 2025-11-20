@@ -9,11 +9,14 @@ import type { ValidationResult } from '@/types/validations.type';
 import { debounce } from '@/infra/utils/debounce';
 import { saveSolution } from '@/infra/data/challenges.rest';
 
+import { useActionDialog } from '@/app/hooks/useActionDialog';
+
 import { Card, CardHeader, CardTitle } from '@/components/ui/card';
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from '@/components/ui/drawer';
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
 import { CodeEditor } from '@/app/components/CodeEditor';
+import { ActionDialog } from '@/app/components/ActionDialog';
 import { ValidationItem } from '@/app/components/ValidationItem';
 import { DifficultyLevelBadge } from '@/app/components/DifficultyLevelBadge';
 
@@ -40,9 +43,16 @@ export const ChallengeEditorPage = () => {
 
   const navigate = useNavigate();
 
-  const saveCode = useCallback(async (newCode: string) => {
-    setStatus('saving');
+  const {
+    open,
+    setOpen,
+    config,
+    showDialog,
+    handleConfirm
+  } = useActionDialog();
 
+
+  const saveCode = useCallback(async (newCode: string) => {
     try {
       const savedSolution = await saveSolution({
         language: 'java',
@@ -58,7 +68,7 @@ export const ChallengeEditorPage = () => {
     }
   }, [data.challenge.id]);
 
-  const debouncedSave = useMemo(() => debounce(saveCode, 3000), [saveCode]);
+  const debouncedSave = useMemo(() => debounce(saveCode, 3000), []);
 
   const handleCodeChange = useCallback((newCode: string) => {
     setCode(newCode);
@@ -83,6 +93,19 @@ export const ChallengeEditorPage = () => {
       setStatus('idle');
     }
   }, [data.challenge.id, code]);
+
+  const handleRestoreChallengeBaseCode = () => {
+    showDialog({
+      title: 'Restaurar código base do desafio?',
+      description: `Esta ação não poderá ser revertida.
+        As alterações feitas podem ser perdidas.`,
+      confirmLabel: 'Restaurar',
+      variant: 'destructive',
+      action: () => {
+        setCode(data.challenge.baseCode);
+      },
+    });
+  }
 
   const displayedTests = useMemo(() => (
     solution?.validationResults ?? getDefaultValidationResults(data.challenge.validations)
@@ -125,10 +148,25 @@ export const ChallengeEditorPage = () => {
       <h3 className='text-md font-medium'>Editor de código</h3>
       <CodeEditor value={code} onChange={handleCodeChange} />
 
+      <div className='flex justify-between gap-2'>
+        <Button
+          variant="outline"
+          disabled={code === data.challenge.baseCode}
+          onClick={handleRestoreChallengeBaseCode}
+        >
+          Restaurar código base
+        </Button>
+
+        <Button
+          className="w-full max-w-sm self-center"
+          disabled={status !== 'idle'}
+          onClick={() => setOpenDrawer(true)}
+        >
+          {buttonLabel[status]}
+        </Button>
+      </div>
+
       <Drawer open={openDrawer} onOpenChange={setOpenDrawer}>
-        <DrawerTrigger asChild>
-          <Button variant="outline" className="w-full max-w-sm self-center">{buttonLabel[status]}</Button>
-        </DrawerTrigger>
         <DrawerContent>
           <div className="mx-auto w-full max-w-7xl">
             <DrawerHeader>
@@ -147,6 +185,16 @@ export const ChallengeEditorPage = () => {
           </div>
         </DrawerContent>
       </Drawer>
+
+      <ActionDialog
+        open={open}
+        onOpenChange={setOpen}
+        title={config.title}
+        description={config.description}
+        confirmLabel={config.confirmLabel}
+        variant={config.variant}
+        onConfirm={handleConfirm}
+      />
     </div>
   )
 }

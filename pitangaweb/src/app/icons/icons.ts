@@ -8,3 +8,4 @@ export { Plus as PlusIcon } from "lucide-react";
 export { ChevronDown as ChevronDownIcon } from "lucide-react";
 export { ListTodo as ListTodoIcon } from "lucide-react";
 export { Pencil as PencilIcon } from "lucide-react";
+export { ArrowUpRight as ArrowUpRightIcon } from "lucide-react";

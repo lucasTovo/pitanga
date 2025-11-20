@@ -104,11 +104,11 @@
     --warning-800: 45 100% 30%;
     --warning-900: 45 100% 23%;
 
-    --background: var(--neutral-50);
+    --background: var(--neutral-200);
     --foreground: var(--neutral-900);
 
     --primary: var(--primary-500);
-    --primary-foreground: var(--neutral-900);
+    --primary-foreground: var(--neutral-50);
 
     --secondary: var(--secondary-500);
     --secondary-foreground: var(--neutral-900);
@@ -213,4 +213,18 @@
 /* Restores default styling of elements */
 .revert-all * {
   all: revert;
+}
+
+.description-container > * {
+  margin: 0;
+}
+
+.description-container > p,
+.description-container > ol,
+.description-container > ul {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
