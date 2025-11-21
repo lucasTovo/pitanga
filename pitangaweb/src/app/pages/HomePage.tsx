@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
-import { ArrowUpRightIcon, ClipboardListIcon, LogOutIcon, PencilIcon, PlusIcon, Trash2Icon, UserIcon } from 'lucide-react';
+import { LogOutIcon, PlusIcon, UserIcon } from 'lucide-react';
 
 import { SchoolClass } from '@/types/school-class.types';
 
@@ -19,14 +19,13 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Spinner } from "@/components/ui/spinner"
 import { ModeToggle } from '@/components/mode-toggle';
-import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { ButtonGroup } from '@/components/ui/button-group';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ActionDialog } from '@/app/components/ActionDialog';
-import { DifficultyLevelBadge } from '@/app/components/DifficultyLevelBadge';
+import { ChallengeCard } from '@/app/components/ChallengeCard';
+import { SchoolClassCard } from '@/app/components/SchoolClassCard';
 import { SchoolClassFormDialog } from '@/app/components/SchoolClassFormDialog';
 
 export const HomePage = () => {
@@ -35,14 +34,9 @@ export const HomePage = () => {
   const [dialogSchoolClasFormMode, setDialogSchoolClasFormMode] = useState<"create" | "edit">("create");
   const [selectedClass, setSelectedClass] = useState<SchoolClass | null>(null);
 
+  const { logout } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-
-  const { logout } = useAuth();
-  const handleLogout = () => {
-    logout();
-  };
-
   const { user, isTeacher } = useUser();
 
   const {
@@ -147,7 +141,7 @@ export const HomePage = () => {
             <ModeToggle />
             <Button
               variant="destructive"
-              onClick={handleLogout}
+              onClick={() => logout()}
             >
               <LogOutIcon className="w-4 h-4" />
               Sair
@@ -176,67 +170,14 @@ export const HomePage = () => {
               {challenges.map((ch, index) => {
                 const isLast = index === challenges.length - 1;
                 return(
-                    <Card
-                      key={ch.id}
-                      ref={isLast ? lastElementRef : null}
-                      className="
-                        flex
-                        w-full
-                        flex-col
-                        sm:w-[calc(50%-1rem)]
-                        lg:w-[calc(33.333%-1rem)]
-                      "
-                    >
-                      <CardHeader
-                        className='px-6 py-4 flex flex-row grow gap-2 space-y-0 justify-between'
-                      >
-                        <div className='w-full flex flex-col justify-between'>
-                          <CardTitle className='flex justify-between items-start gap-2'>
-                            <span>{ch.title}</span>
-                            <DifficultyLevelBadge level={ch.level}/>
-                          </CardTitle>
-                          {ch.description &&
-                            <CardDescription className='mt-2 max-h-10 overflow-hidden'>
-                              <div
-                                className='revert-all description-container multiline-ellipsis'
-                                dangerouslySetInnerHTML={{ __html: ch.description }}
-                              />
-                            </CardDescription>
-                          }
-                        </div>
-                      </CardHeader>
-                      <Separator/>
-                      <CardFooter className='px-6 py-2 flex justify-between'>
-                        <ButtonGroup>
-                          <Button
-                            size='icon'
-                            variant="outline"
-                            className="hover:bg-destructive hover:text-destructive-foreground"
-                            onClick={() => handleDeleteChallenge(ch.id)}
-                          >
-                            <Trash2Icon />
-                          </Button>
-
-                          <Button
-                            size='icon'
-                            variant="outline"
-                            className="hover:bg-secondary"
-                            onClick={() => handleEditChallenge(ch.id)}
-                          >
-                            <PencilIcon />
-                          </Button>
-                        </ButtonGroup>
-
-                        <Button
-                          size='sm'
-                          className='font-semibold'
-                          onClick={() => navigate(`/challenges/${ch.id}`)}
-                        >
-                          Acessar o desafio
-                          <ArrowUpRightIcon />
-                        </Button>
-                      </CardFooter>
-                    </Card>
+                  <ChallengeCard
+                    key={ch.id}
+                    challenge={ch}
+                    onDelete={handleDeleteChallenge}
+                    onEdit={handleEditChallenge}
+                    onAction={(id) => navigate(`/challenges/${id}`)}
+                    ref={isLast ? lastElementRef : undefined}
+                  />
                 )
               })}
 
@@ -264,66 +205,13 @@ export const HomePage = () => {
             <div className="flex flex-wrap gap-4">
               {schoolClassList?.map((cls) => {
                 return(
-                  <Card
+                  <SchoolClassCard
                     key={cls.id}
-                    className="
-                      flex
-                      w-full
-                      flex-col
-                      sm:w-[calc(50%-1rem)]
-                      lg:w-[calc(33.333%-1rem)]
-                    "
-                  >
-                    <CardHeader
-                      className='px-6 py-4 flex flex-row grow gap-2 space-y-0 justify-between'
-                    >
-                      <div>
-                        <CardTitle className='mb-2'>
-                          {cls.name}
-                        </CardTitle>
-                        <CardDescription>{cls.description}</CardDescription>
-                      </div>
-                      <div className='flex flex-col sm:flex-row gap-2 items-start'>
-                        <Badge variant="outline" className='text-sm font-bold text-primary border-2 border-primary'>
-                          <UserIcon className='mr-1' />
-                          {cls.count.students}
-                        </Badge>
-                        <Badge variant="outline" className='text-sm font-bold text-primary border-2 border-primary'>
-                          <ClipboardListIcon className='mr-1'/>
-                          {cls.count.challenges}
-                        </Badge>
-                      </div>
-                    </CardHeader>
-                    <Separator />
-                    <CardFooter className='px-6 py-2 flex justify-between'>
-                      <ButtonGroup>
-                        <Button
-                          size='icon'
-                          variant="outline"
-                          className="hover:bg-destructive hover:text-destructive-foreground"
-                          onClick={() => handleDeleteClass(cls.id)}
-                        >
-                          <Trash2Icon />
-                        </Button>
-                        <Button
-                          size='icon'
-                          variant="outline"
-                          className="hover:bg-secondary"
-                          onClick={() => handleEditSchoolClass(cls)}
-                        >
-                          <PencilIcon />
-                        </Button>
-                      </ButtonGroup>
-                      <Button
-                        size='sm'
-                        className='font-semibold'
-                        onClick={() => navigate(`/classes/${cls.id}`)}
-                      >
-                        Acessar turma
-                        <ArrowUpRightIcon />
-                      </Button>
-                    </CardFooter>
-                  </Card>
+                    schoolClass={cls}
+                    onDelete={handleDeleteClass}
+                    onEdit={handleEditSchoolClass}
+                    onOpen={(id) => navigate(`/classes/${id}`)}
+                  />
                 )
               })}
             </div>

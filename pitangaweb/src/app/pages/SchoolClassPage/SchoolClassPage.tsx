@@ -26,6 +26,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { DataTable } from '@/app/components/DataTable';
+import { ChallengeCard } from '@/app/components/ChallengeCard';
 import { DifficultyLevelBadge } from '@/app/components/DifficultyLevelBadge';
 
 type Tab = 'students' | 'challenges';
@@ -269,45 +270,17 @@ export const SchoolClassPage = () => {
                   {myChallenges.map((ch, index) => {
                     const isLast = index === myChallenges.length - 1;
                     return(
-                      <Card
+                      <ChallengeCard
                         key={ch.id}
-                        ref={isLast ? lastElementRef : null}
-                        className="flex flex-col w-full"
-                      >
-                        <div className='px-6 py-4 flex items-center'>
-                          <CardHeader className='p-0 flex flex-col justify-between grow gap-2 space-y-0'>
-                            <CardTitle className='mb-2'>
-                              {ch.title}
-                            </CardTitle>
-                            <CardDescription>
-                              <DifficultyLevelBadge level={ch.level} />
-                            </CardDescription>
-                          </CardHeader>
-                          <Button
-                            size='sm'
-                            onClick={() => {
-                              addChallenge({ challengeId: ch.id })
-                              setModalOpen(false)
-                            }}
-                          >
-                            Adicionar
-                          </Button>
-                        </div>
-                        <Separator/>
-                        <CardFooter className='px-6 py-2'>
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <Button disabled={!ch.description} size='sm'>
-                                <ListTodoIcon />
-                                Descrição
-                              </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className='p-4'>
-                              <div className='revert-all' dangerouslySetInnerHTML={{ __html: ch.description }} />
-                            </PopoverContent>
-                          </Popover>
-                        </CardFooter>
-                      </Card>
+                        ref={isLast ? lastElementRef : undefined}
+                        actionLabel='Adicionar desafio'
+                        challenge={ch}
+                        fullWidth
+                        onAction={() => {
+                          addChallenge({ challengeId: ch.id })
+                          setModalOpen(false)
+                        }}
+                      />
                     )
                   })}
 
@@ -322,7 +295,7 @@ export const SchoolClassPage = () => {
                   <p>{dialogContent[tab].loadingMsg}</p>
                 ) : filterAvailableUsers().map(student => (
                   <Card key={student.id} className='p-6 flex items-center justify-between'>
-                    <CardHeader className='p-0 space-y-0'>
+                    <CardHeader className='p-1 space-y-0 flex flex-col gap-2'>
                       <CardTitle>{student.name}</CardTitle>
                       <CardDescription>
                         {student.email}
@@ -336,7 +309,7 @@ export const SchoolClassPage = () => {
                           setModalOpen(false)
                         }}
                       >
-                        Adicionar
+                        Adicionar aluno
                       </Button>
                     </CardFooter>
                   </Card>
