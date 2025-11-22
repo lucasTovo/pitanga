@@ -30,7 +30,7 @@ export function ActionDialog({
 
         <DialogFooter className="gap-2">
           <DialogClose asChild>
-            <Button variant="outline" className="hover:bg-secondary">
+            <Button variant="ghost" className="hover:bg-secondary">
               Cancelar
             </Button>
           </DialogClose>

@@ -126,7 +126,7 @@
     --warning-foreground: var(--neutral-900);
 
     --error: var(--error-500);
-    --error-foreground: var(--neutral-900);
+    --error-foreground: var(--neutral-50);
 
     --destructive: var(--error-500);
     --destructive-foreground: var(--neutral-50);

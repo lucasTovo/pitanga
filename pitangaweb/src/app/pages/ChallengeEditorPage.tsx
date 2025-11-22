@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
 import { useLoaderData, useNavigate } from 'react-router-dom';
-import { ArrowLeftFromLineIcon } from 'lucide-react';
+import { ArrowLeftFromLineIcon, ChevronDownIcon } from 'lucide-react';
 
 import type { Solution } from '@/types/solutions.types';
 import type { Challenge } from '@/types/challenges.types';
@@ -13,12 +13,13 @@ import { useActionDialog } from '@/app/hooks/useActionDialog';
 
 import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
 import { CodeEditor } from '@/app/components/CodeEditor';
 import { ActionDialog } from '@/app/components/ActionDialog';
 import { ValidationItem } from '@/app/components/ValidationItem';
 import { DifficultyLevelBadge } from '@/app/components/DifficultyLevelBadge';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 type ChallengeEditorStatus = 'idle' | 'saving' | 'running' | 'error';
 
@@ -136,21 +137,43 @@ export const ChallengeEditorPage = () => {
         </Card>
       </div>
 
-      <Accordion type="single" collapsible>
-        <AccordionItem value="item-1">
-          <AccordionTrigger className='text-md'>Descrição do desafio</AccordionTrigger>
-          <AccordionContent>
-            <div className="revert-all" dangerouslySetInnerHTML={{ __html: data.challenge.description }} />
-          </AccordionContent>
-        </AccordionItem>
-      </Accordion>
+      {data.challenge.description &&
+        <Collapsible>
+          <CollapsibleTrigger
+            className="
+              pr-2
+              group w-full
+              cursor-pointer
+              focus-visible:outline-none
+              text-md text-left font-medium
+              flex justify-between items-center
+            "
+          >
+            Descrição do desafio
+            <ChevronDownIcon
+              className="
+                w-5 h-5
+                transition-transform duration-200 ease-in-out
+                group-data-[state=open]:rotate-180
+              "
+            />
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <div
+              className="revert-all"
+              dangerouslySetInnerHTML={{ __html: data.challenge.description }}
+            />
+          </CollapsibleContent>
+          <Separator className='mt-3' />
+        </Collapsible>
+      }
 
       <h3 className='text-md font-medium'>Editor de código</h3>
       <CodeEditor value={code} onChange={handleCodeChange} />
 
       <div className='flex justify-between gap-2'>
         <Button
-          variant="outline"
+          variant="ghost"
           disabled={code === data.challenge.baseCode}
           onClick={handleRestoreChallengeBaseCode}
         >
@@ -168,11 +191,11 @@ export const ChallengeEditorPage = () => {
 
       <Drawer open={openDrawer} onOpenChange={setOpenDrawer}>
         <DrawerContent>
-          <div className="mx-auto w-full max-w-7xl">
-            <DrawerHeader>
+          <div className="p-3 sm:p-6 mx-auto w-full max-w-7xl">
+            <DrawerHeader className='p-0 mb-4'>
               <DrawerTitle>Validações</DrawerTitle>
             </DrawerHeader>
-            <div className="p-4 pb-0">
+            <div className="pb-0">
               <div className="flex flex-col gap-4 h-[420px]">
                 {displayedTests.map((r, i) => (
                   <ValidationItem

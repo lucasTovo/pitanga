@@ -23,7 +23,7 @@ import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { DataTable } from '@/app/components/DataTable';
 import { ChallengeCard } from '@/app/components/ChallengeCard';
 
@@ -100,15 +100,17 @@ export const SchoolClassPage = () => {
     }, 0);
   }
 
-  const dialogContent: Record<Tab, { button: string; title: string; loadingMsg: string }> = {
+  const dialogContent: Record<Tab, { button: string; title: string; description: string; loadingMsg: string }> = {
     students: {
       button: 'Adicionar aluno á turma',
-      title: 'Escolha um aluno para adicionar',
+      title: 'Lista de alunos',
+      description: 'Escolha um aluno para adicionar',
       loadingMsg: 'Carregando alunos...',
     },
     challenges: {
       button: 'Adicionar desafio á turma',
-      title: 'Escolha um desafio para adicionar',
+      title: 'Lista de desafios',
+      description: 'Escolha um desafio para adicionar',
       loadingMsg: 'Carregando desafios...',
     }
   }
@@ -231,6 +233,7 @@ export const SchoolClassPage = () => {
           <DialogContent className="sm:max-w-2x2 w-full max-h-[70vh] flex flex-col flex-1 overflow-hidden">
             <DialogHeader>
               <DialogTitle>{dialogContent[tab].title}</DialogTitle>
+              <DialogDescription>{dialogContent[tab].description}</DialogDescription>
             </DialogHeader>
             <ScrollArea className="flex flex-col flex-1">
               <div className="flex flex-col gap-4">
