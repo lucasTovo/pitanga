@@ -182,7 +182,7 @@ export const ChallengeForm = ({ onSubmit, initialValues, mode }: ChallengeFormPr
         {/* BOTÃO CRIAR*/}
         <div className="flex justify-end gap-4 pt-4">
           <Button
-            variant='outline'
+            variant='ghost'
             onClick={() => navigate('/')}
           >
             Cancelar

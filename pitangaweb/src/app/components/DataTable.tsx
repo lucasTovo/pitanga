@@ -48,7 +48,7 @@ export const DataTable = <TData,>({ columns, data, searchPlaceholder }: DataTabl
 
       {/* Tabela */}
       <div className="rounded-md border">
-        <Table className='rounded-lg bg-neutral-50 dark:bg-neutral-800 overflow-hidden  table-fixed'>
+        <Table className='rounded bg-neutral-50 dark:bg-neutral-800 overflow-hidden table-fixed'>
           <TableHeader>
             {table.getHeaderGroups().map((hg) => (
               <TableRow key={hg.id}>
@@ -77,7 +77,7 @@ export const DataTable = <TData,>({ columns, data, searchPlaceholder }: DataTabl
           <TableBody>
             {table.getRowModel().rows.length ? (
               table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id} className='hover:dark:bg-neutral-700'>
+                <TableRow key={row.id}>
                   {row.getVisibleCells().map((cell, index) => {
                     const isLast = index === row.getVisibleCells().length - 1;
                     return (

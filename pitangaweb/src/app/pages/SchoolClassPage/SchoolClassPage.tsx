@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeftFromLineIcon, ClipboardListIcon, ListTodoIcon, PlusIcon, UserIcon } from 'lucide-react';
+import { ArrowLeftFromLineIcon, ClipboardListIcon, PlusIcon, UserIcon } from 'lucide-react';
 
 import { useUser } from '@/app/hooks/useUser';
 import { useChallenges } from '@/app/hooks/useChallenges';
@@ -22,12 +22,10 @@ import { Spinner } from '@/components/ui/spinner';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { DataTable } from '@/app/components/DataTable';
 import { ChallengeCard } from '@/app/components/ChallengeCard';
-import { DifficultyLevelBadge } from '@/app/components/DifficultyLevelBadge';
 
 type Tab = 'students' | 'challenges';
 
@@ -141,8 +139,9 @@ export const SchoolClassPage = () => {
         </Button>
 
         <Card className="w-full flex flex-col">
-          <CardHeader className='grow'>
+          <CardHeader className='py-4 px-6'>
             <CardTitle>{schoolClass.name}</CardTitle>
+            <CardDescription>{schoolClass.description}</CardDescription>
           </CardHeader>
           <Separator/>
           <CardFooter className='py-3 px-6'>
@@ -161,164 +160,135 @@ export const SchoolClassPage = () => {
       </div>
 
       {/* Abas */}
-      <Tabs
-        defaultValue={tab}
-        onValueChange={(value) => setTab(value as Tab)}
-        className="flex flex-col flex-1 space-y-4 overflow-hidden"
-      >
-        <TabsList className='gap-6'>
-          <TabsTrigger value="students">Alunos</TabsTrigger>
-          <TabsTrigger value="challenges">Desafios</TabsTrigger>
-        </TabsList>
-
-        {/* Aba Alunos */}
-        <TabsContent
-          value="students"
-          className='data-[state=active]:flex flex-col flex-1 overflow-hidden'
+      {isTeacher ?
+        <Tabs
+          defaultValue={tab}
+          onValueChange={(value) => setTab(value as Tab)}
+          className="flex flex-col flex-1 space-y-4 overflow-hidden"
         >
-          <ScrollArea className="flex flex-col flex-1">
-            <DataTable
-              columns={studentsColumns(completedSummary, classChallenges.length)}
-              data={classStudents}
-              searchPlaceholder="Buscar aluno..."
-            />
-          </ScrollArea>
-        </TabsContent>
+          <TabsList className='gap-6'>
+            <TabsTrigger value="students">Alunos</TabsTrigger>
+            <TabsTrigger value="challenges">Desafios</TabsTrigger>
+          </TabsList>
 
-        {/* Aba Desafios */}
-        <TabsContent
-          value="challenges"
-          className='data-[state=active]:flex flex-col flex-1 overflow-hidden'
-        >
-          <ScrollArea className="flex flex-col flex-1">
-            {isTeacher ?
+          {/* Aba Alunos */}
+          <TabsContent
+            value="students"
+            className='data-[state=active]:flex flex-col flex-1 overflow-hidden'
+          >
+            <ScrollArea className="flex flex-col flex-1">
+              <DataTable
+                columns={studentsColumns(completedSummary, classChallenges.length)}
+                data={classStudents}
+                searchPlaceholder="Buscar aluno..."
+              />
+            </ScrollArea>
+          </TabsContent>
+
+          {/* Aba Desafios */}
+          <TabsContent
+            value="challenges"
+            className='data-[state=active]:flex flex-col flex-1 overflow-hidden'
+          >
+            <ScrollArea className="flex flex-col flex-1">
               <DataTable
                 columns={challengesColumns(getStudentsSolvedCount, schoolClass.students.length)}
                 data={classChallenges}
                 searchPlaceholder="Buscar desafio..."
               />
-            :
-              <div className="flex flex-wrap gap-4">
-                {classChallenges.map((ch) => {
-                  return(
-                    <Card
-                      key={ch.id}
-                      className="
-                        flex
-                        w-full
-                        flex-col
-                        sm:w-[calc(50%-1rem)]
-                        lg:w-[calc(33.333%-1rem)]
-                      "
-                    >
-                      <CardHeader
-                        className='px-6 py-4 flex flex-row grow gap-2 space-y-0 justify-between'
-                      >
-                        <div className='flex flex-col justify-between'>
-                          <CardTitle className='mb-2'>
-                            {ch.title}
-                          </CardTitle>
-                          <CardDescription>
-                            <DifficultyLevelBadge level={ch.level} />
-                          </CardDescription>
-                        </div>
+            </ScrollArea>
+          </TabsContent>
+        </Tabs>
+        :
+        <ScrollArea className="flex flex-col flex-1">
+          <h3 className='py-2 px-4 mb-4 text-center rounded-lg bg-card font-medium text-foreground text-sm'>
+            Desafios da turma
+          </h3>
+          <div className="flex flex-wrap gap-4">
+            {classChallenges.map((ch, index) => {
+              const isLast = index === classChallenges.length - 1;
+              return(
+                <ChallengeCard
+                  key={ch.id}
+                  challenge={ch}
+                  onAction={(id) => navigate(`/challenges/${id}`)}
+                  ref={isLast ? lastElementRef : undefined}
+                />
+              )
+            })}
+          </div>
+        </ScrollArea>
+      }
+
+      {isTeacher &&
+        <Dialog open={modalOpen} onOpenChange={setModalOpen}>
+          <DialogTrigger asChild className='block w-full max-w-sm mx-auto'>
+            <Button className='flex'>
+              <PlusIcon />
+              {dialogContent[tab].button}
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-2x2 w-full max-h-[70vh] flex flex-col flex-1 overflow-hidden">
+            <DialogHeader>
+              <DialogTitle>{dialogContent[tab].title}</DialogTitle>
+            </DialogHeader>
+            <ScrollArea className="flex flex-col flex-1">
+              <div className="flex flex-col gap-4">
+                {tab === 'challenges' && (
+                  <>
+                    {myChallenges.map((ch, index) => {
+                      const isLast = index === myChallenges.length - 1;
+                      return(
+                        <ChallengeCard
+                          key={ch.id}
+                          ref={isLast ? lastElementRef : undefined}
+                          actionLabel='Adicionar desafio'
+                          challenge={ch}
+                          fullWidth
+                          onAction={() => {
+                            addChallenge({ challengeId: ch.id })
+                            setModalOpen(false)
+                          }}
+                        />
+                      )
+                    })}
+
+                    {challengesIsFetchingNextPage && (
+                      <Spinner className='m-auto' />
+                    )}
+                  </>
+                )}
+
+                {tab === 'students' && (
+                  allStudentsIsLoading ? (
+                    <p>{dialogContent[tab].loadingMsg}</p>
+                  ) : filterAvailableUsers().map(student => (
+                    <Card key={student.id} className='p-6 flex items-center justify-between'>
+                      <CardHeader className='p-1 space-y-0 flex flex-col gap-2'>
+                        <CardTitle>{student.name}</CardTitle>
+                        <CardDescription>
+                          {student.email}
+                        </CardDescription>
                       </CardHeader>
-                      <Separator/>
-                      <CardFooter className='px-6 py-2 flex justify-between'>
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <Button disabled={!ch.description.trim()} size='sm'>
-                              <ListTodoIcon />
-                              Descrição
-                            </Button>
-                          </PopoverTrigger>
-                          <PopoverContent className='p-4'>
-                            <div
-                              className='revert-all'
-                              dangerouslySetInnerHTML={{ __html: ch.description }}
-                            />
-                          </PopoverContent>
-                        </Popover>
-                        <Button onClick={() => navigate(`/challenges/${ch.id}`)} size='sm'>
-                          Acessar
+                      <CardFooter className='p-0'>
+                        <Button
+                          size='sm'
+                          onClick={() => {
+                            addStudent({ studentId: student.id })
+                            setModalOpen(false)
+                          }}
+                        >
+                          Adicionar aluno
                         </Button>
                       </CardFooter>
                     </Card>
-                  )
-                })}
+                  ))
+                )}
               </div>
-            }
-          </ScrollArea>
-        </TabsContent>
-      </Tabs>
-
-      <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-        <DialogTrigger asChild className='block w-full max-w-sm mx-auto'>
-          <Button className='flex'>
-            <PlusIcon />
-            {dialogContent[tab].button}
-          </Button>
-        </DialogTrigger>
-        <DialogContent className="sm:max-w-2x2 w-full max-h-[70vh] flex flex-col flex-1 overflow-hidden">
-          <DialogHeader>
-            <DialogTitle>{dialogContent[tab].title}</DialogTitle>
-          </DialogHeader>
-          <ScrollArea className="flex flex-col flex-1">
-            <div className="flex flex-col gap-4">
-              {tab === 'challenges' && (
-                <>
-                  {myChallenges.map((ch, index) => {
-                    const isLast = index === myChallenges.length - 1;
-                    return(
-                      <ChallengeCard
-                        key={ch.id}
-                        ref={isLast ? lastElementRef : undefined}
-                        actionLabel='Adicionar desafio'
-                        challenge={ch}
-                        fullWidth
-                        onAction={() => {
-                          addChallenge({ challengeId: ch.id })
-                          setModalOpen(false)
-                        }}
-                      />
-                    )
-                  })}
-
-                  {challengesIsFetchingNextPage && (
-                    <Spinner className='m-auto' />
-                  )}
-                </>
-              )}
-
-              {tab === 'students' && (
-                allStudentsIsLoading ? (
-                  <p>{dialogContent[tab].loadingMsg}</p>
-                ) : filterAvailableUsers().map(student => (
-                  <Card key={student.id} className='p-6 flex items-center justify-between'>
-                    <CardHeader className='p-1 space-y-0 flex flex-col gap-2'>
-                      <CardTitle>{student.name}</CardTitle>
-                      <CardDescription>
-                        {student.email}
-                      </CardDescription>
-                    </CardHeader>
-                    <CardFooter className='p-0'>
-                      <Button
-                        size='sm'
-                        onClick={() => {
-                          addStudent({ studentId: student.id })
-                          setModalOpen(false)
-                        }}
-                      >
-                        Adicionar aluno
-                      </Button>
-                    </CardFooter>
-                  </Card>
-                ))
-              )}
-            </div>
-          </ScrollArea>
-        </DialogContent>
-      </Dialog>
+            </ScrollArea>
+          </DialogContent>
+        </Dialog>
+      }
     </div>
   );
 }

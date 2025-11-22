@@ -119,9 +119,9 @@ export const HomePage = () => {
         <CardHeader className='relative flex-row space-y-0 p-3 sm:p-5 pt-8 pb-6'>
           <div className='flex items-center'>
             <Avatar className="w-14 h-14 object-cover mr-3">
-              <AvatarImage className='rounded-full' src="https://github.com/shadcn.png" alt="@shadcn" />
-              <AvatarFallback>
-                <UserIcon className='rounded-full border'/>
+              {/* <AvatarImage className='rounded-full' src="https://github.com/shadcn.png" alt="@shadcn" /> */}
+              <AvatarFallback className='bg-muted'>
+                <UserIcon className='rounded-full'/>
               </AvatarFallback>
             </Avatar>
 
@@ -157,7 +157,7 @@ export const HomePage = () => {
       >
         <TabsList className='gap-6'>
           <TabsTrigger value="challenges">Meus desafios</TabsTrigger>
-          <TabsTrigger value="classes">Turmas</TabsTrigger>
+          <TabsTrigger value="classes">Minhas turmas</TabsTrigger>
         </TabsList>
 
         {/* Aba de desafios */}
@@ -208,8 +208,10 @@ export const HomePage = () => {
                   <SchoolClassCard
                     key={cls.id}
                     schoolClass={cls}
-                    onDelete={handleDeleteClass}
-                    onEdit={handleEditSchoolClass}
+                    {...(isTeacher && {
+                      onDelete: handleDeleteClass,
+                      onEdit: handleEditSchoolClass,
+                    })}
                     onOpen={(id) => navigate(`/classes/${id}`)}
                   />
                 )

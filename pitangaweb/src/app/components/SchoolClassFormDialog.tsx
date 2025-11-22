@@ -152,7 +152,7 @@ export function SchoolClassFormDialog({
 
             <Button
               type="button"
-              variant="outline"
+              variant="ghost"
               className="w-full"
               onClick={() => onOpenChange(false)}
             >
