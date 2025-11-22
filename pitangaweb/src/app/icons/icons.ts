@@ -10,4 +10,6 @@ export { ListTodo as ListTodoIcon } from "lucide-react";
 export { Pencil as PencilIcon } from "lucide-react";
 export { ArrowUpRight as ArrowUpRightIcon } from "lucide-react";
 export { Search as SearchIcon } from "lucide-react";
+export { CircleX as CircleXIcon } from "lucide-react";
+export { CircleCheckBig as CircleCheckBigIcon } from "lucide-react";
 

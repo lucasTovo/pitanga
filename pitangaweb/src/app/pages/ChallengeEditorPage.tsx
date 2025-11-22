@@ -11,6 +11,7 @@ import { saveSolution } from '@/infra/data/challenges.rest';
 
 import { useActionDialog } from '@/app/hooks/useActionDialog';
 
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
 import { Button } from '@/components/ui/button';
@@ -191,19 +192,21 @@ export const ChallengeEditorPage = () => {
 
       <Drawer open={openDrawer} onOpenChange={setOpenDrawer}>
         <DrawerContent>
-          <div className="p-3 sm:p-6 mx-auto w-full max-w-7xl">
+          <div className="p-3 sm:p-6 md:p-10 mx-auto w-full max-w-7xl">
             <DrawerHeader className='p-0 mb-4'>
               <DrawerTitle>Validações</DrawerTitle>
             </DrawerHeader>
-            <div className="pb-0">
-              <div className="flex flex-col gap-4 h-[420px]">
-                {displayedTests.map((r, i) => (
-                  <ValidationItem
-                    key={i}
-                    {...r}
-                  />
-                ))}
-              </div>
+            <div className="pb-0 h-[520px]">
+              <ScrollArea className='h-full flex flex-1'>
+                <div className="pr-3 flex flex-col gap-4">
+                  {displayedTests.map((test, index) => (
+                    <ValidationItem
+                      key={index}
+                      {...test}
+                    />
+                  ))}
+                </div>
+              </ScrollArea>
             </div>
           </div>
         </DrawerContent>

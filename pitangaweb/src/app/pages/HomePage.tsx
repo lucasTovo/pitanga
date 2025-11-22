@@ -165,7 +165,7 @@ export const HomePage = () => {
           value="challenges"
           className='data-[state=active]:flex flex-col flex-1 overflow-hidden'
         >
-          <ScrollArea className="flex flex-col flex-1" >
+          <ScrollArea className="flex flex-1" >
             <div className="flex flex-wrap gap-4">
               {challenges.map((ch, index) => {
                 const isLast = index === challenges.length - 1;
@@ -201,7 +201,7 @@ export const HomePage = () => {
           value="classes"
           className='data-[state=active]:flex flex-col flex-1 overflow-hidden'
         >
-          <ScrollArea className="flex flex-col flex-1">
+          <ScrollArea className="flex flex-1">
             <div className="flex flex-wrap gap-4">
               {schoolClassList?.map((cls) => {
                 return(

@@ -201,25 +201,27 @@ export const SchoolClassPage = () => {
             </ScrollArea>
           </TabsContent>
         </Tabs>
-        :
-        <ScrollArea className="flex flex-col flex-1">
-          <h3 className='py-2 px-4 mb-4 text-center rounded-lg bg-card font-medium text-foreground text-sm'>
+      :
+        <>
+          <h3 className='py-2 px-4 text-center rounded-lg bg-card font-medium text-foreground text-sm'>
             Desafios da turma
           </h3>
-          <div className="flex flex-wrap gap-4">
-            {classChallenges.map((ch, index) => {
-              const isLast = index === classChallenges.length - 1;
-              return(
-                <ChallengeCard
-                  key={ch.id}
-                  challenge={ch}
-                  onAction={(id) => navigate(`/challenges/${id}`)}
-                  ref={isLast ? lastElementRef : undefined}
-                />
-              )
-            })}
-          </div>
-        </ScrollArea>
+          <ScrollArea className="flex flex-col flex-1">
+            <div className="flex flex-wrap gap-4">
+              {classChallenges.map((ch, index) => {
+                const isLast = index === classChallenges.length - 1;
+                return(
+                  <ChallengeCard
+                    key={ch.id}
+                    challenge={ch}
+                    onAction={(id) => navigate(`/challenges/${id}`)}
+                    ref={isLast ? lastElementRef : undefined}
+                  />
+                )
+              })}
+            </div>
+          </ScrollArea>
+        </>
       }
 
       {isTeacher &&
@@ -236,7 +238,7 @@ export const SchoolClassPage = () => {
               <DialogDescription>{dialogContent[tab].description}</DialogDescription>
             </DialogHeader>
             <ScrollArea className="flex flex-col flex-1">
-              <div className="flex flex-col gap-4">
+              <div className="pr-3 flex flex-col gap-4">
                 {tab === 'challenges' && (
                   <>
                     {myChallenges.map((ch, index) => {

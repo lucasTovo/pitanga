@@ -1,5 +1,5 @@
 import { forwardRef, useState } from "react";
-import { ChevronDownIcon } from "lucide-react";
+import { ChevronDownIcon, CircleCheckBigIcon, CircleXIcon } from "lucide-react";
 
 import type { ValidationResult, ValidationStatus } from "@/types/validations.type";
 
@@ -10,8 +10,8 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 
 const STATUS_STYLES: Record<ValidationStatus | "null", string> = {
   null: "bg-neutral text-neutral-foreground",
-  FAIL: "bg-error text-error-foreground",
-  PASS: "bg-success text-success-foreground"
+  FAIL: "border-2 border-error",
+  PASS: "border-2 border-success"
 };
 
 export const ValidationItem = forwardRef<HTMLDivElement, ValidationResult>(
@@ -20,11 +20,11 @@ export const ValidationItem = forwardRef<HTMLDivElement, ValidationResult>(
     const style = STATUS_STYLES[status ?? "null"];
 
     return (
-      <div ref={ref}>
-        <Collapsible open={open} onOpenChange={setOpen} asChild>
-          <Card className={cn("border p-2 transition", style)}>
-            <CollapsibleTrigger className="cursor-pointer w-full flex justify-between items-center text-left">
-              <div className="pb-1">
+      <Collapsible ref={ref} open={open} onOpenChange={setOpen} asChild>
+        <Card className={cn("border p-3 transition", style)}>
+          <CollapsibleTrigger className="cursor-pointer w-full flex justify-between items-center text-left">
+            <div className="pr-3 flex items-center justify-between grow">
+              <div>
                 <p>
                   <strong>Input:</strong>{" "}
                   {input?.trim()?.length ? input : "Sem input"}
@@ -35,22 +35,29 @@ export const ValidationItem = forwardRef<HTMLDivElement, ValidationResult>(
                 </p>
               </div>
 
-              <ChevronDownIcon
-                className={cn(
-                  "w-5 h-5 transition-transform duration-200 ease-in-out",
-                  open && "rotate-180"
-                )}
-              />
-            </CollapsibleTrigger>
+              {status === 'PASS' &&
+                <CircleCheckBigIcon className="text-success" />
+              }
+              {status === 'FAIL' &&
+                <CircleXIcon className="text-error" />
+              }
+            </div>
 
-            <CollapsibleContent>
-              <CardContent className="mt-2 rounded bg-neutral-800 text-neutral-100 p-3 border select-text">
-                {output}
-              </CardContent>
-            </CollapsibleContent>
-          </Card>
-        </Collapsible>
-      </div>
+            <ChevronDownIcon
+              className={cn(
+                "w-5 h-5 transition-transform duration-200 ease-in-out",
+                open && "rotate-180"
+              )}
+            />
+          </CollapsibleTrigger>
+
+          <CollapsibleContent>
+            <CardContent className="mt-2 rounded bg-muted p-3 border select-text">
+              {output}
+            </CardContent>
+          </CollapsibleContent>
+        </Card>
+      </Collapsible>
     );
   }
 );
