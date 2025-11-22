@@ -12,6 +12,7 @@ import {
 import { cn } from "@/lib/utils";
 
 import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 interface DataTableProps<TData> {
@@ -34,21 +35,21 @@ export const DataTable = <TData,>({ columns, data, searchPlaceholder }: DataTabl
   });
 
   return (
-    <div className="space-y-4">
+    <div className="h-full flex flex-col flex-1 gap-4">
       {/* Campo de pesquisa */}
-      <div className="relative max-w-sm ml-auto">
+      <div className="relative w-full max-w-sm ml-auto">
         <Input
           placeholder={searchPlaceholder ?? "Pesquisar..."}
           value={globalFilter ?? ""}
           onChange={(e) => setGlobalFilter(e.target.value)}
-          className="w-full pr-9 bg-neutral dark:bg-neutral-900"
+          className="w-full pr-9 bg-neutral dark:bg-neutral-900 focus-visible:ring-0"
         />
         <SearchIcon className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
       </div>
 
-      {/* Tabela */}
-      <div className="rounded-md border">
-        <Table className='rounded bg-neutral-50 dark:bg-neutral-800 overflow-hidden table-fixed'>
+      {/* Table header */}
+      <div className="rounded-lg border overflow-hidden flex flex-col">
+        <Table className='bg-neutral-50 dark:bg-neutral-800 table-fixed'>
           <TableHeader>
             {table.getHeaderGroups().map((hg) => (
               <TableRow key={hg.id}>
@@ -60,7 +61,7 @@ export const DataTable = <TData,>({ columns, data, searchPlaceholder }: DataTabl
                       onClick={header.column.getToggleSortingHandler()}
                       className={cn(
                         header.column.getCanSort() && 'cursor-pointer select-none',
-                        isLast && 'text-right'
+                        isLast && ['text-right', 'pr-4']
                       )}
                     >
                       {flexRender(header.column.columnDef.header, header.getContext())}
@@ -73,33 +74,38 @@ export const DataTable = <TData,>({ columns, data, searchPlaceholder }: DataTabl
               </TableRow>
             ))}
           </TableHeader>
-
-          <TableBody>
-            {table.getRowModel().rows.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id}>
-                  {row.getVisibleCells().map((cell, index) => {
-                    const isLast = index === row.getVisibleCells().length - 1;
-                    return (
-                      <TableCell
-                        key={cell.id}
-                        className={cn(isLast && 'text-right')}
-                      >
-                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                      </TableCell>
-                    );
-                  })}
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={columns.length} className="text-center py-6">
-                  Nenhum registro encontrado.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
         </Table>
+
+        {/* Table body */}
+        <ScrollArea className="flex flex-1" >
+          <Table className='rounded bg-neutral-50 dark:bg-neutral-800 table-fixed'>
+            <TableBody>
+              {table.getRowModel().rows.length ? (
+                table.getRowModel().rows.map((row) => (
+                  <TableRow key={row.id}>
+                    {row.getVisibleCells().map((cell, index) => {
+                      const isLast = index === row.getVisibleCells().length - 1;
+                      return (
+                        <TableCell
+                          key={cell.id}
+                          className={cn(isLast && ['text-right', 'pr-4'])}
+                        >
+                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        </TableCell>
+                      );
+                    })}
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={columns.length} className="text-center py-6">
+                    Nenhum registro encontrado.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </ScrollArea>
       </div>
     </div>
   );

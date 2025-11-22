@@ -176,29 +176,25 @@ export const SchoolClassPage = () => {
           {/* Aba Alunos */}
           <TabsContent
             value="students"
-            className='data-[state=active]:flex flex-col flex-1 overflow-hidden'
+            className='data-[state=active]:flex flex-col flex-1 overflow-hidden focus-visible:ring-0'
           >
-            <ScrollArea className="flex flex-col flex-1">
-              <DataTable
-                columns={studentsColumns(completedSummary, classChallenges.length)}
-                data={classStudents}
-                searchPlaceholder="Buscar aluno..."
-              />
-            </ScrollArea>
+            <DataTable
+              columns={studentsColumns(completedSummary, classChallenges.length)}
+              data={classStudents}
+              searchPlaceholder="Buscar aluno..."
+            />
           </TabsContent>
 
           {/* Aba Desafios */}
           <TabsContent
             value="challenges"
-            className='data-[state=active]:flex flex-col flex-1 overflow-hidden'
+            className='data-[state=active]:flex flex-col flex-1 overflow-hidden focus-visible:ring-0'
           >
-            <ScrollArea className="flex flex-col flex-1">
-              <DataTable
-                columns={challengesColumns(getStudentsSolvedCount, schoolClass.students.length)}
-                data={classChallenges}
-                searchPlaceholder="Buscar desafio..."
-              />
-            </ScrollArea>
+            <DataTable
+              columns={challengesColumns(getStudentsSolvedCount, schoolClass.students.length)}
+              data={classChallenges}
+              searchPlaceholder="Buscar desafio..."
+            />
           </TabsContent>
         </Tabs>
       :

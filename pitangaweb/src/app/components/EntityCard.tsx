@@ -25,8 +25,8 @@ export const EntityCard = forwardRef<HTMLDivElement, EntityCardProps>(
             w-full
           `,
           !fullWidth && `
-            sm:w-[calc(50%-1rem)]
-            lg:w-[calc(33.333%-1rem)]
+            sm:w-[calc(50%-0.5rem)]
+            lg:w-[calc(33%-0.5rem)]
           `,
           className
         )}
