@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { IOList } from '@/app/components/IOList';
 import { CodeEditor } from '@/app/components/CodeEditor';
@@ -74,7 +75,7 @@ export const ChallengeForm = ({ onSubmit, initialValues, mode }: ChallengeFormPr
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5 pb-10">
         {/* TÍTULO */}
         <FormField
           control={form.control}
@@ -110,8 +111,8 @@ export const ChallengeForm = ({ onSubmit, initialValues, mode }: ChallengeFormPr
           control={form.control}
           name="level"
           render={({ field }) => (
-            <FormItem className='flex items-center space-y-0 gap-4'>
-              <FormLabel className='text-lg'>Nível:</FormLabel>
+            <FormItem className='flex flex-col items-start'>
+              <FormLabel className='text-lg'>Nível</FormLabel>
               <FormControl>
                 <ToggleGroup
                   type="single"
@@ -119,7 +120,7 @@ export const ChallengeForm = ({ onSubmit, initialValues, mode }: ChallengeFormPr
                   onValueChange={(value) => {
                     if (value) field.onChange(value);
                   }}
-                  className="flex gap-2 flex-wrap"
+                  className="flex gap-2 sm:gap-4 flex-wrap"
                 >
                   <ToggleGroupItem
                     value="EASY"
@@ -172,6 +173,8 @@ export const ChallengeForm = ({ onSubmit, initialValues, mode }: ChallengeFormPr
           )}
         />
 
+        <Separator />
+
         {/* VALIDAÇÕES */}
         <FormField
           control={form.control}
@@ -185,6 +188,8 @@ export const ChallengeForm = ({ onSubmit, initialValues, mode }: ChallengeFormPr
             </FormItem>
           )}
         />
+
+        <Separator />
 
         {/* CÓDIGO BASE */}
         <FormField
@@ -210,7 +215,7 @@ export const ChallengeForm = ({ onSubmit, initialValues, mode }: ChallengeFormPr
             Cancelar
           </Button>
 
-          <Button type="submit">
+          <Button className='min-w-28' type="submit">
             {mode === 'edit' ? 'Salvar alterações' : 'Criar'}
           </Button>
         </div>

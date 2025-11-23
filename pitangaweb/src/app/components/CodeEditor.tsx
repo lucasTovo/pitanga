@@ -58,7 +58,7 @@ export const CodeEditor = forwardRef<HTMLDivElement, CodeEditorProps>(
     return (
       <div
         ref={containerRef}
-        className={`relative w-full h-full min-h-[500px] rounded-xl overflow-hidden border border-border ${className}`}
+        className={`relative w-full h-full min-h-[500px] rounded-xl overflow-hidden border border-border shadow-sm ${className}`}
       >
         <AceEditor
           mode="java"

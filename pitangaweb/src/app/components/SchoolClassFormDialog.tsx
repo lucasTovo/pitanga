@@ -106,7 +106,7 @@ export function SchoolClassFormDialog({
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit)}
-            className="space-y-4 pt-4"
+            className="flex flex-col gap-4"
           >
             {/* Campo Nome */}
             <FormField
@@ -142,22 +142,24 @@ export function SchoolClassFormDialog({
             />
 
             {/* Botões */}
-            <Button className="w-full" type="submit" disabled={mutation.isPending}>
-              {mutation.isPending
-                ? "Salvando..."
-                : mode === "create"
-                ? "Criar Turma"
-                : "Salvar Alterações"}
-            </Button>
+            <div className="flex gap-4 mt-8">
+              <Button
+                type="button"
+                variant="ghost"
+                className="w-full"
+                onClick={() => onOpenChange(false)}
+              >
+                Cancelar
+              </Button>
 
-            <Button
-              type="button"
-              variant="ghost"
-              className="w-full"
-              onClick={() => onOpenChange(false)}
-            >
-              Cancelar
-            </Button>
+              <Button className="w-full" type="submit" disabled={mutation.isPending}>
+                {mutation.isPending
+                  ? "Salvando..."
+                  : mode === "create"
+                  ? "Criar Turma"
+                  : "Salvar Alterações"}
+              </Button>
+            </div>
           </form>
         </Form>
       </DialogContent>

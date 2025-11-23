@@ -26,7 +26,7 @@ export const ChallengeCard = forwardRef<HTMLDivElement, ChallengeCardProps>(
       fullWidth={fullWidth}
       header={
         <div className="w-full flex flex-col justify-between">
-          <CardTitle className="flex justify-between items-start gap-2">
+          <CardTitle className="flex justify-between items-center gap-2">
             <span>{challenge.title}</span>
             <DifficultyLevelBadge level={challenge.level} />
           </CardTitle>

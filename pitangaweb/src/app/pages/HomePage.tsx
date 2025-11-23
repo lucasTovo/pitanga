@@ -129,7 +129,7 @@ export const HomePage = () => {
               <CardTitle>{user.name}</CardTitle>
               <CardDescription>
                 <p className="text-sm text-muted-foreground">{user.email}</p>
-                <Badge variant="secondary" className="mt-1">
+                <Badge variant="secondary" className="mt-2">
                   <UserIcon className="w-4 h-4" />
                   {isTeacher ? 'Professor' : 'Aluno'}
                 </Badge>

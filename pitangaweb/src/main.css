@@ -138,10 +138,10 @@
     --popover-foreground: var(--neutral-800);
 
     --muted: var(--neutral-100);
-    --muted-foreground: var(--neutral-500);
+    --muted-foreground: var(--neutral-600);
 
     --border: var(--neutral-300);
-    --input: var(--neutral-200);
+    --input: var(--neutral-300);
     --ring: var(--primary-500);
 
     --chart-1: 12 76% 61%;
@@ -186,7 +186,7 @@
     --popover: var(--neutral-800);
     --popover-foreground: var(--neutral-100);
 
-    --muted: var(--neutral-700);
+    --muted: var(--neutral-800);
     --muted-foreground: var(--neutral-100);
 
     --border: var(--neutral-700);

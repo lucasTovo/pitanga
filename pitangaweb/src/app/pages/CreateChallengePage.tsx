@@ -16,7 +16,7 @@ export const CreateChallengePage = () => {
 
   return (
     <div className="max-w-3xl mx-auto py-6">
-      <nav className="flex items-center w-full mb-4 gap-3">
+      <nav className="flex items-center w-full mb-4 gap-4">
         <Button onClick={() => navigate('/')}>
           <ArrowLeftFromLineIcon/>
         </Button>

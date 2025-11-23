@@ -52,6 +52,7 @@ export const IOList = forwardRef<HTMLDivElement>((_, ref) => {
                 <Card className={
                   cn(
                     'relative',
+                    'shadow-sm',
                     hasError && 'border-error'
                   )
                 }>
@@ -106,8 +107,8 @@ export const IOList = forwardRef<HTMLDivElement>((_, ref) => {
                 </Card>
 
                 {hasError && (
-                  <span className="text-sm text-destructive font-medium mt-1">
-                    Preencha os campos
+                  <span className="text-sm text-destructive font-medium mt-2">
+                    Preencha os campos ou exclua o item de validação
                   </span>
                 )}
               </Fragment>
