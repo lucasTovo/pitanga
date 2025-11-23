@@ -5,6 +5,8 @@ import { useNavigate } from 'react-router-dom';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 
+import { ChallengeLevel } from '@/types/challenges.types';
+
 import {
   Form,
   FormControl,
@@ -24,17 +26,18 @@ const DEFAULT_CODE = `public class Solution {
 \tpublic static void main(String[] args) {
 \t\t// Sua solução aqui
 \t}
-}
-`;
+}`;
 
 const validationSchema = z.object({
   input: z.string().min(1, 'O campo input é obrigatório'),
   output: z.string().min(1, 'O campo output é obrigatório')
 });
 
+export type IO = z.infer<typeof validationSchema>;
+
 const challengeSchema = z.object({
   title: z.string().min(5, 'O título deve ter pelo menos 5 caracteres'),
-  level: z.enum(['EASY', 'MEDIUM', 'HARD', 'PRO']),
+  level: z.enum(ChallengeLevel),
   description: z.string(),
   baseCode: z.string(),
   validations: z.array(validationSchema),
@@ -42,7 +45,7 @@ const challengeSchema = z.object({
 
 export type ChallengeFormData = z.infer<typeof challengeSchema>;
 
-interface ChallengeFormProps {
+export interface ChallengeFormProps {
   mode: 'create' | 'edit';
   initialValues?: ChallengeFormData;
   onSubmit: (data: ChallengeFormData) => Promise<void> | void;
@@ -52,25 +55,22 @@ export const ChallengeForm = ({ onSubmit, initialValues, mode }: ChallengeFormPr
   const navigate = useNavigate();
 
   const form = useForm<ChallengeFormData>({
-      resolver: zodResolver(challengeSchema),
-      defaultValues: {
-        title: '',
-        level: 'EASY',
-        description: '',
-        baseCode: DEFAULT_CODE,
-        validations: []
-      },
-      mode: 'onBlur',
-      reValidateMode: 'onBlur',
-      shouldFocusError: false,
-      criteriaMode: "firstError",
-    });
+    resolver: zodResolver(challengeSchema),
+    defaultValues: {
+      title: '',
+      level: ChallengeLevel.EASY,
+      description: '',
+      baseCode: DEFAULT_CODE,
+      validations: []
+    },
+    mode: 'all',
+  });
 
   useEffect(() => {
     if (initialValues) {
       form.reset(initialValues);
     }
-  }, [initialValues]);
+  }, [initialValues, form]);
 
   return (
     <Form {...form}>
@@ -116,30 +116,52 @@ export const ChallengeForm = ({ onSubmit, initialValues, mode }: ChallengeFormPr
                 <ToggleGroup
                   type="single"
                   value={field.value}
-                  onValueChange={(value) => field.onChange(value || "")}
+                  onValueChange={(value) => {
+                    if (value) field.onChange(value);
+                  }}
                   className="flex gap-2 flex-wrap"
                 >
                   <ToggleGroupItem
                     value="EASY"
-                    className="data-[state=on]:bg-success data-[state=on]:text-success-foreground rounded-full border px-4 py-1 text-sm transition-all data-[state=on]:border-transparent"
-                    >
+                    className="
+                      data-[state=on]:bg-success
+                      data-[state=on]:border-transparent
+                      data-[state=on]:text-success-foreground
+                      rounded-full border px-4 py-1 text-sm transition-all
+                    "
+                  >
                     Fácil
                   </ToggleGroupItem>
                   <ToggleGroupItem
                     value="MEDIUM"
-                    className="data-[state=on]:bg-warning data-[state=on]:text-warning-foreground rounded-full border px-4 py-1 text-sm transition-all data-[state=on]:border-transparent"
-                    >
+                    className="
+                      data-[state=on]:bg-warning
+                      data-[state=on]:border-transparent
+                      data-[state=on]:text-warning-foreground
+                      rounded-full border px-4 py-1 text-sm transition-all
+                    "
+                  >
                     Médio
                   </ToggleGroupItem>
                   <ToggleGroupItem
                     value="HARD"
-                    className="data-[state=on]:bg-accent data-[state=on]:text-accent-foreground rounded-full border px-4 py-1 text-sm transition-all data-[state=on]:border-transparent"
-                    >
+                    className="
+                      data-[state=on]:bg-accent
+                      data-[state=on]:border-transparent
+                      data-[state=on]:text-accent-foreground
+                      rounded-full border px-4 py-1 text-sm transition-all
+                    "
+                  >
                     Difícil
                   </ToggleGroupItem>
                   <ToggleGroupItem
                     value="PRO"
-                    className="data-[state=on]:bg-complementary data-[state=on]:text-complementary-foreground rounded-full border px-4 py-1 text-sm transition-all data-[state=on]:border-transparent"
+                    className="
+                      data-[state=on]:bg-complementary
+                      data-[state=on]:border-transparent
+                      data-[state=on]:text-complementary-foreground
+                      rounded-full border px-4 py-1 text-sm transition-all
+                    "
                   >
                     PRO
                   </ToggleGroupItem>
