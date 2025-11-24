@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS challenges (
     "level" VARCHAR(255) NOT NULL,
     "base_code" TEXT DEFAULT 'public class Main {\n\tpublic static void main(String[] args) {\n\t\t// Solução\n\t}\n}',
     creator_id VARCHAR(64) NOT NULL,
+    is_public BOOLEAN NOT NULL DEFAULT true,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
     deleted_at TIMESTAMP
