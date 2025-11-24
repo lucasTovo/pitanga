@@ -13,8 +13,8 @@ import { useCompletedSummary } from '@/app/hooks/useCompletedSummary';
 import { useAddStudentToSchoolClass } from '@/app/hooks/useAddStudentToSchoolClass';
 import { useAddChallengeToSchoolClass } from '@/app/hooks/useAddChallengeToSchoolClass';
 
-import { studentsColumns } from '@/app/pages/SchoolClassPage/studentsColumns';
-import { challengesColumns } from '@/app/pages/SchoolClassPage/challengesColumns';
+import { challengesColumns, challengesSubTableColumns } from '@/app/pages/SchoolClassPage/challengesColumns';
+import { studentsColumns, studentsSubTableColumns } from '@/app/pages/SchoolClassPage/studentsColumns';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -179,8 +179,10 @@ export const SchoolClassPage = () => {
             className='data-[state=active]:flex flex-col flex-1 overflow-hidden focus-visible:ring-0'
           >
             <DataTable
-              columns={studentsColumns(completedSummary, classChallenges.length)}
               data={classStudents}
+              columns={studentsColumns(completedSummary, classChallenges.length)}
+              childColumns={(user) => studentsSubTableColumns(user, completedSummary)}
+              children={classChallenges}
               searchPlaceholder="Buscar aluno..."
             />
           </TabsContent>
@@ -191,8 +193,10 @@ export const SchoolClassPage = () => {
             className='data-[state=active]:flex flex-col flex-1 overflow-hidden focus-visible:ring-0'
           >
             <DataTable
-              columns={challengesColumns(getStudentsSolvedCount, schoolClass.students.length)}
               data={classChallenges}
+              columns={challengesColumns(getStudentsSolvedCount, schoolClass.students.length)}
+              childColumns={(challenge) => challengesSubTableColumns(challenge, completedSummary)}
+              children={classStudents}
               searchPlaceholder="Buscar desafio..."
             />
           </TabsContent>

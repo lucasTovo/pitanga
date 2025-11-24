@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { SearchIcon } from "lucide-react";
+import { ChevronDownIcon, SearchIcon } from "lucide-react";
 import {
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
   getSortedRowModel,
+  Row,
   useReactTable,
   type ColumnDef,
 } from "@tanstack/react-table";
@@ -13,15 +14,25 @@ import { cn } from "@/lib/utils";
 
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { SubTable } from "@/app/components/SubTable";
 
-interface DataTableProps<TData> {
-  columns: ColumnDef<TData, any>[];
-  data: TData[];
+interface DataTableProps<TParent, TChild> {
+  data: TParent[];
+  columns: ColumnDef<TParent, any>[];
+  children?: TChild[];
+  childColumns?: (parent: TParent) => ColumnDef<TChild, any>[];
   searchPlaceholder?: string;
 }
 
-export const DataTable = <TData,>({ columns, data, searchPlaceholder }: DataTableProps<TData>) => {
+export const DataTable = <TParent, TChild = never>({
+  data,
+  columns,
+  children,
+  childColumns,
+  searchPlaceholder
+}: DataTableProps<TParent, TChild>) => {
   const [globalFilter, setGlobalFilter] = useState("");
 
   const table = useReactTable({
@@ -31,71 +42,137 @@ export const DataTable = <TData,>({ columns, data, searchPlaceholder }: DataTabl
     onGlobalFilterChange: setGlobalFilter,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
-    getSortedRowModel: getSortedRowModel()
+    getSortedRowModel: getSortedRowModel(),
   });
 
-  return (
+   return (
     <div className="h-full flex flex-col flex-1 gap-4">
-      {/* Campo de pesquisa */}
+      {/* Pesquisa */}
       <div className="relative w-full max-w-sm ml-auto">
         <Input
           placeholder={searchPlaceholder ?? "Pesquisar..."}
-          value={globalFilter ?? ""}
+          value={globalFilter}
           onChange={(e) => setGlobalFilter(e.target.value)}
           className="w-full pr-9 bg-neutral dark:bg-neutral-900 focus-visible:ring-0"
         />
         <SearchIcon className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
       </div>
 
-      {/* Table header */}
       <div className="rounded-lg border overflow-hidden flex flex-col">
-        <Table className='bg-neutral-50 dark:bg-neutral-800 table-fixed'>
+        {/* Header */}
+        <Table className="bg-neutral-50 dark:bg-neutral-800 table-fixed border-collapse">
           <TableHeader>
             {table.getHeaderGroups().map((hg) => (
               <TableRow key={hg.id}>
                 {hg.headers.map((header, index) => {
                   const isLast = index === hg.headers.length - 1;
+
                   return (
                     <TableHead
                       key={header.id}
                       onClick={header.column.getToggleSortingHandler()}
                       className={cn(
-                        header.column.getCanSort() && 'cursor-pointer select-none',
-                        isLast && ['text-right', 'pr-4']
+                        header.column.getCanSort() && "cursor-pointer select-none",
+                        isLast && "text-right pr-4"
                       )}
                     >
                       {flexRender(header.column.columnDef.header, header.getContext())}
-
                       {header.column.getIsSorted() === "asc" && " ↑"}
                       {header.column.getIsSorted() === "desc" && " ↓"}
                     </TableHead>
-                  )
+                  );
                 })}
               </TableRow>
             ))}
           </TableHeader>
         </Table>
 
-        {/* Table body */}
-        <ScrollArea className="flex flex-1" >
-          <Table className='rounded bg-neutral-50 dark:bg-neutral-800 table-fixed'>
+        {/* Body */}
+        <ScrollArea className="flex flex-1">
+          <Table className="rounded bg-neutral-50 dark:bg-neutral-800 table-fixed border-collapse">
             <TableBody>
               {table.getRowModel().rows.length ? (
-                table.getRowModel().rows.map((row) => (
-                  <TableRow key={row.id}>
-                    {row.getVisibleCells().map((cell, index) => {
-                      const isLast = index === row.getVisibleCells().length - 1;
-                      return (
-                        <TableCell
-                          key={cell.id}
-                          className={cn(isLast && ['text-right', 'pr-4'])}
-                        >
-                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                        </TableCell>
-                      );
-                    })}
-                  </TableRow>
-                ))
+                table.getRowModel().rows.map((row) => {
+                  const parent = row.original;
+                  const hasChildren =
+                    !!children && children.length > 0 && !!childColumns;
+
+                  return (
+                    <Collapsible
+                      key={row.id}
+                      asChild
+                      disabled={!hasChildren}
+                    >
+                      <>
+                        {/* Linha principal */}
+                        <CollapsibleTrigger asChild>
+                          <TableRow
+                            className={cn(
+                              'group',
+                              'data-[state=open]:bg-secondary-100',
+                              'data-[state=open]:border-2',
+                              'data-[state=open]:border-secondary',
+                              'data-[state=open]:border-b-0',
+
+                              'data-[state=open]:dark:bg-secondary-900',
+                              'data-[state=open]:dark:border-secondary-600',
+                              hasChildren && "cursor-pointer",
+                          )}>
+                            {row.getVisibleCells().map((cell, index) => {
+                              const isLast = index === row.getVisibleCells().length - 1;
+
+                              return (
+                                <>
+                                  <TableCell
+                                    key={cell.id}
+                                    className={cn(
+                                      isLast && "pr-2 flex items-center justify-end gap-1"
+                                    )}
+                                  >
+                                    {flexRender(
+                                      cell.column.columnDef.cell,
+                                      cell.getContext()
+                                    )}
+
+                                    {hasChildren && isLast &&
+                                      <ChevronDownIcon
+                                        className="
+                                          transition-transform duration-200 ease-in-out
+                                          group-data-[state=open]:rotate-180
+                                        "
+                                      />
+                                    }
+                                  </TableCell>
+
+                                </>
+                              );
+                            })}
+                          </TableRow>
+                        </CollapsibleTrigger>
+
+                        {/* Subtabela */}
+                        {hasChildren && (
+                          <CollapsibleContent asChild>
+                            <TableRow>
+                              <TableCell
+                                colSpan={row.getVisibleCells().length}
+                                className="p-0"
+                              >
+                                <div className="-mx-[1px] pl-5 border-2 border-secondary border-t-0 dark:border-secondary-600">
+                                  <SubTable
+                                    data={children}
+                                    columns={childColumns(parent)}
+                                    parent={parent}
+                                  />
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          </CollapsibleContent>
+                        )}
+                      </>
+                    </Collapsible>
+                  );
+                })
               ) : (
                 <TableRow>
                   <TableCell colSpan={columns.length} className="text-center py-6">
@@ -109,4 +186,5 @@ export const DataTable = <TData,>({ columns, data, searchPlaceholder }: DataTabl
       </div>
     </div>
   );
-}
+};
+
