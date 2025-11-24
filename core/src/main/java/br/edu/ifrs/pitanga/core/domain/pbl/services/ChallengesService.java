@@ -81,6 +81,7 @@ public class ChallengesService {
             .description(safeChallenge.getDescription())
             .level(safeChallenge.getLevel())
             .status(SolutionStatus.getStatus(solutions, check))
+            .isPublic(safeChallenge.getIsPublic())
             .build();
     }
 
