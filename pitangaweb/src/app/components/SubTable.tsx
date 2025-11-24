@@ -66,8 +66,7 @@ export function SubTable<TChild, TParent>({
                   {flexRender(cell.column.columnDef.cell, cell.getContext())}
                 </TableCell>
               )
-            }
-            )}
+            })}
           </TableRow>
         ))}
       </TableBody>

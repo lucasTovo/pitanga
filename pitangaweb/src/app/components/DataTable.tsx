@@ -45,6 +45,31 @@ export const DataTable = <TParent, TChild = never>({
     getSortedRowModel: getSortedRowModel(),
   });
 
+  const renderCells = (row: Row<TParent>, hasChildren: boolean) =>
+    row.getVisibleCells().map((cell, index) => {
+      const isLast = index === row.getVisibleCells().length - 1;
+
+      return (
+        <TableCell
+          key={cell.id}
+        >
+          <div className={cn(isLast && "pr-1 flex items-center justify-end gap-1")}>
+            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+
+            {hasChildren && isLast && (
+              <ChevronDownIcon
+                className="
+                  transition-transform duration-200 ease-in-out
+                  group-data-[state=open]:rotate-180
+                "
+              />
+            )}
+          </div>
+        </TableCell>
+      );
+    }
+  );
+
    return (
     <div className="h-full flex flex-col flex-1 gap-4">
       {/* Pesquisa */}
@@ -89,7 +114,7 @@ export const DataTable = <TParent, TChild = never>({
 
         {/* Body */}
         <ScrollArea className="flex flex-1">
-          <Table className="rounded bg-neutral-50 dark:bg-neutral-800 table-fixed border-collapse">
+          <Table className="bg-neutral-50 dark:bg-neutral-800 table-fixed border-collapse">
             <TableBody>
               {table.getRowModel().rows.length ? (
                 table.getRowModel().rows.map((row) => {
@@ -97,7 +122,7 @@ export const DataTable = <TParent, TChild = never>({
                   const hasChildren =
                     !!children && children.length > 0 && !!childColumns;
 
-                  return (
+                  return hasChildren ? (
                     <Collapsible
                       key={row.id}
                       asChild
@@ -109,6 +134,7 @@ export const DataTable = <TParent, TChild = never>({
                           <TableRow
                             className={cn(
                               'group',
+                              'dark:hover:bg-neutral-700',
                               'data-[state=open]:bg-secondary-100',
                               'data-[state=open]:border-2',
                               'data-[state=open]:border-secondary',
@@ -118,60 +144,34 @@ export const DataTable = <TParent, TChild = never>({
                               'data-[state=open]:dark:border-secondary-600',
                               hasChildren && "cursor-pointer",
                           )}>
-                            {row.getVisibleCells().map((cell, index) => {
-                              const isLast = index === row.getVisibleCells().length - 1;
-
-                              return (
-                                <>
-                                  <TableCell
-                                    key={cell.id}
-                                    className={cn(
-                                      isLast && "pr-2 flex items-center justify-end gap-1"
-                                    )}
-                                  >
-                                    {flexRender(
-                                      cell.column.columnDef.cell,
-                                      cell.getContext()
-                                    )}
-
-                                    {hasChildren && isLast &&
-                                      <ChevronDownIcon
-                                        className="
-                                          transition-transform duration-200 ease-in-out
-                                          group-data-[state=open]:rotate-180
-                                        "
-                                      />
-                                    }
-                                  </TableCell>
-
-                                </>
-                              );
-                            })}
+                            {renderCells(row, hasChildren)}
                           </TableRow>
                         </CollapsibleTrigger>
 
                         {/* Subtabela */}
-                        {hasChildren && (
-                          <CollapsibleContent asChild>
-                            <TableRow>
-                              <TableCell
-                                colSpan={row.getVisibleCells().length}
-                                className="p-0"
-                              >
-                                <div className="-mx-[1px] pl-5 border-2 border-secondary border-t-0 dark:border-secondary-600">
-                                  <SubTable
-                                    data={children}
-                                    columns={childColumns(parent)}
-                                    parent={parent}
-                                  />
-                                </div>
-                              </TableCell>
-                            </TableRow>
-                          </CollapsibleContent>
-                        )}
+                        <CollapsibleContent asChild>
+                          <TableRow>
+                            <TableCell
+                              colSpan={row.getVisibleCells().length}
+                              className="p-0"
+                            >
+                              <div className="-mx-[1px] pl-5 border-2 border-secondary border-t-0 dark:border-secondary-600">
+                                <SubTable
+                                  data={children}
+                                  columns={childColumns(parent)}
+                                  parent={parent}
+                                />
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        </CollapsibleContent>
                       </>
                     </Collapsible>
-                  );
+                  ) : (
+                    <TableRow key={row.id}>
+                      {renderCells(row, hasChildren)}
+                    </TableRow>
+                  )
                 })
               ) : (
                 <TableRow>

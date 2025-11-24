@@ -1,3 +1,4 @@
+import { CircleCheckBigIcon, CircleXIcon } from "lucide-react";
 import { ColumnDef } from "@tanstack/react-table";
 
 import { User } from "@/types/school-class.types";
@@ -75,7 +76,9 @@ export const challengesSubTableColumns = (
     },
     cell: ({ row }) => {
       const isCompleted = completedSummary?.[row.original.id].completedChallenges.includes(challenge.id);
-      return `${isCompleted ? 'Completado' : 'Incompleto'}`;
+      return isCompleted
+        ? <CircleCheckBigIcon className="ml-auto text-success" />
+        : <CircleXIcon className="ml-auto text-error" />;
     },
   },
 ]

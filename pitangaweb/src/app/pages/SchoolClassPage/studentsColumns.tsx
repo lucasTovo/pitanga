@@ -1,10 +1,11 @@
+import { CircleCheckBigIcon, CircleXIcon } from "lucide-react";
 import { ColumnDef } from "@tanstack/react-table";
 
 import { User } from "@/types/school-class.types";
 import { Challenge } from "@/types/challenges.types";
-import { difficultyOrder } from "./challengesColumns";
 
 import { CompletedChallengesCount } from "@/infra/data/challenges.rest";
+import { difficultyOrder } from "./challengesColumns";
 
 import { DifficultyLevelBadge, difficultyLevelStyles } from "@/app/components/DifficultyLevelBadge";
 
@@ -72,7 +73,9 @@ export const studentsSubTableColumns = (
     },
     cell: ({ row }) => {
       const isCompleted = completedSummary?.[user.id].completedChallenges.includes(row.original.id);
-      return `${isCompleted ? 'Completado' : 'Incompleto'}`;
+      return isCompleted
+        ? <CircleCheckBigIcon className="ml-auto text-success" />
+        : <CircleXIcon className="ml-auto text-error" />;
     },
   },
 ];
