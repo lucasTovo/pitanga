@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { getChallengeSolution } from "@/infra/data/challenges.rest";
 
 import { useAuth } from "@/hooks/useAuth";
+import { ThemeProvider } from "@/app/theme/ThemeProvider";
 
 import { RootLayout, rootLoader } from "@/app/layouts/RootLayout";
 import { Colors } from "@/app/pages/Colors";
@@ -14,8 +15,6 @@ import { EditChallengePage } from "@/app/pages/EditChallengePage";
 import { CreateChallengePage } from "@/app/pages/CreateChallengePage";
 import { ChallengeEditorPage } from "@/app/pages/ChallengeEditorPage";
 import { SchoolClassPage } from "@/app/pages/SchoolClassPage/SchoolClassPage";
-
-import { ThemeProvider } from "@/components/theme-provider";
 
 const basename = import.meta.env.BASE_URL ?? "/pitanga-tcc";
 

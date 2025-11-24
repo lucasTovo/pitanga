@@ -9,7 +9,8 @@ import 'ace-builds/src-noconflict/ext-language_tools'
 import { cn } from '@/lib/utils'
 import { useTailwindBreakpoint } from '@/app/hooks/useTailwindBreakpoint'
 
-import { ResolvedTheme, useTheme } from '@/components/theme-provider'
+import { useTheme } from '@/app/theme/useTheme'
+import { ResolvedTheme } from '@/app/theme/ThemeProvider'
 
 function useResizeObserver(ref: React.RefObject<HTMLElement>) {
   const [size, setSize] = useState({ width: 0, height: 0 })

@@ -18,7 +18,7 @@ import { useSchoolClassList } from '@/app/hooks/useSchoolClassList';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Spinner } from "@/components/ui/spinner"
-import { ModeToggle } from '@/components/mode-toggle';
+import { ThemeToggle } from '@/app/components/ThemeToggle';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -138,7 +138,7 @@ export const HomePage = () => {
           </div>
 
           <div className="absolute top-3 right-3 flex gap-2">
-            <ModeToggle />
+            <ThemeToggle />
             <Button
               variant="destructive"
               onClick={() => logout()}
