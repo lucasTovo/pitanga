@@ -11,10 +11,10 @@ import { RootLayout, rootLoader } from "@/app/layouts/RootLayout";
 import { Colors } from "@/app/pages/Colors";
 import { HomePage } from "@/app/pages/HomePage";
 import { ErrorPage } from "@/app/pages/ErrorPage";
+import { SchoolClassPage } from "@/app/pages/SchoolClassPage";
 import { EditChallengePage } from "@/app/pages/EditChallengePage";
 import { CreateChallengePage } from "@/app/pages/CreateChallengePage";
 import { ChallengeEditorPage } from "@/app/pages/ChallengeEditorPage";
-import { SchoolClassPage } from "@/app/pages/SchoolClassPage/SchoolClassPage";
 
 const basename = import.meta.env.BASE_URL ?? "/pitanga-tcc";
 
