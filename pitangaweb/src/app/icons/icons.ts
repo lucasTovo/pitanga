@@ -5,3 +5,11 @@ export { ClipboardList as ClipboardListIcon } from 'lucide-react';
 export { ArrowLeftFromLine as ArrowLeftFromLineIcon } from 'lucide-react';
 export { Trash2 as Trash2Icon } from "lucide-react";
 export { Plus as PlusIcon } from "lucide-react";
+export { ChevronDown as ChevronDownIcon } from "lucide-react";
+export { ListTodo as ListTodoIcon } from "lucide-react";
+export { Pencil as PencilIcon } from "lucide-react";
+export { ArrowUpRight as ArrowUpRightIcon } from "lucide-react";
+export { Search as SearchIcon } from "lucide-react";
+export { CircleX as CircleXIcon } from "lucide-react";
+export { CircleCheckBig as CircleCheckBigIcon } from "lucide-react";
+

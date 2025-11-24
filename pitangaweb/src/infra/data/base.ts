@@ -6,7 +6,7 @@ function createApi(baseURL: string) {
   const api = axios.create({
     baseURL,
     timeout: 30000,
-    validateStatus: (status) => [200, 201, 404].includes(status),
+    validateStatus: (status => status >= 200 && status < 400),
     withCredentials: true,
   });
 

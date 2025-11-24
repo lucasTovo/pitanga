@@ -1,21 +1,25 @@
 import { StrictMode } from "react";
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
-import { getChallengeSolution } from './infra/data/challenges.rest';
-import { getSchoolClass } from './infra/data/shcool.rest';
+import { getChallengeSolution } from "@/infra/data/challenges.rest";
 
-import { ThemeProvider } from '@/components/theme-provider';
-import { useAuth } from './auth/hook/useAuth';
-import { HomePage } from './app/pages/HomePage';
-import { Colors } from './app/pages/Colors';
-import { ErrorPage } from './app/pages/ErrorPage';
-import { CreateChallengePage } from './app/pages/CreateChallengePage';
-import { CreateSchoolClass } from './app/pages/CreateSchoolClass';
-import { ChallengeEditor } from './app/pages/ChallengeEditor';
-import { RootLayout, rootLoader } from "./app/layouts/RootLayout";
-import { SchoolClassPage } from "./app/pages/SchoolClassPage";
+import { useAuth } from "@/hooks/useAuth";
+import { ThemeProvider } from "@/app/theme/ThemeProvider";
+
+import { RootLayout, rootLoader } from "@/app/layouts/RootLayout";
+import { Colors } from "@/app/pages/Colors";
+import { HomePage } from "@/app/pages/HomePage";
+import { ErrorPage } from "@/app/pages/ErrorPage";
+import { EditChallengePage } from "@/app/pages/EditChallengePage";
+import { CreateChallengePage } from "@/app/pages/CreateChallengePage";
+import { ChallengeEditorPage } from "@/app/pages/ChallengeEditorPage";
+import { SchoolClassPage } from "@/app/pages/SchoolClassPage/SchoolClassPage";
 
 const basename = import.meta.env.BASE_URL ?? "/pitanga-tcc";
+
+// 🔹 Cria o cliente do React Query
+const queryClient = new QueryClient();
 
 export const App = () => {
   const { initialized, isAuthenticated, login } = useAuth();
@@ -42,38 +46,39 @@ export const App = () => {
             element: <HomePage />,
           },
           {
-            path: "/create-challenge",
+            path: "/challenges/create",
             element: <CreateChallengePage />,
           },
           {
             path: "/challenges/:challengeId",
-            element: <ChallengeEditor />,
+            element: <ChallengeEditorPage />,
             loader: getChallengeSolution,
           },
           {
-            path: "/create-class",
-            element: <CreateSchoolClass />,
+            path: "/challenges/:id/edit",
+            element: <EditChallengePage />,
           },
           {
             path: "/classes/:classId",
             element: <SchoolClassPage />,
-            loader: getSchoolClass,
           },
           {
             path: "/colors-test",
             element: <Colors />,
           },
         ],
-      }
+      },
     ],
     { basename }
   );
 
   return (
     <StrictMode>
-      <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-        <RouterProvider router={router} />
-      </ThemeProvider>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+          <RouterProvider router={router} />
+        </ThemeProvider>
+      </QueryClientProvider>
     </StrictMode>
   );
-}
+};

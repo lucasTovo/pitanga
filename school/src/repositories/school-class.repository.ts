@@ -2,6 +2,7 @@ import { SchoolClass } from '@prisma/client';
 
 import { prisma } from '../shared/prisma-client';
 import { CreateSchoolClassDTO, SchoolClassResponse } from '../types/schoolClass.types';
+import { AuthUser } from '../middlewares/auth.middleware';
 
 function mapToSchoolClassResponse(raw: any): SchoolClassResponse {
     return {
@@ -79,12 +80,19 @@ export async function addChallengeToSchoolClass(schoolClassId: string, challenge
   return mapToSchoolClassResponse(updated);
 }
 
-export async function findAllSchoolClasses(): Promise<SchoolClassResponse[]> {
-    const result = await prisma.schoolClass.findMany({
-        select: schoolClassSelect,
-    });
+export async function findAllSchoolClasses(user: AuthUser): Promise<SchoolClassResponse[]> {
+  const isTeacher = user.realm_access.roles.includes('teacher');
 
-    return result.map(r => mapToSchoolClassResponse(r));
+  const condition = isTeacher
+    ? { creatorId: user.sub }
+    : { students: { some: { userId: user.sub } } };
+
+  const result = await prisma.schoolClass.findMany({
+    where: condition,
+    select: schoolClassSelect,
+  });
+
+  return result.map(mapToSchoolClassResponse);
 }
 
 export async function findSchoolClassById(id: string): Promise<SchoolClassResponse | null> {
@@ -108,5 +116,35 @@ export async function updateSchoolClass(id: string, data: Partial<SchoolClass>):
 }
 
 export async function deleteSchoolClass(id: string) {
-    return await prisma.schoolClass.delete({ where: { id } });
+  const schoolClass = await prisma.schoolClass.findUnique({
+    where: { id }
+  });
+
+  await prisma.schoolClassUser.deleteMany({
+    where: { schoolClassId: id }
+  });
+
+  await prisma.schoolClassChallenge.deleteMany({
+    where: { schoolClassId: id }
+  });
+
+  return await prisma.schoolClass.delete({
+    where: { id }
+  });
+}
+
+export async function removeChallengeRelation(schoolClassId: string, challengeId: string) {
+  return prisma.schoolClass.update({
+    where: { id: schoolClassId },
+    data: {
+      challenges: {
+        delete: {
+          schoolClassId_challengeId: {
+            schoolClassId,
+            challengeId
+          }
+        }
+      }
+    }
+  });
 }

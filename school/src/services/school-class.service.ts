@@ -1,3 +1,4 @@
+import { AuthUser } from '../middlewares/auth.middleware';
 import * as repo from '../repositories/school-class.repository';
 import { CreateSchoolClassDTO, SchoolClassResponse, UpdateSchoolClassDTO } from '../types/schoolClass.types';
 
@@ -25,15 +26,15 @@ export const addChallengeToSchoolClass = async (schoolClassId: string, challenge
   }
 };
 
-export const listSchoolClasses = async (): Promise<SchoolClassResponse[]> => {
+export const listSchoolClasses = async (user: AuthUser): Promise<SchoolClassResponse[]> => {
     try {
-        return await repo.findAllSchoolClasses();
+        return await repo.findAllSchoolClasses(user);
     } catch (err: any) {
         throw new Error(`Failed to list school classes: ${err.message}`);
     }
 }
 
-export const getSchoolClass = async (id: string): Promise<SchoolClassResponse | null> => {
+export const getSchoolClassById = async (id: string): Promise<SchoolClassResponse | null> => {
     try {
         return await repo.findSchoolClassById(id);
     } catch (err: any) {
@@ -56,3 +57,16 @@ export const deleteSchoolClass = async (id: string): Promise<void> => {
         throw new Error(`Failed to delete school class: ${err.message}`);
     }
 }
+
+export const removeChallengeFromAllClasses = async (
+  user: AuthUser,
+  challengeId: string
+) => {
+  const classes = await repo.findAllSchoolClasses(user);
+
+  for (const schoolClass of classes) {
+    if (schoolClass.challenges.includes(challengeId)) {
+      await repo.removeChallengeRelation(schoolClass.id, challengeId);
+    }
+  }
+};

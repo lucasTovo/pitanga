@@ -104,11 +104,11 @@
     --warning-800: 45 100% 30%;
     --warning-900: 45 100% 23%;
 
-    --background: var(--neutral-50);
+    --background: var(--neutral-200);
     --foreground: var(--neutral-900);
 
     --primary: var(--primary-500);
-    --primary-foreground: var(--neutral-900);
+    --primary-foreground: var(--neutral-50);
 
     --secondary: var(--secondary-500);
     --secondary-foreground: var(--neutral-900);
@@ -126,7 +126,7 @@
     --warning-foreground: var(--neutral-900);
 
     --error: var(--error-500);
-    --error-foreground: var(--neutral-900);
+    --error-foreground: var(--neutral-50);
 
     --destructive: var(--error-500);
     --destructive-foreground: var(--neutral-50);
@@ -138,10 +138,10 @@
     --popover-foreground: var(--neutral-800);
 
     --muted: var(--neutral-100);
-    --muted-foreground: var(--neutral-500);
+    --muted-foreground: var(--neutral-600);
 
-    --border: var(--neutral-200);
-    --input: var(--neutral-200);
+    --border: var(--neutral-300);
+    --input: var(--neutral-300);
     --ring: var(--primary-500);
 
     --chart-1: 12 76% 61%;
@@ -166,7 +166,7 @@
     --accent-foreground: var(--neutral-800);
 
     --complementary: var(--complementary-400);
-    --complementary-foreground: var(--neutral-100);
+    --complementary-foreground: var(--neutral-800);
 
     --success: var(--success-400);
     --success-foreground: var(--neutral-800);
@@ -187,7 +187,7 @@
     --popover-foreground: var(--neutral-100);
 
     --muted: var(--neutral-800);
-    --muted-foreground: var(--neutral-100);
+    --muted-foreground: var(--neutral-400);
 
     --border: var(--neutral-700);
     --input: var(--neutral-700);
@@ -208,4 +208,23 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* Restores default styling of elements */
+.revert-all * {
+  all: revert;
+}
+
+.description-container > * {
+  margin: 0;
+}
+
+.description-container > p,
+.description-container > ol,
+.description-container > ul {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }

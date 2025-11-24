@@ -6,26 +6,16 @@ import { Page } from '@/types/common.types';
 
 import { challengesApi } from './base';
 
-export async function listChallenges() {
-  type Short = Page<Challenge>;
-  const challengesRaw = await challengesApi.get<Short>('/challenges');
-
-  if(!challengesRaw.data?.content) {
-    throw new Error('Could not load page');
-  }
-
-  const challenges = challengesRaw.data?.content
-  return challenges;
+export const listChallenges = async ({pageParam = 0}): Promise<Page<Challenge>> => {
+  const { data } = await challengesApi.get<Page<Challenge>>(
+    `/challenges?page=${pageParam}&size=25`
+  );
+  return data;
 }
 
 export async function getChallengeById(id: string) {
-  try {
-    const response = await challengesApi.get<Challenge>(`/challenges/${id}`);
-    return response.data;
-  } catch (error) {
-    console.error(`Error fetching challenge ${id}:`, error);
-    return null;
-  }
+  const response = await challengesApi.get<Challenge>(`/challenges/${id}`);
+  return response.data;
 }
 
 export async function getChallengeSolution({ params }: { params: Params }) {
@@ -74,4 +64,39 @@ export async function saveSolution(params: SaveCommand) {
 
   const solutionRaw = await challengesApi.get<Solution>(url);
   return solutionRaw.data;
+}
+
+export async function deleteChallenge(id: string) {
+  try {
+    const response = await challengesApi.delete<Challenge>(
+      `/challenges/${id}`,
+      { validateStatus: (status => status >= 200 && status < 400) }
+    );
+    return response.data;
+  } catch (error) {
+    console.error(`Error deleting challenge ${id}:`, error);
+    return null;
+  }
+}
+
+export async function updateChallenge(id: string, data: Partial<ChallengeDTO>) {
+  const response = await challengesApi.patch(`/challenges/${id}`, data);
+  return response.data;
+}
+
+interface CompletedChallengesCountDTO {
+  studentIds: string[];
+  challengeIds: string[];
+}
+
+export interface CompletedChallengesCount {
+  count: number;
+  completedChallenges: string[];
+}
+
+export async function getCompletedChallengesCount(
+  {studentIds, challengeIds}: CompletedChallengesCountDTO
+): Promise<Record<string, CompletedChallengesCount>> {
+  const response = await challengesApi.post('/solutions/completion-summary', {studentIds, challengeIds});
+  return response.data;
 }

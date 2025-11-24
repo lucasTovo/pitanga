@@ -1,28 +1,20 @@
-import { Outlet, useLoaderData, useOutletContext } from 'react-router-dom';
-
-import { User } from '@/types/schoolClass.types';
-
-import { getLoggedUser } from '@/infra/data/shcool.rest';
+import { Outlet, useLoaderData } from "react-router-dom";
+import type { User } from "@/types/school-class.types";
+import { getLoggedUser } from "@/infra/data/school.rest";
 
 type ContextType = { user: User };
 
 export async function rootLoader() {
-  const user = await getLoggedUser()
-  return user
+  const user = await getLoggedUser();
+  return user;
 }
 
 export const RootLayout = () => {
   const user = useLoaderData() as User;
 
   return (
-    <main
-      className="mx-auto w-full max-w-7xl p-3 h-screen"
-    >
+    <main>
       <Outlet context={{ user } satisfies ContextType} />
     </main>
   );
 };
-
-export function useUser() {
-  return useOutletContext<ContextType>();
-}

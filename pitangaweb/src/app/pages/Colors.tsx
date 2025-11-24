@@ -1,4 +1,4 @@
-import { ModeToggle } from "@/components/mode-toggle";
+import { ThemeToggle } from "@/app/components/ThemeToggle";
 import { Card, CardContent } from "@/components/ui/card";
 
 const themeColors = [
@@ -32,7 +32,7 @@ const themeColors = [
 export const Colors = () => {
   return (
     <div>
-      <ModeToggle />
+      <ThemeToggle />
       {themeColors.map(({ name, className }) => (
         <Card key={name} className="overflow-hidden shadow-md">
             <CardContent className={`p-3 flex flex-col gap-1 text-sm` + ` ${className}`}>

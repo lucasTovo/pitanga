@@ -1,107 +1,147 @@
-import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { ClipboardListIcon, LogOutIcon, UserIcon } from 'lucide-react';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
+import { LogOutIcon, PlusIcon, UserIcon } from 'lucide-react';
 
-import { SchoolClass, UserRole } from '@/types/schoolClass.types';
-import { Challenge, ChallengeLevel } from '@/types/challenges.types';
+import { SchoolClass } from '@/types/school-class.types';
 
-import { listSchoolClasses } from '@/infra/data/shcool.rest';
-import { listChallenges } from '@/infra/data/challenges.rest';
+import { deleteSchoolClass } from '@/infra/data/school.rest';
+import { orchestratorRest } from '@/infra/data/orchestrator.rest';
 
-import { useAuth } from '@/auth/hook/useAuth';
-import { useUser } from '../layouts/RootLayout';
+import { useAuth } from '@/hooks/useAuth';
+import { useUser } from '@/app/hooks/useUser';
+import { useChallenges } from '@/app/hooks/useChallenges';
+import { useActionDialog } from '@/app/hooks/useActionDialog';
+import { useInfiniteScroll } from '@/app/hooks/useInfiniteScroll';
+import { useSchoolClassList } from '@/app/hooks/useSchoolClassList';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ModeToggle } from '@/components/mode-toggle';
+import { Spinner } from "@/components/ui/spinner"
+import { ThemeToggle } from '@/app/components/ThemeToggle';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { ActionDialog } from '@/app/components/ActionDialog';
+import { PageContainer } from '@/app/components/PageContainer';
+import { ChallengeCard } from '@/app/components/ChallengeCard';
+import { SchoolClassCard } from '@/app/components/SchoolClassCard';
+import { SchoolClassFormDialog } from '@/app/components/SchoolClassFormDialog';
 
 export const HomePage = () => {
-  const [challenges, setChallenges] = useState<Challenge[]>([]);
-  const [classes, setClasses] = useState<SchoolClass[]>([]);
   const [activeTab, setActiveTab] = useState('challenges');
-  const [loadingChallenges, setLoadingChallenges] = useState(true);
-  const [loadingSchoolClasses, setLoadingSchoolClasses] = useState(true);
-
-  const { user } = useUser();
-  const isTeacher = user.role === UserRole.TEACHER;
+  const [dialogSchoolClasFormOpen, setDialogSchoolClasFormOpen] = useState(false);
+  const [dialogSchoolClasFormMode, setDialogSchoolClasFormMode] = useState<"create" | "edit">("create");
+  const [selectedClass, setSelectedClass] = useState<SchoolClass | null>(null);
 
   const { logout } = useAuth();
-  const handleLogout = () => {
-    logout();
-  };
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const { user, isTeacher } = useUser();
 
-  useEffect(() => {
-    async function getChallenges() {
-      setLoadingChallenges(true);
-      try {
-        const userChallenges = await listChallenges(); // ajustar se precisar filtrar por criador
-        setChallenges(userChallenges);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoadingChallenges(false);
-      }
-    }
-    getChallenges();
-  }, []);
+  const {
+    open,
+    setOpen,
+    config,
+    showDialog,
+    handleConfirm
+  } = useActionDialog();
 
-  useEffect(() => {
-    async function getSchoolClasses() {
-      setLoadingSchoolClasses(true);
-      try {
-        const userSchoolClasses = await listSchoolClasses();
-        setClasses(userSchoolClasses);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoadingSchoolClasses(false);
-      }
-    }
-    getSchoolClasses();
-  }, []);
+  const {
+    schoolClassList,
+    schoolClassListIsLoading,
+  } = useSchoolClassList();
 
-  const difficultyLevelStyles: Record<ChallengeLevel, string> = {
-    EASY: "bg-success text-success-foreground",
-    MEDIUM: "bg-warning text-warning-foreground",
-    HARD: "bg-accent text-accent-foreground",
-    PRO: "bg-complementary text-complementary-foreground",
+  const {
+    challenges,
+    challengesFetchNextPage,
+    challengesHasNextPage,
+    challengesIsFetchingNextPage
+  } = useChallenges();
+
+  const { lastElementRef } = useInfiniteScroll({
+    hasNextPage: challengesHasNextPage,
+    isFetching: challengesIsFetchingNextPage,
+    onLoadMore: challengesFetchNextPage
+  });
+
+  const handleCreateSchoolClass = () => {
+    setDialogSchoolClasFormMode("create");
+    setSelectedClass(null);
+    setDialogSchoolClasFormOpen(true);
   }
 
-  if (loadingChallenges) return <p>Carregando desafios...</p>;
-  if (loadingSchoolClasses) return <p>Carregando turmas...</p>;
+  const handleEditSchoolClass = (schoolClass: SchoolClass) => {
+    setDialogSchoolClasFormMode("edit");
+    setSelectedClass(schoolClass);
+    setDialogSchoolClasFormOpen(true);
+  }
+
+  function handleDeleteChallenge(id: string) {
+    showDialog({
+      title: 'Excluir desafio?',
+      description: `Esta ação não poderá ser revertida.
+        O desafio será excluido permanentemente.`,
+      confirmLabel: 'Excluir',
+      variant: 'destructive',
+      action: async () => {
+        await orchestratorRest.deleteChallengeCascade(id);
+        queryClient.invalidateQueries({ queryKey: ['challenges'] });
+        queryClient.invalidateQueries({ queryKey: ['classes'] });
+      },
+    });
+  }
+
+  function handleDeleteClass(id: string) {
+    showDialog({
+      title: 'Excluir turma?',
+      description: `Esta ação não poderá ser revertida.
+        A turma será excluida permanentemente.`,
+      confirmLabel: 'Excluir',
+      variant: 'destructive',
+      action: async () => {
+        await deleteSchoolClass(id);
+        queryClient.invalidateQueries({ queryKey: ['classes'] });
+      },
+    });
+  }
+
+  const handleEditChallenge = (id: string) => {
+    navigate(`/challenges/${id}/edit`);
+  }
+
+  if (schoolClassListIsLoading) return <p>Carregando turmas...</p>;
 
   return (
-    <div className="space-y-6 flex flex-col h-full">
-      {/* Topo com informações do usuário */}
+    <PageContainer lockScroll className='space-y-6 flex flex-col'>
       <Card className="w-full">
-        <CardHeader className='flex-row p-3 sm:p-6'>
-          <Avatar className="w-16 h-16 object-cover mr-4">
-            <AvatarImage className='rounded-full' src="https://github.com/shadcn.png" alt="@shadcn" />
-            <AvatarFallback>
-              <UserIcon className='rounded-full border'/>
-            </AvatarFallback>
-          </Avatar>
+        <CardHeader className='relative flex-row space-y-0 p-3 sm:p-5 pt-8 pb-6'>
+          <div className='flex items-center'>
+            <Avatar className="w-14 h-14 object-cover mr-3">
+              {/* <AvatarImage className='rounded-full' src="https://github.com/shadcn.png" alt="@shadcn" /> */}
+              <AvatarFallback className='bg-muted'>
+                <UserIcon className='rounded-full'/>
+              </AvatarFallback>
+            </Avatar>
 
-          <div>
-            <CardTitle>{user.name}</CardTitle>
-            <CardDescription>
-              <p className="text-sm text-muted-foreground">{user.email}</p>
-              <Badge variant="secondary" className="mt-1">
-                <UserIcon className="w-4 h-4" />
-                {isTeacher ? 'Professor' : 'Aluno'}
-              </Badge>
-            </CardDescription>
+            <div>
+              <CardTitle>{user.name}</CardTitle>
+              <CardDescription>
+                <p className="text-sm text-muted-foreground">{user.email}</p>
+                <Badge variant="secondary" className="mt-2">
+                  <UserIcon className="w-4 h-4" />
+                  {isTeacher ? 'Professor' : 'Aluno'}
+                </Badge>
+              </CardDescription>
+            </div>
           </div>
 
-          <div className="ml-auto flex gap-2 ">
-            <ModeToggle />
+          <div className="absolute top-3 right-3 flex gap-2">
+            <ThemeToggle />
             <Button
               variant="destructive"
-              onClick={handleLogout}
+              onClick={() => logout()}
             >
               <LogOutIcon className="w-4 h-4" />
               Sair
@@ -116,8 +156,8 @@ export const HomePage = () => {
         className="flex flex-col flex-1 space-y-4 overflow-hidden"
       >
         <TabsList className='gap-6'>
-          <TabsTrigger value="challenges">Desafios</TabsTrigger>
-          <TabsTrigger value="classes">Turmas</TabsTrigger>
+          <TabsTrigger value="challenges">Meus desafios</TabsTrigger>
+          <TabsTrigger value="classes">Minhas turmas</TabsTrigger>
         </TabsList>
 
         {/* Aba de desafios */}
@@ -125,44 +165,34 @@ export const HomePage = () => {
           value="challenges"
           className='data-[state=active]:flex flex-col flex-1 overflow-hidden'
         >
-          <ScrollArea className="flex flex-col flex-1">
-            <div className="flex flex-wrap gap-4">
-              {challenges.map(ch => (
-                <Link
-                  key={ch.id}
-                  to={'/challenges/' + ch.id}
-                  className="
-                    block
-                    w-full
-                    flex-grow-0
-                    flex-shrink-0
-                    sm:w-[calc(50%-1rem)]
-                    lg:w-[calc(33.333%-1rem)]
-                    transition-transform origin-center hover:scale-[1.02]
-                  "
-                >
-                  <Card className='h-full'>
-                    <CardHeader className='pb-3'>
-                      <CardTitle>{ch.title}</CardTitle>
-                      <CardDescription>
-                        <div dangerouslySetInnerHTML={{ __html: ch.description }} />
-                      </CardDescription>
-                    </CardHeader>
-                    <CardFooter>
-                      <Badge className={`${difficultyLevelStyles[ch.level]}`}>
-                        {ch.level}
-                      </Badge>
-                    </CardFooter>
-                  </Card>
-                </Link>
-              ))}
+          <ScrollArea className="flex flex-1" >
+            <div className="pr-3 flex flex-wrap gap-4">
+              {challenges.map((ch, index) => {
+                const isLast = index === challenges.length - 1;
+                return(
+                  <ChallengeCard
+                    key={ch.id}
+                    challenge={ch}
+                    onDelete={handleDeleteChallenge}
+                    onEdit={handleEditChallenge}
+                    onAction={(id) => navigate(`/challenges/${id}`)}
+                    ref={isLast ? lastElementRef : undefined}
+                  />
+                )
+              })}
+
+              {challengesIsFetchingNextPage && (
+                <Spinner className='m-auto' />
+              )}
             </div>
           </ScrollArea>
 
-          <Button asChild className='my-4 w-full max-w-sm self-center'>
-            <Link to={'/create-challenge'}>
-              + Adicionar Desafio
-            </Link>
+          <Button
+            className='my-4 w-full max-w-sm self-center'
+            onClick={() => navigate('/challenges/create')}
+          >
+            <PlusIcon />
+            Adicionar Desafio
           </Button>
         </TabsContent>
 
@@ -171,52 +201,52 @@ export const HomePage = () => {
           value="classes"
           className='data-[state=active]:flex flex-col flex-1 overflow-hidden'
         >
-          <ScrollArea className="flex flex-col flex-1">
-            <div className="flex flex-wrap gap-4">
-              {classes.map(cls => (
-                <Link
-                  key={cls.id}
-                  to={`/classes/${cls.id}`}
-                  className="
-                    block
-                    w-full
-                    sm:w-1/2
-                    lg:w-1/3
-                    xl:w-1/4
-                    flex-grow
-                    transition-transform origin-center hover:scale-[1.02]
-                  "
-                >
-                  <Card className='h-full'>
-                    <CardHeader className='pb-3'>
-                      <CardTitle>{cls.name}</CardTitle>
-                      <CardDescription>{cls.description}</CardDescription>
-                    </CardHeader>
-                    <CardFooter>
-                      <Badge variant="secondary" className='mr-2 text-sm font-bold'>
-                        <UserIcon className='mr-1'/>
-                        {cls.count.students}
-                      </Badge>
-                      <Badge variant="secondary" className='text-sm font-bold'>
-                        <ClipboardListIcon className='mr-1'/>
-                        {cls.count.challenges}
-                      </Badge>
-                    </CardFooter>
-                  </Card>
-                </Link>
-              ))}
+          <ScrollArea className="flex flex-1">
+            <div className="pr-3 flex flex-wrap gap-4">
+              {schoolClassList?.map((cls) => {
+                return(
+                  <SchoolClassCard
+                    key={cls.id}
+                    schoolClass={cls}
+                    {...(isTeacher && {
+                      onDelete: handleDeleteClass,
+                      onEdit: handleEditSchoolClass,
+                    })}
+                    onOpen={(id) => navigate(`/classes/${id}`)}
+                  />
+                )
+              })}
             </div>
           </ScrollArea>
 
           {isTeacher && (
-            <Button asChild className='my-4'>
-              <Link to={'/create-class'}>
-                + Adicionar Turma
-              </Link>
+            <Button
+              onClick={handleCreateSchoolClass}
+              className='my-4 w-full max-w-sm self-center'
+            >
+              <PlusIcon />
+              Adicionar Turma
             </Button>
           )}
         </TabsContent>
       </Tabs>
-    </div >
+
+      <ActionDialog
+        open={open}
+        onOpenChange={setOpen}
+        title={config.title}
+        description={config.description}
+        confirmLabel={config.confirmLabel}
+        variant={config.variant}
+        onConfirm={handleConfirm}
+      />
+
+      <SchoolClassFormDialog
+        mode={dialogSchoolClasFormMode}
+        open={dialogSchoolClasFormOpen}
+        onOpenChange={setDialogSchoolClasFormOpen}
+        initialData={selectedClass ?? null}
+      />
+    </PageContainer>
   );
 }
