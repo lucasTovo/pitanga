@@ -1,5 +1,5 @@
 import { forwardRef } from "react";
-import { ArrowUpRightIcon, EyeOffIcon, PencilIcon, Trash2Icon } from "lucide-react";
+import { ArrowUpRightIcon, CircleCheckBigIcon, EyeOffIcon, PencilIcon, Trash2Icon } from "lucide-react";
 
 import type { Challenge } from "@/types/challenges.types";
 
@@ -16,10 +16,11 @@ interface ChallengeCardProps {
   onAction?: (id: string) => void;
   actionLabel?: string;
   fullWidth?: boolean;
+  done?: boolean; // usado apenas na visualização dos desafios da turma pelo aluno
 }
 
 export const ChallengeCard = forwardRef<HTMLDivElement, ChallengeCardProps>(
-  ({ challenge, onDelete, onEdit, onAction, actionLabel = 'Acessar o desafio', fullWidth }, ref) => {
+  ({ challenge, onDelete, onEdit, onAction, actionLabel = 'Acessar o desafio', fullWidth, done = false }, ref) => {
   return (
     <EntityCard
       ref={ref}
@@ -50,6 +51,10 @@ export const ChallengeCard = forwardRef<HTMLDivElement, ChallengeCardProps>(
       }
       footer={
         <>
+          {done && (
+            <CircleCheckBigIcon className="text-success" />
+          )}
+
           <ButtonGroup>
             {onDelete &&
               <Button

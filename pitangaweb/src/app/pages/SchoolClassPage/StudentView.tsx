@@ -1,8 +1,10 @@
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeftFromLineIcon, ClipboardListIcon } from 'lucide-react';
 
+import { useUser } from '@/app/hooks/useUser';
 import { useSchoolClass } from '@/app/hooks/useSchoolClass';
 import { useClassChallenges } from '@/app/hooks/useClassChallenges';
+import { useCompletedSummary } from '@/app/hooks/useCompletedSummary';
 
 import { cn } from '@/lib/utils';
 
@@ -19,6 +21,7 @@ type StudentViewProps = {
 
 export const StudentView = ({ classId }: StudentViewProps) => {
   const navigate = useNavigate();
+  const { user } = useUser();
 
   const {
     schoolClass,
@@ -31,6 +34,12 @@ export const StudentView = ({ classId }: StudentViewProps) => {
     classChallengesIsLoading,
     classChallengesIsError
   } = useClassChallenges(schoolClass?.challenges);
+
+  const {
+    completedSummary,
+    completedSummaryIsLoading,
+    completedSummaryIsError
+  } = useCompletedSummary(schoolClass?.students, schoolClass?.challenges);
 
   if (schoolClassIsLoading || classChallengesIsLoading) return <p>Carregando...</p>;
   if (schoolClassIsError || classChallengesIsError) return <p>Erro</p>;
@@ -77,6 +86,7 @@ export const StudentView = ({ classId }: StudentViewProps) => {
               key={ch.id}
               challenge={ch}
               onAction={(id) => navigate(`/challenges/${id}`)}
+              done={completedSummary?.[user.id].completedChallenges.includes(ch.id)}
             />
           ))}
         </div>
