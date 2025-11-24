@@ -35,6 +35,16 @@ public class ChallengesController {
         return challengesService.findAndFilter(user.getName(), pageable);
     }
 
+    @GetMapping("/public")
+    public Page<ChallengeResponse> listPublic(ChallengePageableFilter pageable) {
+        return challengesService.findPublicChallenges(pageable);
+    }
+
+    @GetMapping("/me")
+    public Page<ChallengeResponse> listMine(Authentication user, ChallengePageableFilter pageable) {
+        return challengesService.findMyChallenges(user.getName(), pageable);
+    }
+
     @GetMapping("/{challengeId}")
     public ResponseEntity<Challenge> getById(@PathVariable UUID challengeId) {
         return challengesService.findById(challengeId)
@@ -43,19 +53,52 @@ public class ChallengesController {
     }
 
     @PatchMapping("/{challengeId}")
-    public ResponseEntity<Challenge> updateById(Authentication user, 
+    // public ResponseEntity<Challenge> updateById(Authentication user,
+    //     @PathVariable UUID challengeId,
+    //     @RequestBody ChallengeRequest request) {
+    //     return challengesService.update(challengeId, request, user.getName())
+    //         .map(ResponseEntity.ok()::body)
+    //         .orElse(ResponseEntity.notFound().build());
+    // }
+    public ResponseEntity<Challenge> updateById(Authentication user,
         @PathVariable UUID challengeId,
         @RequestBody ChallengeRequest request) {
+
+        boolean isOwner = challengesService
+            .findByIdAndCreator(challengeId, user.getName())
+            .isPresent();
+
+        if (!isOwner) {
+            return ResponseEntity.status(403).build();
+        }
+
         return challengesService.update(challengeId, request, user.getName())
             .map(ResponseEntity.ok()::body)
             .orElse(ResponseEntity.notFound().build());
     }
 
     @DeleteMapping("/{challengeId}")
-    public ResponseEntity<Void> deleteById(@PathVariable UUID challengeId) {
+    // public ResponseEntity<Void> deleteById(@PathVariable UUID challengeId) {
+    //     if (challengesService.deleteById(challengeId)) {
+    //         return ResponseEntity.noContent().build();
+    //     }
+    //     return ResponseEntity.notFound().build();
+    // }
+    public ResponseEntity<Void> deleteById(Authentication user,
+        @PathVariable UUID challengeId) {
+
+        boolean isOwner = challengesService
+            .findByIdAndCreator(challengeId, user.getName())
+            .isPresent();
+
+        if (!isOwner) {
+            return ResponseEntity.status(403).build();
+        }
+
         if (challengesService.deleteById(challengeId)) {
             return ResponseEntity.noContent().build();
         }
+
         return ResponseEntity.notFound().build();
     }
 
