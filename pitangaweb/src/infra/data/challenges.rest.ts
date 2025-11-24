@@ -6,9 +6,16 @@ import { Page } from '@/types/common.types';
 
 import { challengesApi } from './base';
 
-export const listChallenges = async ({pageParam = 0}): Promise<Page<Challenge>> => {
+export const listMyChallenges = async ({pageParam = 0}): Promise<Page<Challenge>> => {
   const { data } = await challengesApi.get<Page<Challenge>>(
-    `/challenges?page=${pageParam}&size=25`
+    `/challenges/me?page=${pageParam}&size=25`
+  );
+  return data;
+}
+
+export const listPublicChallenges = async ({pageParam = 0}): Promise<Page<Challenge>> => {
+  const { data } = await challengesApi.get<Page<Challenge>>(
+    `/challenges/public?page=${pageParam}&size=25`
   );
   return data;
 }

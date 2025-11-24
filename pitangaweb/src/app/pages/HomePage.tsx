@@ -15,10 +15,12 @@ import { useChallenges } from '@/app/hooks/useChallenges';
 import { useActionDialog } from '@/app/hooks/useActionDialog';
 import { useInfiniteScroll } from '@/app/hooks/useInfiniteScroll';
 import { useSchoolClassList } from '@/app/hooks/useSchoolClassList';
+import { usePublicChallenges } from '@/app/hooks/usePublicChallenges';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Spinner } from "@/components/ui/spinner"
+import { Switch } from '@/components/ui/switch';
+import { Spinner } from "@/components/ui/spinner";
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -30,11 +32,14 @@ import { ChallengeCard } from '@/app/components/ChallengeCard';
 import { SchoolClassCard } from '@/app/components/SchoolClassCard';
 import { SchoolClassFormDialog } from '@/app/components/SchoolClassFormDialog';
 
+type Tab = 'challenges' | 'classes' | 'public';
+
 export const HomePage = () => {
-  const [activeTab, setActiveTab] = useState('challenges');
+  const [activeTab, setActiveTab] = useState<Tab>('challenges');
   const [dialogSchoolClasFormOpen, setDialogSchoolClasFormOpen] = useState(false);
   const [dialogSchoolClasFormMode, setDialogSchoolClasFormMode] = useState<"create" | "edit">("create");
   const [selectedClass, setSelectedClass] = useState<SchoolClass | null>(null);
+  const [hideMyChallenges, setHideMyChallenges] = useState(false);
 
   const { logout } = useAuth();
   const navigate = useNavigate();
@@ -60,6 +65,17 @@ export const HomePage = () => {
     challengesHasNextPage,
     challengesIsFetchingNextPage
   } = useChallenges();
+
+  const {
+    publicChallenges,
+    publicChallengesFetchNextPage,
+    publicChallengesHasNextPage,
+    publicChallengesIsFetchingNextPage
+  } = usePublicChallenges();
+
+  const filteredPublicChallenges = publicChallenges.filter(
+    ch => !hideMyChallenges || ch.creatorId !== user.id
+  );
 
   const { lastElementRef } = useInfiniteScroll({
     hasNextPage: challengesHasNextPage,
@@ -88,7 +104,8 @@ export const HomePage = () => {
       variant: 'destructive',
       action: async () => {
         await orchestratorRest.deleteChallengeCascade(id);
-        queryClient.invalidateQueries({ queryKey: ['challenges'] });
+        queryClient.invalidateQueries({ queryKey: ['my-challenges'] });
+        queryClient.invalidateQueries({ queryKey: ['public-challenges'] });
         queryClient.invalidateQueries({ queryKey: ['classes'] });
       },
     });
@@ -115,7 +132,7 @@ export const HomePage = () => {
   if (schoolClassListIsLoading) return <p>Carregando turmas...</p>;
 
   return (
-    <PageContainer lockScroll className='space-y-6 flex flex-col'>
+    <PageContainer lockScroll className='space-y-4 flex flex-col'>
       <Card className="w-full">
         <CardHeader className='relative flex-row space-y-0 p-3 sm:p-5 pt-8 pb-6'>
           <div className='flex items-center'>
@@ -153,12 +170,13 @@ export const HomePage = () => {
       </Card>
 
       {/* Abas */}
-      <Tabs value={activeTab} onValueChange={setActiveTab}
-        className="flex flex-col flex-1 space-y-4 overflow-hidden"
+      <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as Tab)}
+        className="flex flex-col flex-1 space-y-3 overflow-hidden"
       >
         <TabsList className='gap-6'>
           <TabsTrigger value="challenges">Meus desafios</TabsTrigger>
           <TabsTrigger value="classes">Minhas turmas</TabsTrigger>
+          <TabsTrigger value="public">Desafios públicos</TabsTrigger>
         </TabsList>
 
         {/* Aba de desafios */}
@@ -239,6 +257,46 @@ export const HomePage = () => {
               Adicionar Turma
             </Button>
           )}
+        </TabsContent>
+
+        {/* Aba de desafios públicos */}
+        <TabsContent
+          value="public"
+          className='data-[state=active]:flex flex-col flex-1 overflow-hidden'
+        >
+          <div className='flex gap-4 items-center mb-2 ml-auto pr-3'>
+            Ocultar meus desafios
+            <Switch
+              checked={hideMyChallenges}
+              onCheckedChange={setHideMyChallenges}
+            />
+          </div>
+          <ScrollArea
+            className={cn(
+              'flex flex-1',
+              '[&_[data-radix-scroll-area-viewport]>div]:!block', {/* Evita display: table no SrollAreaViewport */}
+            )}
+          >
+            <div className="pr-3 flex flex-wrap gap-4">
+              {filteredPublicChallenges.map((ch, index) => {
+                const isLast = index === challenges.length - 1;
+                return(
+                  <ChallengeCard
+                    key={ch.id}
+                    challenge={ch}
+                    onDelete={ch.creatorId === user.id ? handleDeleteChallenge : undefined}
+                    onEdit={ch.creatorId === user.id ? handleEditChallenge : undefined}
+                    onAction={(id) => navigate(`/challenges/${id}`)}
+                    ref={isLast ? lastElementRef : undefined}
+                  />
+                )
+              })}
+
+              {challengesIsFetchingNextPage && (
+                <Spinner className='m-auto' />
+              )}
+            </div>
+          </ScrollArea>
         </TabsContent>
       </Tabs>
 
