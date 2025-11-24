@@ -16,6 +16,7 @@ function adaptChallengeToForm(data: Challenge): ChallengeFormData {
     title: data.title,
     level: data.level,
     description: data.description,
+    isPublic: data.isPublic,
     baseCode: data.baseCode,
     validations: data.validations.map(v => ({
       input: v.testInput,

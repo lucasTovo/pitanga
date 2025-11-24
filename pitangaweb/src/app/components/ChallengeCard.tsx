@@ -1,5 +1,5 @@
 import { forwardRef } from "react";
-import { ArrowUpRightIcon, PencilIcon, Trash2Icon } from "lucide-react";
+import { ArrowUpRightIcon, EyeOffIcon, PencilIcon, Trash2Icon } from "lucide-react";
 
 import type { Challenge } from "@/types/challenges.types";
 
@@ -27,14 +27,21 @@ export const ChallengeCard = forwardRef<HTMLDivElement, ChallengeCardProps>(
       header={
         <div className="w-full flex flex-col justify-between">
           <CardTitle className="flex justify-between items-center gap-2">
-            <span>{challenge.title}</span>
-            <DifficultyLevelBadge level={challenge.level} />
+            <span className="truncate">
+              {challenge.title}
+            </span>
+            <div className="flex gap-2 items-center">
+              {!challenge.isPublic && (
+                <EyeOffIcon className="text-neutral-500" />
+              )}
+              <DifficultyLevelBadge level={challenge.level} />
+            </div>
           </CardTitle>
 
           {challenge.description &&
             <CardDescription className='mt-2 max-h-10 overflow-hidden'>
               <div
-                className='revert-all description-container multiline-ellipsis'
+                className='revert-all description-container line-clamp-2'
                 dangerouslySetInnerHTML={{ __html: challenge.description }}
               />
             </CardDescription>

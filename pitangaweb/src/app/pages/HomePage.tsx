@@ -5,6 +5,7 @@ import { LogOutIcon, PlusIcon, UserIcon } from 'lucide-react';
 
 import { SchoolClass } from '@/types/school-class.types';
 
+import { cn } from '@/lib/utils';
 import { deleteSchoolClass } from '@/infra/data/school.rest';
 import { orchestratorRest } from '@/infra/data/orchestrator.rest';
 
@@ -18,11 +19,11 @@ import { useSchoolClassList } from '@/app/hooks/useSchoolClassList';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Spinner } from "@/components/ui/spinner"
-import { ThemeToggle } from '@/app/components/ThemeToggle';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { ThemeToggle } from '@/app/components/ThemeToggle';
 import { ActionDialog } from '@/app/components/ActionDialog';
 import { PageContainer } from '@/app/components/PageContainer';
 import { ChallengeCard } from '@/app/components/ChallengeCard';
@@ -165,7 +166,12 @@ export const HomePage = () => {
           value="challenges"
           className='data-[state=active]:flex flex-col flex-1 overflow-hidden'
         >
-          <ScrollArea className="flex flex-1" >
+          <ScrollArea
+            className={cn(
+              'flex flex-1',
+              '[&_[data-radix-scroll-area-viewport]>div]:!block', {/* Evita display: table no SrollAreaViewport */}
+            )}
+          >
             <div className="pr-3 flex flex-wrap gap-4">
               {challenges.map((ch, index) => {
                 const isLast = index === challenges.length - 1;
@@ -188,7 +194,7 @@ export const HomePage = () => {
           </ScrollArea>
 
           <Button
-            className='my-4 w-full max-w-sm self-center'
+            className='mt-6 w-full max-w-sm self-center'
             onClick={() => navigate('/challenges/create')}
           >
             <PlusIcon />
@@ -201,7 +207,12 @@ export const HomePage = () => {
           value="classes"
           className='data-[state=active]:flex flex-col flex-1 overflow-hidden'
         >
-          <ScrollArea className="flex flex-1">
+          <ScrollArea
+            className={cn(
+              'flex flex-1',
+              '[&_[data-radix-scroll-area-viewport]>div]:!block', {/* Evita display: table no SrollAreaViewport */}
+            )}
+          >
             <div className="pr-3 flex flex-wrap gap-4">
               {schoolClassList?.map((cls) => {
                 return(
@@ -222,7 +233,7 @@ export const HomePage = () => {
           {isTeacher && (
             <Button
               onClick={handleCreateSchoolClass}
-              className='my-4 w-full max-w-sm self-center'
+              className='mt-6 w-full max-w-sm self-center'
             >
               <PlusIcon />
               Adicionar Turma

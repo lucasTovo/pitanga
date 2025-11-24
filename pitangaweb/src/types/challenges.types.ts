@@ -12,11 +12,12 @@ export interface Challenge {
   id: string;
   title: string;
   description: string;
+  creatorId: string;
   baseCode: string;
   level: ChallengeLevel;
   validations: ValidationBase[];
-  creatorId: string;
   status: SolutionStatus;
+  isPublic: boolean;
 }
 
 export interface ChallengeDTO {

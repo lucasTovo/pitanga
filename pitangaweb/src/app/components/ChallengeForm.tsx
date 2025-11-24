@@ -22,6 +22,7 @@ import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { IOList } from '@/app/components/IOList';
 import { CodeEditor } from '@/app/components/CodeEditor';
 import { TextEditor } from '@/app/components/TextEditor';
+import { Switch } from '@/components/ui/switch';
 
 const DEFAULT_CODE = `public class Solution {
 \tpublic static void main(String[] args) {
@@ -40,6 +41,7 @@ const challengeSchema = z.object({
   title: z.string().min(5, 'O título deve ter pelo menos 5 caracteres'),
   level: z.enum(ChallengeLevel),
   description: z.string(),
+  isPublic: z.boolean(),
   baseCode: z.string(),
   validations: z.array(validationSchema),
 });
@@ -61,6 +63,7 @@ export const ChallengeForm = ({ onSubmit, initialValues, mode }: ChallengeFormPr
       title: '',
       level: ChallengeLevel.EASY,
       description: '',
+      isPublic: true,
       baseCode: DEFAULT_CODE,
       validations: []
     },
@@ -106,72 +109,112 @@ export const ChallengeForm = ({ onSubmit, initialValues, mode }: ChallengeFormPr
           )}
         />
 
-        {/* NÍVEL */}
-        <FormField
-          control={form.control}
-          name="level"
-          render={({ field }) => (
-            <FormItem className='flex flex-col items-start'>
-              <FormLabel className='text-lg'>Nível</FormLabel>
-              <FormControl>
-                <ToggleGroup
-                  type="single"
-                  value={field.value}
-                  onValueChange={(value) => {
-                    if (value) field.onChange(value);
-                  }}
-                  className="flex gap-2 sm:gap-4 flex-wrap"
-                >
-                  <ToggleGroupItem
-                    value="EASY"
-                    className="
-                      data-[state=on]:bg-success
-                      data-[state=on]:border-transparent
-                      data-[state=on]:text-success-foreground
-                      rounded-full border px-4 py-1 text-sm transition-all
-                    "
+        <div className='flex flex-col md:flex-row justify-between gap-4'>
+          {/* NÍVEL */}
+          <FormField
+            control={form.control}
+            name="level"
+            render={({ field }) => (
+              <FormItem className='flex flex-col items-start flex-1'>
+                <FormLabel className='text-lg'>Nível</FormLabel>
+                <FormControl>
+                  <ToggleGroup
+                    type="single"
+                    value={field.value}
+                    onValueChange={(value) => {
+                      if (value) field.onChange(value);
+                    }}
+                    className="flex gap-2 sm:gap-4 flex-wrap"
                   >
-                    Fácil
-                  </ToggleGroupItem>
-                  <ToggleGroupItem
-                    value="MEDIUM"
-                    className="
-                      data-[state=on]:bg-warning
-                      data-[state=on]:border-transparent
-                      data-[state=on]:text-warning-foreground
-                      rounded-full border px-4 py-1 text-sm transition-all
-                    "
-                  >
-                    Médio
-                  </ToggleGroupItem>
-                  <ToggleGroupItem
-                    value="HARD"
-                    className="
-                      data-[state=on]:bg-accent
-                      data-[state=on]:border-transparent
-                      data-[state=on]:text-accent-foreground
-                      rounded-full border px-4 py-1 text-sm transition-all
-                    "
-                  >
-                    Difícil
-                  </ToggleGroupItem>
-                  <ToggleGroupItem
-                    value="PRO"
-                    className="
-                      data-[state=on]:bg-complementary
-                      data-[state=on]:border-transparent
-                      data-[state=on]:text-complementary-foreground
-                      rounded-full border px-4 py-1 text-sm transition-all
-                    "
-                  >
-                    PRO
-                  </ToggleGroupItem>
-                </ToggleGroup>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+                    <ToggleGroupItem
+                      value="EASY"
+                      className="
+                        data-[state=on]:bg-success
+                        data-[state=on]:border-transparent
+                        data-[state=on]:text-success-foreground
+                        rounded-full border px-4 py-1 text-sm transition-all
+                      "
+                    >
+                      Fácil
+                    </ToggleGroupItem>
+                    <ToggleGroupItem
+                      value="MEDIUM"
+                      className="
+                        data-[state=on]:bg-warning
+                        data-[state=on]:border-transparent
+                        data-[state=on]:text-warning-foreground
+                        rounded-full border px-4 py-1 text-sm transition-all
+                      "
+                    >
+                      Médio
+                    </ToggleGroupItem>
+                    <ToggleGroupItem
+                      value="HARD"
+                      className="
+                        data-[state=on]:bg-accent
+                        data-[state=on]:border-transparent
+                        data-[state=on]:text-accent-foreground
+                        rounded-full border px-4 py-1 text-sm transition-all
+                      "
+                    >
+                      Difícil
+                    </ToggleGroupItem>
+                    <ToggleGroupItem
+                      value="PRO"
+                      className="
+                        data-[state=on]:bg-complementary
+                        data-[state=on]:border-transparent
+                        data-[state=on]:text-complementary-foreground
+                        rounded-full border px-4 py-1 text-sm transition-all
+                      "
+                    >
+                      PRO
+                    </ToggleGroupItem>
+                  </ToggleGroup>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <Separator className='md:hidden' />
+
+          {/* VISIBILIDADE */}
+          <FormField
+            control={form.control}
+            name="isPublic"
+            render={({ field }) => (
+              <FormItem className='flex flex-col flex-1'>
+                <FormLabel className="text-lg">Visibilidade</FormLabel>
+                <FormControl>
+                  <div className='flex gap-4 items-center'>
+                    <Button
+                      type="button"
+                      variant='ghost'
+                      onClick={() => field.onChange(false)}
+                    >
+                      Privado
+                    </Button>
+
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+
+                    <Button
+                      type="button"
+                      variant='ghost'
+                      onClick={() => field.onChange(true)}
+                    >
+                      Público
+                    </Button>
+                  </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
 
         <Separator />
 
