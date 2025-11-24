@@ -11,16 +11,17 @@ import { saveSolution } from '@/infra/data/challenges.rest';
 
 import { useActionDialog } from '@/app/hooks/useActionDialog';
 
+import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
-import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { CodeEditor } from '@/app/components/CodeEditor';
 import { ActionDialog } from '@/app/components/ActionDialog';
+import { PageContainer } from '@/app/components/PageContainer';
 import { ValidationItem } from '@/app/components/ValidationItem';
 import { DifficultyLevelBadge } from '@/app/components/DifficultyLevelBadge';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 type ChallengeEditorStatus = 'idle' | 'saving' | 'running' | 'error';
 
@@ -121,7 +122,7 @@ export const ChallengeEditorPage = () => {
   }
 
   return (
-    <div className="space-y-5 flex flex-col h-full">
+    <PageContainer className='space-y-5 flex flex-col'>
       <div className='flex gap-2'>
         <Button
           className='h-auto'
@@ -221,6 +222,6 @@ export const ChallengeEditorPage = () => {
         variant={config.variant}
         onConfirm={handleConfirm}
       />
-    </div>
+    </PageContainer>
   )
 }

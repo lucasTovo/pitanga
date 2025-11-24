@@ -4,6 +4,7 @@ import { ArrowLeftFromLineIcon } from 'lucide-react';
 import { saveChallenge } from '@/infra/data/challenges.rest';
 
 import { Button } from '@/components/ui/button';
+import { PageContainer } from '@/app/components/PageContainer';
 import { ChallengeForm, ChallengeFormData } from '@/app/components/ChallengeForm';
 
 export const CreateChallengePage = () => {
@@ -15,7 +16,7 @@ export const CreateChallengePage = () => {
   };
 
   return (
-    <div className="max-w-3xl mx-auto py-6">
+    <PageContainer className='max-w-4xl'>
       <nav className="flex items-center w-full mb-4 gap-4">
         <Button onClick={() => navigate('/')}>
           <ArrowLeftFromLineIcon/>
@@ -30,6 +31,6 @@ export const CreateChallengePage = () => {
         mode="create"
         onSubmit={handleCreate}
       />
-    </div>
+    </PageContainer>
   );
 };

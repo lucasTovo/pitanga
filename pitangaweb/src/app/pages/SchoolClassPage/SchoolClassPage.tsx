@@ -26,6 +26,7 @@ import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from '@/comp
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { DataTable } from '@/app/components/DataTable';
 import { ChallengeCard } from '@/app/components/ChallengeCard';
+import { PageContainer } from '@/app/components/PageContainer';
 
 type Tab = 'students' | 'challenges';
 
@@ -131,7 +132,7 @@ export const SchoolClassPage = () => {
   ) return <p>Erro</p>;
 
   return (
-    <div className="space-y-6 flex flex-col h-full">
+    <PageContainer lockScroll className='space-y-6 flex flex-col'>
       <div className='flex gap-2'>
         <Button
           className='h-auto'
@@ -294,6 +295,6 @@ export const SchoolClassPage = () => {
           </DialogContent>
         </Dialog>
       }
-    </div>
+    </PageContainer>
   );
 }

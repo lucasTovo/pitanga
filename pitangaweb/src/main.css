@@ -187,7 +187,7 @@
     --popover-foreground: var(--neutral-100);
 
     --muted: var(--neutral-800);
-    --muted-foreground: var(--neutral-100);
+    --muted-foreground: var(--neutral-400);
 
     --border: var(--neutral-700);
     --input: var(--neutral-700);

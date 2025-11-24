@@ -8,6 +8,7 @@ import { getChallengeById, updateChallenge } from "@/infra/data/challenges.rest"
 
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
+import { PageContainer } from "@/app/components/PageContainer";
 import { ChallengeForm, ChallengeFormData } from "@/app/components/ChallengeForm";
 
 function adaptChallengeToForm(data: Challenge): ChallengeFormData {
@@ -55,7 +56,7 @@ export const EditChallengePage = () => {
   );
 
   return (
-    <div className="max-w-3xl mx-auto py-6">
+    <PageContainer className="max-w-4xl">
       <nav className="flex items-center w-full mb-4 gap-3">
         <Button onClick={() => navigate('/')}>
           <ArrowLeftFromLineIcon/>
@@ -70,6 +71,6 @@ export const EditChallengePage = () => {
         initialValues={challenge}
         onSubmit={handleUpdate}
       />
-    </div>
+    </PageContainer>
   );
 };

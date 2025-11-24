@@ -20,10 +20,11 @@ import { Button } from '@/components/ui/button';
 import { Spinner } from "@/components/ui/spinner"
 import { ModeToggle } from '@/components/mode-toggle';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ActionDialog } from '@/app/components/ActionDialog';
+import { PageContainer } from '@/app/components/PageContainer';
 import { ChallengeCard } from '@/app/components/ChallengeCard';
 import { SchoolClassCard } from '@/app/components/SchoolClassCard';
 import { SchoolClassFormDialog } from '@/app/components/SchoolClassFormDialog';
@@ -113,8 +114,7 @@ export const HomePage = () => {
   if (schoolClassListIsLoading) return <p>Carregando turmas...</p>;
 
   return (
-    <div className="space-y-6 flex flex-col h-full">
-      {/* Topo com informações do usuário */}
+    <PageContainer lockScroll className='space-y-6 flex flex-col'>
       <Card className="w-full">
         <CardHeader className='relative flex-row space-y-0 p-3 sm:p-5 pt-8 pb-6'>
           <div className='flex items-center'>
@@ -247,6 +247,6 @@ export const HomePage = () => {
         onOpenChange={setDialogSchoolClasFormOpen}
         initialData={selectedClass ?? null}
       />
-    </div >
+    </PageContainer>
   );
 }

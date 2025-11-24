@@ -75,7 +75,7 @@ export const ChallengeForm = ({ onSubmit, initialValues, mode }: ChallengeFormPr
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5 pb-10">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
         {/* TÍTULO */}
         <FormField
           control={form.control}
