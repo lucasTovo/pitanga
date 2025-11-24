@@ -6,6 +6,9 @@ import 'ace-builds/src-noconflict/theme-chrome'
 import 'ace-builds/src-noconflict/theme-dracula'
 import 'ace-builds/src-noconflict/ext-language_tools'
 
+import { cn } from '@/lib/utils'
+import { useTailwindBreakpoint } from '@/app/hooks/useTailwindBreakpoint'
+
 import { ResolvedTheme, useTheme } from '@/components/theme-provider'
 
 function useResizeObserver(ref: React.RefObject<HTMLElement>) {
@@ -28,7 +31,7 @@ function useResizeObserver(ref: React.RefObject<HTMLElement>) {
     return () => resizeObserver.disconnect()
   }, [ref])
 
-  return size
+  return size;
 }
 
 const editorTheme: Record<ResolvedTheme, string> = {
@@ -37,17 +40,19 @@ const editorTheme: Record<ResolvedTheme, string> = {
 }
 
 type CodeEditorProps = {
-  fontSize?: number
   value?: string
   className?: string
   onChange: (code: string) => void
 }
 
 export const CodeEditor = forwardRef<HTMLDivElement, CodeEditorProps>(
-  ({ fontSize = 16, value = '', className = '', onChange }, ref) => {
+  ({ value = '', className = '', onChange }, ref) => {
     const containerRef = useRef<HTMLDivElement>(null)
     const { width, height } = useResizeObserver(containerRef)
     const { resolvedTheme } = useTheme();
+
+    const breakpoint = useTailwindBreakpoint();
+    const fontSize = breakpoint === 'sm' ? 14 : 16;
 
     useEffect(() => {
       if (!ref) return
@@ -58,7 +63,10 @@ export const CodeEditor = forwardRef<HTMLDivElement, CodeEditorProps>(
     return (
       <div
         ref={containerRef}
-        className={`relative w-full h-full min-h-[500px] rounded-xl overflow-hidden border border-border shadow-sm ${className}`}
+        className={cn(
+          'relative w-full h-full min-h-[500px] rounded-xl overflow-hidden border border-border shadow-sm',
+          className,
+        )}
       >
         <AceEditor
           mode="java"
