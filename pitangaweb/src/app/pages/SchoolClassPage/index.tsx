@@ -13,7 +13,7 @@ export const SchoolClassPage = () => {
   if (!classId) return <p>Turma não encontrada</p>;
 
   return (
-    <PageContainer lockScroll className='space-y-6 flex flex-col'>
+    <PageContainer lockScroll className='space-y-4 flex flex-col'>
       {isTeacher ? (
         <TeacherView classId={classId} />
       ) : (

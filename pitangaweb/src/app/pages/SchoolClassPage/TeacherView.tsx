@@ -168,7 +168,7 @@ export const TeacherView = ({ classId }: TeacherViewProps) => {
       <Tabs
         defaultValue={tab}
         onValueChange={(value) => setTab(value as Tab)}
-        className="flex flex-col flex-1 space-y-4 overflow-hidden"
+        className="flex flex-col flex-1 space-y-3 overflow-hidden"
       >
         <TabsList className='gap-6'>
           <TabsTrigger value="students">Alunos</TabsTrigger>

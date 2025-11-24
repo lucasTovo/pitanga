@@ -71,7 +71,7 @@ export const DataTable = <TParent, TChild = never>({
   );
 
    return (
-    <div className="h-full flex flex-col flex-1 gap-4">
+    <div className="h-full flex flex-col flex-1 gap-3">
       {/* Pesquisa */}
       <div className="relative w-full max-w-sm ml-auto">
         <Input
