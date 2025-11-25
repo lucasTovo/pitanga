@@ -29,6 +29,7 @@ export const EditChallengePage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [challenge, setChallenge] = useState<ChallengeFormData | null>(null);
+  const [isCopy, setIsCopy] = useState(false);
 
   if (!id) {
     throw new Error("Missing challenge id in route parameters.");
@@ -39,6 +40,7 @@ export const EditChallengePage = () => {
       const challenge = await getChallengeById(id!);
       if(challenge) {
         setChallenge(adaptChallengeToForm(challenge));
+        setIsCopy(!!challenge.originChallengeId)
       }
     }
 
@@ -71,6 +73,7 @@ export const EditChallengePage = () => {
         mode="edit"
         initialValues={challenge}
         onSubmit={handleUpdate}
+        isCopy={isCopy}
       />
     </PageContainer>
   );

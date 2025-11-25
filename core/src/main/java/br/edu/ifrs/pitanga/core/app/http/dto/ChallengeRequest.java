@@ -17,7 +17,8 @@ public record ChallengeRequest(
     String baseCode,
     String level,
     List<ValidationDTO> validations,
-    Boolean isPublic
+    Boolean isPublic,
+    UUID originChallengeId
 ) {
     public List<Validation> transformValidations(UUID challengeId) {
         List<Validation> aValidations = new ArrayList<>();
@@ -38,13 +39,20 @@ public record ChallengeRequest(
     }
 
     public Challenge toEntity(String userId) {
-        return Challenge.builder()
+        Challenge challenge = Challenge.builder()
             .title(title())
             .description(description())
             .creatorId(userId)
             .baseCode(baseCode())
             .level(ChallengeLevel.valueOf(level()))
             .isPublic(isPublic() != null ? isPublic() : true)
+            .originChallengeId(originChallengeId())
             .build();
+
+        if (originChallengeId() != null) {
+            challenge.setIsPublic(false);
+        }
+
+        return challenge;
     }
 }

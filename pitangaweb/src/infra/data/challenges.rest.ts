@@ -107,3 +107,31 @@ export async function getCompletedChallengesCount(
   const response = await challengesApi.post('/solutions/completion-summary', {studentIds, challengeIds});
   return response.data;
 }
+
+export async function copyChallenge(challengeId: string) {
+  const challengeBeingCopied = await getChallengeById(challengeId);
+  const {
+    id,
+    title,
+    level,
+    baseCode,
+    description,
+    validations,
+  }: Challenge = challengeBeingCopied;
+
+  const challenge = {
+    title: `Cópia de ${title}`,
+    description,
+    level,
+    baseCode,
+    validations,
+    originChallengeId: id,
+  }
+
+  const res = await challengesApi.post<Challenge>('/challenges', {
+    ...challenge,
+    creatorId: "2", // cuidado se o tipo for string
+  });
+
+  return res.data;
+}

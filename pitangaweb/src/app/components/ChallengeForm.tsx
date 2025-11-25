@@ -52,9 +52,10 @@ export interface ChallengeFormProps {
   mode: 'create' | 'edit';
   initialValues?: ChallengeFormData;
   onSubmit: (data: ChallengeFormData) => Promise<void> | void;
+  isCopy?: boolean;
 }
 
-export const ChallengeForm = ({ onSubmit, initialValues, mode }: ChallengeFormProps) => {
+export const ChallengeForm = ({ onSubmit, initialValues, mode, isCopy = false }: ChallengeFormProps) => {
   const navigate = useNavigate();
 
   const form = useForm<ChallengeFormData>({
@@ -187,28 +188,34 @@ export const ChallengeForm = ({ onSubmit, initialValues, mode }: ChallengeFormPr
               <FormItem className='flex flex-col flex-1'>
                 <FormLabel className="text-lg">Visibilidade</FormLabel>
                 <FormControl>
-                  <div className='flex gap-4 items-center'>
-                    <Button
-                      type="button"
-                      variant='ghost'
-                      onClick={() => field.onChange(false)}
-                    >
-                      Privado
-                    </Button>
+                  <>
+                    <div className='flex gap-4 items-center'>
+                      <Button
+                        type="button"
+                        variant='ghost'
+                        onClick={() => field.onChange(false)}
+                        disabled={isCopy}
+                      >
+                        Privado
+                      </Button>
 
-                    <Switch
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                        disabled={isCopy}
+                      />
 
-                    <Button
-                      type="button"
-                      variant='ghost'
-                      onClick={() => field.onChange(true)}
-                    >
-                      Público
-                    </Button>
-                  </div>
+                      <Button
+                        type="button"
+                        variant='ghost'
+                        onClick={() => field.onChange(true)}
+                        disabled={isCopy}
+                      >
+                        Público
+                      </Button>
+                    </div>
+                    <span className='text-sm'>Desafios copiados não podem ser públicos</span>
+                  </>
                 </FormControl>
                 <FormMessage />
               </FormItem>

@@ -31,6 +31,7 @@ import { PageContainer } from '@/app/components/PageContainer';
 import { ChallengeCard } from '@/app/components/ChallengeCard';
 import { SchoolClassCard } from '@/app/components/SchoolClassCard';
 import { SchoolClassFormDialog } from '@/app/components/SchoolClassFormDialog';
+import { copyChallenge } from '@/infra/data/challenges.rest';
 
 type Tab = 'challenges' | 'classes' | 'public';
 
@@ -41,9 +42,9 @@ export const HomePage = () => {
   const [selectedClass, setSelectedClass] = useState<SchoolClass | null>(null);
   const [hideMyChallenges, setHideMyChallenges] = useState(false);
 
-  const { logout } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { logout } = useAuth();
   const { user, isTeacher } = useUser();
 
   const {
@@ -108,6 +109,20 @@ export const HomePage = () => {
         queryClient.invalidateQueries({ queryKey: ['public-challenges'] });
         queryClient.invalidateQueries({ queryKey: ['classes'] });
       },
+    });
+  }
+
+  const handleCopyChallenge = async (id: string) => {
+    showDialog({
+      title: 'Copiar desafio?',
+      description: 'O desafio seria copiado e adicionado aos seus desafios',
+      confirmLabel: 'Copiar',
+      variant: 'default',
+      action: async () => {
+        const response = await copyChallenge(id);
+        queryClient.invalidateQueries({ queryKey: ['my-challenges'] });
+        navigate(`/challenges/${response.id}`);
+      }
     });
   }
 
@@ -286,7 +301,8 @@ export const HomePage = () => {
                     challenge={ch}
                     onDelete={ch.creatorId === user.id ? handleDeleteChallenge : undefined}
                     onEdit={ch.creatorId === user.id ? handleEditChallenge : undefined}
-                    onAction={(id) => navigate(`/challenges/${id}`)}
+                    onAction={(id) => handleCopyChallenge(id)}
+                    actionLabel='Copiar desafio'
                     ref={isLast ? lastElementRef : undefined}
                   />
                 )

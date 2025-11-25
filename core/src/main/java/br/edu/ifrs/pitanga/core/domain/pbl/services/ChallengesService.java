@@ -45,7 +45,10 @@ public class ChallengesService {
                     if (userId != null) {
                         // Authenticated: show public challenges OR private challenges of the creator
                         return cb.or(
-                            cb.equal(root.get("isPublic"), true),
+                            cb.and(
+                                cb.equal(root.get("isPublic"), true),
+                                cb.isNull(root.get("originChallengeId"))
+                            ),
                             cb.and(
                                 cb.equal(root.get("isPublic"), false),
                                 cb.equal(root.get("creatorId"), userId)
@@ -74,7 +77,10 @@ public class ChallengesService {
 
         Specification<Challenge> spec = Specification
             .where(safeFilter.getSpec())
-            .and((root, query, cb) -> cb.equal(root.get("isPublic"), true));
+            .and((root, query, cb) -> cb.and(
+                cb.equal(root.get("isPublic"), true),
+                cb.isNull(root.get("originChallengeId"))
+            ));
 
         Page<Challenge> page = challengesRepository.findAll(spec, pageable);
 

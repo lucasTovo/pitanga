@@ -18,6 +18,7 @@ export interface Challenge {
   validations: ValidationBase[];
   status: SolutionStatus;
   isPublic: boolean;
+  originChallengeId?: string;
 }
 
 export interface ChallengeDTO {
