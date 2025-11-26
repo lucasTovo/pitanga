@@ -1,21 +1,25 @@
-import { useCallback, useMemo, useState } from 'react';
-import { useLoaderData, useNavigate } from 'react-router-dom';
+// React e libs externas
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeftFromLineIcon, ChevronDownIcon } from 'lucide-react';
+import { useQueryClient } from '@tanstack/react-query';
 
-import type { Solution } from '@/types/solutions.types';
 import type { Challenge } from '@/types/challenges.types';
 import type { ValidationResult } from '@/types/validations.type';
 
+import { cn } from '@/lib/utils';
 import { debounce } from '@/infra/utils/debounce';
 import { saveSolution } from '@/infra/data/challenges.rest';
 
+import { useAuth } from '@/hooks/useAuth';
 import { useActionDialog } from '@/app/hooks/useActionDialog';
+import { useChallengeSolution } from '@/app/hooks/useChallengeSolution';
 
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Card, CardHeader, CardTitle } from '@/components/ui/card';
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
+import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { CodeEditor } from '@/app/components/CodeEditor';
 import { ActionDialog } from '@/app/components/ActionDialog';
@@ -25,7 +29,9 @@ import { DifficultyLevelBadge } from '@/app/components/DifficultyLevelBadge';
 
 type ChallengeEditorStatus = 'idle' | 'saving' | 'running' | 'error';
 
-function getDefaultValidationResults(validations: Challenge['validations']): ValidationResult[] {
+function getDefaultValidationResults(validations?: Challenge['validations']): ValidationResult[] {
+  if (!validations) return [];
+
   return validations.map(({ testInput, ...rest })=> ({
     ...rest,
     input: testInput,
@@ -35,69 +41,106 @@ function getDefaultValidationResults(validations: Challenge['validations']): Val
 }
 
 export const ChallengeEditorPage = () => {
-  const data = useLoaderData() as {
-    challenge: Challenge;
-    solution?: Solution;
-  };
-  const [code, setCode] = useState(data.solution?.code ?? data.challenge.baseCode);
+  const [code, setCode] = useState<string>();
+  const [openDrawer, setOpenDrawer] = useState(false);
   const [status, setStatus] = useState<ChallengeEditorStatus>('idle');
-  const [solution, setSolution] = useState(data.solution);
-  const [openDrawer, setOpenDrawer] = useState(false)
+
+  const { challengeId } = useParams<string>();
 
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
+  const queryClient = useQueryClient();
+
+  const readOnly = !isAuthenticated;
+
+  if (!challengeId) {
+    throw new Error("Missing challenge id in route parameters.");
+  }
+
+  const {
+    challenge,
+    solution,
+    challengeSolutionIsFetchedAfterMount,
+  } = useChallengeSolution(challengeId);
+
+  useEffect(() => {
+    if (!challenge) return;
+
+    if (readOnly) {
+      setCode(challenge.baseCode);
+      return;
+    }
+
+    const code = solution?.code ?? challenge.baseCode;
+    setCode(code);
+
+  }, [challenge, solution, readOnly]);
 
   const {
     open,
     setOpen,
     config,
     showDialog,
-    handleConfirm
+    handleConfirm,
   } = useActionDialog();
 
+  const saveAndRunCode = useCallback(async (newCode: string) => {
+    if (readOnly) return;
 
-  const saveCode = useCallback(async (newCode: string) => {
+    setStatus('saving');
+
     try {
       const savedSolution = await saveSolution({
         language: 'java',
         code: newCode,
-        challengeId: data.challenge.id,
+        challengeId,
       });
 
-      setSolution(savedSolution);
-    } catch (err) {
-      setStatus('error');
-    } finally {
-      setStatus('idle');
-    }
-  }, [data.challenge.id]);
+      const previousChallengeSolution = queryClient.getQueryData(['challenge-solution', challengeId]);
+      if (previousChallengeSolution) {
+        const nextChallengeSolution = {
+          ...previousChallengeSolution,
+          solution: {
+            code: savedSolution?.code,
+          }
+        }
 
-  const debouncedSave = useMemo(() => debounce(saveCode, 3000), []);
+        await queryClient.setQueryData(['challenge-solution', challengeId], nextChallengeSolution);
+      }
 
-  const handleCodeChange = useCallback((newCode: string) => {
-    setCode(newCode);
-    setStatus('saving');
-    debouncedSave(newCode);
-  }, [debouncedSave]);
-
-  const runCode = useCallback(async () => {
-    setStatus('running');
-
-    try {
-      const result = await saveSolution({
-        language: 'java',
-        code,
-        challengeId: data.challenge.id,
+      queryClient.invalidateQueries({
+        exact: true,
+        queryKey: ['challenge-solution', challengeId]
       });
-
-      setSolution(result);
     } catch {
       setStatus('error');
     } finally {
       setStatus('idle');
     }
-  }, [data.challenge.id, code]);
+  }, [challengeId, readOnly]);
+
+  const debouncedSave = useMemo(
+    () => debounce(saveAndRunCode, 3000),
+    [saveAndRunCode]
+  );
+
+  useEffect(() => {
+    return () => {
+      if (readOnly) return;
+      debouncedSave.flush();
+    };
+  }, [debouncedSave, readOnly]);
+
+  const handleCodeChange = useCallback((newCode: string) => {
+    if (readOnly) return;
+
+    setCode(newCode);
+    debouncedSave(newCode);
+  }, [debouncedSave]);
 
   const handleRestoreChallengeBaseCode = () => {
+    if (readOnly) return;
+
     showDialog({
       title: 'Restaurar código base do desafio?',
       description: `Esta ação não poderá ser revertida.
@@ -105,41 +148,54 @@ export const ChallengeEditorPage = () => {
       confirmLabel: 'Restaurar',
       variant: 'destructive',
       action: () => {
-        setCode(data.challenge.baseCode);
+        setCode(challenge?.baseCode);
       },
     });
-  }
+  };
 
   const displayedTests = useMemo(() => (
-    solution?.validationResults ?? getDefaultValidationResults(data.challenge.validations)
-  ), [solution, data.challenge.validations]);
+    solution?.validationResults ??
+    getDefaultValidationResults(challenge?.validations)
+  ), [solution, challenge?.validations]);
 
   const buttonLabel: Record<ChallengeEditorStatus, string> = {
     idle: 'Salvar e executar',
     running: 'Executando...',
     saving: 'Salvando...',
-    error: 'Erro ao salvar ou executar o codigo',
+    error: 'Erro ao salvar ou executar o código',
+  };
+
+  if (!challenge) {
+    return (
+      <span>Desafio não carregado!</span>
+    )
   }
 
   return (
-    <PageContainer className='space-y-5 flex flex-col'>
-      <div className='flex gap-2'>
+    <PageContainer className="space-y-5 flex flex-col min-h[100vh]">
+      <div className="flex gap-2">
         <Button
-          className='h-auto'
+          className={cn(
+            'h-auto',
+            readOnly && 'cursor-not-allowed'
+          )}
+          disabled={readOnly}
           onClick={() => navigate('/')}
         >
-          <ArrowLeftFromLineIcon/>
+          <ArrowLeftFromLineIcon />
         </Button>
 
         <Card className="w-full">
           <CardHeader className="flex flex-row justify-between items-center space-y-0">
-            <CardTitle className='text-lg'>{data.challenge.title}</CardTitle>
-            <DifficultyLevelBadge level={data.challenge.level} />
+            <CardTitle className="text-lg">
+              {challenge.title}
+            </CardTitle>
+            <DifficultyLevelBadge level={challenge.level} />
           </CardHeader>
         </Card>
       </div>
 
-      {data.challenge.description &&
+      {challenge.description && (
         <Collapsible>
           <CollapsibleTrigger
             className="
@@ -160,45 +216,80 @@ export const ChallengeEditorPage = () => {
               "
             />
           </CollapsibleTrigger>
+
           <CollapsibleContent>
             <div
               className="revert-all"
-              dangerouslySetInnerHTML={{ __html: data.challenge.description }}
+              dangerouslySetInnerHTML={{
+                __html: challenge.description,
+              }}
             />
           </CollapsibleContent>
-          <Separator className='mt-3' />
+
+          <Separator className="mt-3" />
         </Collapsible>
-      }
+      )}
 
-      <h3 className='text-md font-medium'>Editor de código</h3>
-      <CodeEditor value={code} onChange={handleCodeChange} />
-
-      <div className='flex justify-between gap-2'>
+      <div className='flex justify-between items-center gap-2'>
+        <h3 className='text-md font-medium'>Editor de código</h3>
         <Button
           variant="ghost"
-          disabled={code === data.challenge.baseCode}
+          disabled={
+            readOnly ||
+            code === challenge.baseCode
+          }
+          className={cn(
+            readOnly && 'cursor-not-allowed'
+          )}
           onClick={handleRestoreChallengeBaseCode}
         >
           Restaurar código base
         </Button>
+      </div>
+      {!challengeSolutionIsFetchedAfterMount ? (
+        <span>Carregando editor...</span>
+      ) : (
+        <CodeEditor
+          value={code}
+          readOnly={readOnly}
+          onChange={handleCodeChange}
+        />
+      )}
+
+      <div className='flex justify-between items-center gap-4'>
+        <Button onClick={() => setOpenDrawer(true)}>
+          Validações
+        </Button>
 
         <Button
-          className="w-full max-w-sm self-center"
-          disabled={status !== 'idle'}
-          onClick={() => setOpenDrawer(true)}
+          className={cn(
+            'w-full max-w-sm',
+            readOnly && 'cursor-not-allowed'
+          )}
+          disabled={
+            readOnly ||
+            status !== 'idle'
+          }
+          onClick={async () => {
+            if (!code) return;
+            await saveAndRunCode(code);
+            setOpenDrawer(true);
+          }}
         >
-          {buttonLabel[status]}
+          {readOnly ? 'Somente visualização' : buttonLabel[status]}
         </Button>
       </div>
 
       <Drawer open={openDrawer} onOpenChange={setOpenDrawer}>
         <DrawerContent>
           <div className="p-3 sm:p-6 md:p-10 mx-auto w-full max-w-7xl">
-            <DrawerHeader className='p-0 mb-4'>
+            <DrawerHeader className="p-0 mb-4">
               <DrawerTitle>Validações</DrawerTitle>
+              <DrawerDescription>Entradas e saídas de dados esperadas</DrawerDescription>
             </DrawerHeader>
-            <div className="pb-0 h-[520px]">
-              <ScrollArea className='h-full flex flex-1'>
+
+            <div className="pb-0 max-h-[520px]">
+              <ScrollArea className="h-full flex flex-1">
                 <div className="pr-3 flex flex-col gap-4">
                   {displayedTests.map((test, index) => (
                     <ValidationItem
@@ -223,5 +314,5 @@ export const ChallengeEditorPage = () => {
         onConfirm={handleConfirm}
       />
     </PageContainer>
-  )
-}
+  );
+};
