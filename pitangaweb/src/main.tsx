@@ -1,13 +1,14 @@
+import { useEffect, useState } from "react";
 import ReactDOM from "react-dom/client";
 import { ReactKeycloakProvider } from "@react-keycloak/web";
 
-import "./main.css";
+import { useAuth } from "@/hooks/useAuth";
 
-import { App } from "./App";
-import { updateUser } from "./infra/data/school.rest";
-import { keycloak, initOptions } from "./infra/data/keycloack";
-import { useAuth } from "./hooks/useAuth";
-import { useEffect, useState } from "react";
+import { updateUser } from "@/infra/data/school.rest";
+import { keycloak, initOptions } from "@/infra/data/keycloack";
+
+import { App } from "@/App";
+import "./main.css";
 
 const root = document.getElementById("root")!;
 
@@ -26,10 +27,10 @@ function AppInitializer() {
     };
 
     syncUser();
-  }, [initialized, keycloak.authenticated]);
+  }, [initialized]);
 
   if (!ready) {
-    return <div>Carregando...</div>;
+    return <div>Carregando aplicação...</div>;
   }
 
   return <App />;
