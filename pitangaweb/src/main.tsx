@@ -5,7 +5,7 @@ import { ReactKeycloakProvider } from "@react-keycloak/web";
 import { useAuth } from "@/hooks/useAuth";
 
 import { updateUser } from "@/infra/data/school.rest";
-import { keycloak, initOptions } from "@/infra/data/keycloack";
+import { keycloak, initOptions } from "@/infra/data/keycloak";
 
 import { App } from "@/App";
 import "./main.css";
@@ -20,10 +20,16 @@ function AppInitializer() {
     if (!initialized) return;
 
     const syncUser = async () => {
-      if (keycloak.authenticated) {
-        await updateUser();
+      try {
+        if (keycloak.authenticated) {
+          console.log("Usuário autenticado, chamando updateUser...");
+          await updateUser();
+        }
+      } catch (error) {
+        console.error("Erro ao sincronizar usuário:", error);
+      } finally {
+        setReady(true);
       }
-      setReady(true);
     };
 
     syncUser();

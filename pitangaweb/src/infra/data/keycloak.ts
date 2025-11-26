@@ -12,5 +12,5 @@ export const keycloak = new Keycloak({
 export const initOptions = {
     onLoad: 'check-sso',
     pkceMethod: 'S256',       // recomendado para SPAs
-    checkLoginIframe: true,   // verifica token periodicamente
+    checkLoginIframe: false,   // verifica token periodicamente
 };
