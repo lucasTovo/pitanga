@@ -25,25 +25,18 @@ export async function getChallengeById(id: string) {
   return response.data;
 }
 
-export async function getChallengeSolution({ params }: { params: Params }) {
-  try {
-    const url = `/challenges/${params.challengeId}`;
-    const challengeRaw = await challengesApi.get<Challenge>(url);
-    const solutionRaw = await challengesApi.get<Solution>(`${url}/solutions`);
+export async function getChallengeSolution(challengeId: string) {
+  const url = `/challenges/${challengeId}`;
 
-    const result = {
-      challenge: challengeRaw.data as Challenge,
-      solution: solutionRaw.status === 200 ? (solutionRaw.data as Solution) : undefined
-    };
+  const [challengeRaw, solutionRaw] = await Promise.all([
+    challengesApi.get<Challenge>(url),
+    challengesApi.get<Solution>(`${url}/solutions`).catch(() => null)
+  ]);
 
-    return result;
-  } catch (err: any) {
-    if (err?.response?.status === 404) {
-      return redirect('/?error=Challenge not found');
-    }
-
-    throw err;
-  }
+  return {
+    challenge: challengeRaw.data,
+    solution: solutionRaw?.status === 200 ? solutionRaw.data : null
+  };
 }
 
 export async function saveChallenge(body: ChallengeDTO) {
