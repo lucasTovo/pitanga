@@ -186,7 +186,7 @@ export const HomePage = () => {
 
       {/* Abas */}
       <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as Tab)}
-        className="flex flex-col flex-1 space-y-3 overflow-hidden"
+        className="flex flex-col flex-1 space-y-4 overflow-hidden"
       >
         <TabsList className='gap-6'>
           <TabsTrigger value="challenges">Meus desafios</TabsTrigger>

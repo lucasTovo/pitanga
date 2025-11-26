@@ -1,7 +1,7 @@
 // React e libs externas
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeftFromLineIcon, ChevronDownIcon } from 'lucide-react';
+import { ArrowLeftFromLineIcon, ChevronDownIcon, LogInIcon } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 
 import type { Challenge } from '@/types/challenges.types';
@@ -48,7 +48,7 @@ export const ChallengeEditorPage = () => {
   const { challengeId } = useParams<string>();
 
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, login } = useAuth();
   const queryClient = useQueryClient();
 
   const readOnly = !isAuthenticated;
@@ -185,13 +185,23 @@ export const ChallengeEditorPage = () => {
           <ArrowLeftFromLineIcon />
         </Button>
 
-        <Card className="w-full">
-          <CardHeader className="flex flex-row justify-between items-center space-y-0">
-            <CardTitle className="text-lg">
+        <Card className="w-full flex justify-between">
+          <CardHeader className="p-4 sm:p-6 flex flex-1 items-start gap-2 space-y-0">
+            <DifficultyLevelBadge level={challenge.level} />
+            <CardTitle className="text-md sm:text-lg">
               {challenge.title}
             </CardTitle>
-            <DifficultyLevelBadge level={challenge.level} />
           </CardHeader>
+          {!isAuthenticated && (
+            <div className='p-4 sm:p-6  flex gap-4 items-center border-l'>
+              <Button
+                onClick={() => login()}
+              >
+                Entrar
+                <LogInIcon />
+              </Button>
+            </div>
+          )}
         </Card>
       </div>
 

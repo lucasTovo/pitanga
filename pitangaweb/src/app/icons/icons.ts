@@ -13,4 +13,5 @@ export { Search as SearchIcon } from "lucide-react";
 export { CircleX as CircleXIcon } from "lucide-react";
 export { CircleCheckBig as CircleCheckBigIcon } from "lucide-react";
 export { EyeOff as EyeOffIcon } from "lucide-react";
+export { LogIn as LogInIcon } from "lucide-react";
 

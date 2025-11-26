@@ -59,7 +59,7 @@ export const EditChallengePage = () => {
   );
 
   return (
-    <PageContainer className="max-w-4xl">
+    <PageContainer className="max-w-4xl grow">
       <nav className="flex items-center w-full mb-4 gap-3">
         <Button onClick={() => navigate('/')}>
           <ArrowLeftFromLineIcon/>
