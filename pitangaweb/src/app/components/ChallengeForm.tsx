@@ -214,7 +214,9 @@ export const ChallengeForm = ({ onSubmit, initialValues, mode, isCopy = false }:
                         Público
                       </Button>
                     </div>
-                    <span className='text-sm'>Desafios copiados não podem ser públicos</span>
+                    {isCopy && (
+                      <span className='text-sm'>Desafios copiados não podem ser públicos</span>
+                    )}
                   </>
                 </FormControl>
                 <FormMessage />

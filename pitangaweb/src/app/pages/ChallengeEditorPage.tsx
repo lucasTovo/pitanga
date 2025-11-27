@@ -26,6 +26,7 @@ import { ActionDialog } from '@/app/components/ActionDialog';
 import { PageContainer } from '@/app/components/PageContainer';
 import { ValidationItem } from '@/app/components/ValidationItem';
 import { DifficultyLevelBadge } from '@/app/components/DifficultyLevelBadge';
+import { ShareChallengeDialog } from '@/app/components/ShareChallengeDialog';
 
 type ChallengeEditorStatus = 'idle' | 'saving' | 'running' | 'error';
 
@@ -257,7 +258,9 @@ export const ChallengeEditorPage = () => {
         </Button>
       </div>
       {!challengeSolutionIsFetchedAfterMount ? (
-        <span>Carregando editor...</span>
+        <div className='grow'>
+          <span>Carregando editor código...</span>
+        </div>
       ) : (
         <CodeEditor
           value={code}
@@ -295,7 +298,12 @@ export const ChallengeEditorPage = () => {
           <div className="p-3 sm:p-6 md:p-10 mx-auto w-full max-w-7xl">
             <DrawerHeader className="p-0 mb-4">
               <DrawerTitle>Validações</DrawerTitle>
-              <DrawerDescription>Entradas e saídas de dados esperadas</DrawerDescription>
+              <DrawerDescription>
+                {challenge.validations.length
+                  ? 'Entradas e saídas de dados esperadas'
+                  : 'O desafio não possui validações adicionadas'
+                }
+              </DrawerDescription>
             </DrawerHeader>
 
             <div className="pb-0 max-h-[520px]">
