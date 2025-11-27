@@ -12,3 +12,5 @@ schoolClassRouter.get('/:id', controller.getSchoolClassById);
 schoolClassRouter.put('/:id', controller.updateSchoolClass);
 schoolClassRouter.delete('/:id', controller.deleteSchoolClass);
 schoolClassRouter.delete('/challenges/:challengeId', controller.removeChallengeFromAllClasses);
+schoolClassRouter.delete('/:id/challenges/:challengeId', controller.removeChallengeFromSchoolClass);
+

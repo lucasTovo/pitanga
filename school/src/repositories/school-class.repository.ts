@@ -148,3 +148,27 @@ export async function removeChallengeRelation(schoolClassId: string, challengeId
     }
   });
 }
+
+export async function removeChallengeFromSpecificClass(
+  schoolClassId: string,
+  challengeId: string
+) {
+  await prisma.schoolClassChallenge.delete({
+    where: {
+      schoolClassId_challengeId: {
+        schoolClassId,
+        challengeId,
+      },
+    },
+  });
+
+  const updated = await prisma.schoolClass.findUnique({
+    where: { id: schoolClassId },
+    select: schoolClassSelect,
+  });
+
+  if (!updated) throw new Error('School class not found');
+
+  return mapToSchoolClassResponse(updated);
+}
+

@@ -70,3 +70,15 @@ export const removeChallengeFromAllClasses = async (
     }
   }
 };
+
+export const removeChallengeFromSchoolClass = async (
+  schoolClassId: string,
+  challengeId: string
+) => {
+  try {
+    return await repo.removeChallengeFromSpecificClass(schoolClassId, challengeId);
+  } catch (err: any) {
+    throw new Error(`Failed to remove challenge from school class: ${err.message}`);
+  }
+};
+

@@ -61,6 +61,14 @@ export async function removeChallengeFromAllClasses(id: string) {
   }
 }
 
+export async function removeChallengeFromClass(schoolClassId: string, challengeId: string) {
+  try {
+    await classesApi.delete(`/classes/${schoolClassId}/challenges/${challengeId}`);
+  } catch (error) {
+    console.error(`Error deleting challenge ${challengeId} from class ${schoolClassId}:`, error);
+  }
+}
+
 // ---------------------- USERS ----------------------
 
 export async function listUsers() {

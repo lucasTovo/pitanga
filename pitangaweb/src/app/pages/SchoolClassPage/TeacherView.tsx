@@ -121,6 +121,9 @@ export const TeacherView = ({ classId }: TeacherViewProps) => {
     }, 0);
   };
 
+  const studentsTableColumns = studentsColumns(completedSummary, classChallenges.length)
+  const challengesTableColumns = challengesColumns(getStudentsSolvedCount, schoolClass?.students?.length ?? 0, schoolClass?.id!)
+
   const dialogContent: Record<Tab, { button: string; title: string; description: string; loadingMsg: string }> = {
     students: {
       button: 'Adicionar aluno à turma',
@@ -179,9 +182,9 @@ export const TeacherView = ({ classId }: TeacherViewProps) => {
       handleCopyChallenge(challenge.id);
     } else {
       addChallenge({ challengeId: challenge.id });
+      queryClient.invalidateQueries({ queryKey: ['classes'] });
+      setModalOpen(false);
     }
-
-    setModalOpen(false);
   };
 
   const handleCopyChallenge = async (id: string) => {
@@ -198,6 +201,12 @@ export const TeacherView = ({ classId }: TeacherViewProps) => {
         addChallenge({ challengeId: response.id });
       }
     });
+  }
+
+  const handleAddStudent = (id: string) => {
+    addStudent({ studentId: id });
+    queryClient.invalidateQueries({ queryKey: ['classes'] });
+    setModalOpen(false);
   }
 
   const renderDialogChallenges = (challenges: Challenge[]) => (
@@ -220,7 +229,6 @@ export const TeacherView = ({ classId }: TeacherViewProps) => {
               fullWidth
               onAction={() => {
                 handleAddChallenge(ch);
-                setModalOpen(false);
               }}
             />
           );
@@ -296,7 +304,7 @@ export const TeacherView = ({ classId }: TeacherViewProps) => {
         <TabsContent value="students" className='data-[state=active]:flex flex-col flex-1 overflow-hidden'>
           <DataTable
             data={classStudents}
-            columns={studentsColumns(completedSummary, classChallenges.length)}
+            columns={studentsTableColumns}
             childColumns={(user) => studentsSubTableColumns(user, completedSummary)}
             children={classChallenges}
             searchPlaceholder="Buscar aluno..."
@@ -307,7 +315,7 @@ export const TeacherView = ({ classId }: TeacherViewProps) => {
         <TabsContent value="challenges" className='data-[state=active]:flex flex-col flex-1 overflow-hidden'>
           <DataTable
             data={classChallenges}
-            columns={challengesColumns(getStudentsSolvedCount, schoolClass.students.length)}
+            columns={challengesTableColumns}
             childColumns={(challenge) => challengesSubTableColumns(challenge, completedSummary)}
             children={classStudents}
             searchPlaceholder="Buscar desafio..."
@@ -370,10 +378,7 @@ export const TeacherView = ({ classId }: TeacherViewProps) => {
                       <Button
                         size='sm'
                         disabled={addingStudent}
-                        onClick={() => {
-                          addStudent({ studentId: student.id });
-                          setModalOpen(false);
-                        }}
+                        onClick={() => handleAddStudent(student.id)}
                       >
                         Adicionar aluno
                       </Button>
@@ -394,6 +399,7 @@ export const TeacherView = ({ classId }: TeacherViewProps) => {
         confirmLabel={config.confirmLabel}
         variant={config.variant}
         onConfirm={handleConfirm}
+        modal={false}
       />
     </>
   );
