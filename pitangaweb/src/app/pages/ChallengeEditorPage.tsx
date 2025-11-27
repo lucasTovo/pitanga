@@ -13,6 +13,7 @@ import { copyChallenge, saveSolution } from '@/infra/data/challenges.rest';
 
 import { useAuth } from '@/hooks/useAuth';
 import { useActionDialog } from '@/app/hooks/useActionDialog';
+import { useSchoolClassList } from '@/app/hooks/useSchoolClassList';
 import { useChallengeSolution } from '@/app/hooks/useChallengeSolution';
 
 import { Button } from '@/components/ui/button';
@@ -54,7 +55,7 @@ export const ChallengeEditorPage = ({ readOnly = false }: Props) => {
   const { challengeId } = useParams<string>();
 
   const navigate = useNavigate();
-  const { userId, isAuthenticated, login } = useAuth();
+  const { userId, isAuthenticated, roles, login } = useAuth();
   const queryClient = useQueryClient();
 
   const isInteractionDisabled = readOnly || !isAuthenticated;
@@ -68,6 +69,8 @@ export const ChallengeEditorPage = ({ readOnly = false }: Props) => {
     solution,
     challengeSolutionIsFetchedAfterMount,
   } = useChallengeSolution(challengeId);
+
+  const { schoolClassList } = useSchoolClassList();
 
   const isChallengeFromAnotherUser =
     isAuthenticated &&
@@ -95,7 +98,7 @@ export const ChallengeEditorPage = ({ readOnly = false }: Props) => {
   } = useActionDialog();
 
   const saveAndRunCode = useCallback(async (newCode: string) => {
-    if (isInteractionDisabled ) return;
+    if (isInteractionDisabled) return;
 
     setStatus('saving');
 
@@ -129,6 +132,12 @@ export const ChallengeEditorPage = ({ readOnly = false }: Props) => {
     }
   }, [challengeId, isInteractionDisabled]);
 
+  const handleSaveCode = async (code?: string) => {
+    if (!code) return;
+    await saveAndRunCode(code);
+    setOpenDrawer(true);
+  }
+
   const debouncedSave = useMemo(
     () => debounce(saveAndRunCode, 3000),
     [saveAndRunCode]
@@ -140,6 +149,55 @@ export const ChallengeEditorPage = ({ readOnly = false }: Props) => {
       debouncedSave.flush();
     };
   }, [debouncedSave, isInteractionDisabled ]);
+
+  const isStudentInChallengeClass = useMemo(() => {
+    if (!isAuthenticated) return false;
+    if (!roles.includes('student')) return false;
+    if (!userId) return false;
+    if (!schoolClassList || !challenge) return false;
+
+    return schoolClassList.some(schoolClass => {
+      const isStudentInClass = schoolClass.students.includes(userId);
+      const challengeInClass = schoolClass.challenges.includes(challenge.id);
+
+      return isStudentInClass && challengeInClass;
+    });
+  }, [isAuthenticated, roles, userId, schoolClassList, challenge]);
+
+  const isOwner = useMemo(() => {
+    if (!isAuthenticated || !challenge) return false;
+    return userId === challenge.creatorId;
+  }, [isAuthenticated, userId, challenge]);
+
+  type ChallengeActionType = 'SOLVE' | 'COPY' | 'DISABLED';
+
+  const actionType: ChallengeActionType = useMemo(() => {
+    if (!isAuthenticated) return 'DISABLED';
+
+    if (isOwner) return 'SOLVE';
+
+    if (isStudentInChallengeClass) return 'SOLVE';
+
+    return 'COPY';
+  }, [isAuthenticated, isOwner, isStudentInChallengeClass]);
+
+  // useEffect(() => {
+  //   console.log('--- DEBUG CHA ---');
+  //   console.log('userId:', userId);
+  //   console.log('challenge.id:', challenge?.id);
+  //   console.log('schoolClassList:', schoolClassList);
+  //   console.log('roles:', roles);
+
+  //   if (schoolClassList && challenge) {
+  //     schoolClassList.forEach(c => {
+  //       console.log('Class:', c.id);
+  //       console.log('Students:', c.students);
+  //       console.log('Challenges:', c.challenges);
+  //       console.log('Is student:', c.students.includes(userId!));
+  //       console.log('Has challenge:', c.challenges.includes(challenge.id));
+  //     });
+  //   }
+  // }, [schoolClassList, challenge, userId, roles]);
 
   const handleCodeChange = useCallback((newCode: string) => {
     if (isInteractionDisabled) return;
@@ -191,22 +249,7 @@ export const ChallengeEditorPage = ({ readOnly = false }: Props) => {
         : buttonStatusLabel[status];
   }
 
-
-  const handleMainButtonClick = async () => {
-    if (!code) return;
-
-    if (isChallengeFromAnotherUser) {
-      await handleCopyChallenge(challengeId);
-      return;
-    }
-
-    if (isInteractionDisabled) return;
-
-    await saveAndRunCode(code);
-    setOpenDrawer(true);
-  };
-
-  const handleCopyChallenge = async (id: string) => {
+  const handleCopyChallenge = (id: string) => {
     showDialog({
       title: 'Usar desafio?',
       description: 'O desafio deve ser copiado e adicionado aos seus desafios para poder usá-lo.',
@@ -358,7 +401,7 @@ export const ChallengeEditorPage = ({ readOnly = false }: Props) => {
           Validações
         </Button>
 
-        <Button
+        {/* <Button
           className={cn(
             'w-full max-w-sm',
             isButtonDisabled  && 'cursor-not-allowed'
@@ -367,6 +410,22 @@ export const ChallengeEditorPage = ({ readOnly = false }: Props) => {
           onClick={async () => handleMainButtonClick()}
         >
           {buttonLabel()}
+        </Button> */}
+
+        <Button
+          className={cn(
+            'w-full max-w-sm',
+            actionType === 'DISABLED'  && 'cursor-not-allowed'
+          )}
+          disabled={actionType === 'DISABLED'}
+          onClick={() => {
+            if (actionType === 'SOLVE') handleSaveCode(code);
+            if (actionType === 'COPY') handleCopyChallenge(challengeId);
+          }}
+        >
+          {actionType === 'SOLVE' && 'Salvar e Executar'}
+          {actionType === 'COPY' && 'Usar Desafio'}
+          {actionType === 'DISABLED' && 'Somente visualização'}
         </Button>
       </div>
 
