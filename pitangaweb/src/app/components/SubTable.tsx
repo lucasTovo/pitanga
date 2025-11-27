@@ -39,6 +39,7 @@ export function SubTable<TChild, TParent>({
                   key={header.id}
                   onClick={header.column.getToggleSortingHandler()}
                   className={cn(
+                    'border-b',
                     header.column.getCanSort() && "cursor-pointer select-none",
                     isLast && "text-right pr-4"
                   )}

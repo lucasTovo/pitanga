@@ -100,3 +100,16 @@ export async function removeChallengeFromAllClasses(req: Request, res: Response)
     });
   }
 }
+
+export async function removeChallengeFromSchoolClass(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { id: schoolClassId, challengeId } = req.params;
+
+    const result = await service.removeChallengeFromSchoolClass(schoolClassId, challengeId);
+
+    res.status(200).json(result);
+  } catch (err: any) {
+    next(err);
+  }
+}
+

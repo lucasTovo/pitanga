@@ -17,4 +17,6 @@ public class ChallengeResponse {
     private String description;
     private ChallengeLevel level;
     private SolutionStatus status;
+    private Boolean isPublic;
+    private String creatorId;
 }

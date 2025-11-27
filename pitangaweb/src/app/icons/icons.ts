@@ -12,4 +12,8 @@ export { ArrowUpRight as ArrowUpRightIcon } from "lucide-react";
 export { Search as SearchIcon } from "lucide-react";
 export { CircleX as CircleXIcon } from "lucide-react";
 export { CircleCheckBig as CircleCheckBigIcon } from "lucide-react";
+export { EyeOff as EyeOffIcon } from "lucide-react";
+export { LogIn as LogInIcon } from "lucide-react";
+export { Share2 as Share2Icon } from "lucide-react";
+export { CircleEllipsis as CircleEllipsisIcon } from "lucide-react";
 

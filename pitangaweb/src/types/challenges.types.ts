@@ -12,16 +12,20 @@ export interface Challenge {
   id: string;
   title: string;
   description: string;
+  creatorId: string;
   baseCode: string;
   level: ChallengeLevel;
   validations: ValidationBase[];
-  creatorId: string;
   status: SolutionStatus;
+  isPublic: boolean;
+  originChallengeId?: string;
 }
 
 export interface ChallengeDTO {
   title: string;
   description: string;
+  level: ChallengeLevel;
   baseCode: string;
+  originChallengeId?: string
   validations: { input: string; output: string; }[];
 }

@@ -14,13 +14,15 @@ export const PageContainer = ({
   return (
     <div
       className={cn(
-        'w-full',
+        'flex',
+        'flex-col',
+        'grow',
         lockScroll && 'h-screen overflow-hidden',
       )}
     >
       <div
         className={cn(
-          'mx-auto w-full max-w-7xl h-full p-3 sm:p-6 md:p-10',
+          'w-full h-full mx-auto max-w-7xl flex flex-col grow p-3 sm:p-6 md:p-10 pb-8 sm:pb-10 md:pb-10',
           className
         )}
       >

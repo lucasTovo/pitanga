@@ -1,13 +1,14 @@
+import { useEffect, useState } from "react";
 import ReactDOM from "react-dom/client";
 import { ReactKeycloakProvider } from "@react-keycloak/web";
 
-import "./main.css";
+import { useAuth } from "@/hooks/useAuth";
 
-import { App } from "./App";
-import { updateUser } from "./infra/data/school.rest";
-import { keycloak, initOptions } from "./infra/data/keycloack";
-import { useAuth } from "./hooks/useAuth";
-import { useEffect, useState } from "react";
+import { updateUser } from "@/infra/data/school.rest";
+import { keycloak, initOptions } from "@/infra/data/keycloak";
+
+import { App } from "@/App";
+import "./main.css";
 
 const root = document.getElementById("root")!;
 
@@ -19,17 +20,23 @@ function AppInitializer() {
     if (!initialized) return;
 
     const syncUser = async () => {
-      if (keycloak.authenticated) {
-        await updateUser();
+      try {
+        if (keycloak.authenticated) {
+          console.log("Usuário autenticado, chamando updateUser...");
+          await updateUser();
+        }
+      } catch (error) {
+        console.error("Erro ao sincronizar usuário:", error);
+      } finally {
+        setReady(true);
       }
-      setReady(true);
     };
 
     syncUser();
-  }, [initialized, keycloak.authenticated]);
+  }, [initialized]);
 
   if (!ready) {
-    return <div>Carregando...</div>;
+    return <div>Carregando aplicação...</div>;
   }
 
   return <App />;

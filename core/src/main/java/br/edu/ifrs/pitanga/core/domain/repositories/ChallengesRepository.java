@@ -18,4 +18,7 @@ public interface ChallengesRepository extends
     JpaSpecificationExecutor<Challenge> {
 
     Page<Challenge> findByCreatorId(String creatorId, Pageable pageable);
+
+    Page<Challenge> findByIsPublicTrue(Pageable pageable);
+    Page<Challenge> findByCreatorIdAndIsPublicTrue(String creatorId, Pageable pageable);
 }

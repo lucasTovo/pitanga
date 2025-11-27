@@ -2,69 +2,72 @@ import { StrictMode } from "react";
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
-import { getChallengeSolution } from "@/infra/data/challenges.rest";
-
-import { useAuth } from "@/hooks/useAuth";
 import { ThemeProvider } from "@/app/theme/ThemeProvider";
-
+import { BaseLayout } from "@/app/layouts/BaseLayout";
 import { RootLayout, rootLoader } from "@/app/layouts/RootLayout";
+import { ProtectedRoute } from "@/routes/ProtectedRoute";
+
 import { Colors } from "@/app/pages/Colors";
 import { HomePage } from "@/app/pages/HomePage";
 import { ErrorPage } from "@/app/pages/ErrorPage";
+import { SchoolClassPage } from "@/app/pages/SchoolClassPage";
 import { EditChallengePage } from "@/app/pages/EditChallengePage";
 import { CreateChallengePage } from "@/app/pages/CreateChallengePage";
 import { ChallengeEditorPage } from "@/app/pages/ChallengeEditorPage";
-import { SchoolClassPage } from "@/app/pages/SchoolClassPage/SchoolClassPage";
 
 const basename = import.meta.env.BASE_URL ?? "/pitanga-tcc";
 
-// 🔹 Cria o cliente do React Query
+// 🔹 React Query
 const queryClient = new QueryClient();
 
 export const App = () => {
-  const { initialized, isAuthenticated, login } = useAuth();
-
-  if (!initialized) {
-    return <div>Carregando Keycloak...</div>;
-  }
-
-  if (!isAuthenticated) {
-    login();
-    return <div>Redirecionando para login...</div>;
-  }
-
   const router = createBrowserRouter(
     [
       {
-        path: "/",
-        element: <RootLayout />,
-        loader: rootLoader,
-        errorElement: <ErrorPage />,
+        element: <BaseLayout />,
         children: [
+          // 🔓 ROTA PÚBLICA
           {
-            index: true,
-            element: <HomePage />,
+            path: "/challenges/public/:challengeId",
+            element: <ChallengeEditorPage readOnly />,
           },
+
+          // 🔐 ROTAS PROTEGIDAS
           {
-            path: "/challenges/create",
-            element: <CreateChallengePage />,
-          },
-          {
-            path: "/challenges/:challengeId",
-            element: <ChallengeEditorPage />,
-            loader: getChallengeSolution,
-          },
-          {
-            path: "/challenges/:id/edit",
-            element: <EditChallengePage />,
-          },
-          {
-            path: "/classes/:classId",
-            element: <SchoolClassPage />,
-          },
-          {
-            path: "/colors-test",
-            element: <Colors />,
+            path: "/",
+            element: (
+              <ProtectedRoute>
+                <RootLayout />
+              </ProtectedRoute>
+            ),
+            loader: rootLoader,
+            errorElement: <ErrorPage />,
+            children: [
+              {
+                index: true,
+                element: <HomePage />,
+              },
+              {
+                path: "/challenges/create",
+                element: <CreateChallengePage />,
+              },
+              {
+                path: "/challenges/:challengeId",
+                element: <ChallengeEditorPage />,
+              },
+              {
+                path: "/challenges/:id/edit",
+                element: <EditChallengePage />,
+              },
+              {
+                path: "/classes/:classId",
+                element: <SchoolClassPage />,
+              },
+              {
+                path: "/colors-test",
+                element: <Colors />,
+              },
+            ],
           },
         ],
       },

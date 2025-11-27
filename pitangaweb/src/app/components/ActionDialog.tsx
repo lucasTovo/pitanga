@@ -9,6 +9,7 @@ interface Props {
   confirmLabel?: string;
   variant?: "default" | "destructive";
   onConfirm: () => void;
+  modal?: boolean;
 }
 
 export function ActionDialog({
@@ -19,9 +20,10 @@ export function ActionDialog({
   confirmLabel = "Confirmar",
   variant = "default",
   onConfirm,
+  modal = true,
 }: Props) {
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={onOpenChange} modal={modal}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle className='text-center'>{title}</DialogTitle>
@@ -30,7 +32,13 @@ export function ActionDialog({
 
         <DialogFooter className="gap-2">
           <DialogClose asChild>
-            <Button variant="ghost" className="hover:bg-secondary">
+            <Button
+              variant="ghost"
+              className="hover:bg-secondary"
+              onClick={(e) => {
+                e.stopPropagation();
+              }}
+            >
               Cancelar
             </Button>
           </DialogClose>

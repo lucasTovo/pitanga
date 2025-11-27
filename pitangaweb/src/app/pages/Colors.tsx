@@ -1,5 +1,6 @@
-import { ThemeToggle } from "@/app/components/ThemeToggle";
+
 import { Card, CardContent } from "@/components/ui/card";
+import { ThemeToggle } from "@/app/components/ThemeToggle";
 
 const themeColors = [
   { name: '--primary', className: 'bg-primary text-primary-foreground' },

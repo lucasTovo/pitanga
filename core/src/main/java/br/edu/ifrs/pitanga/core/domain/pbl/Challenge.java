@@ -30,10 +30,13 @@ public class Challenge {
     @OneToMany(mappedBy = "id.challengeId", fetch = FetchType.EAGER, cascade = { CascadeType.ALL })
     private List<Validation> validations;
     private String creatorId;
-    
+
     @Builder.Default
     @Column(name = "is_public", nullable = false)
     private Boolean isPublic = true;
+    @Column(name = "origin_challenge_id")
+    private UUID originChallengeId;
+
     @Column(name = "created_at", updatable = false, insertable = false)
     private Date createdAt;
     @Column(name = "updated_at")
@@ -61,6 +64,10 @@ public class Challenge {
 
     public void setIsPublic(Boolean isPublic) {
         this.isPublic = isPublic;
+    }
+
+    public void setOriginChallengeId(UUID originChallengeId) {
+        this.originChallengeId = originChallengeId;
     }
 
     @PrePersist

@@ -41,13 +41,14 @@ const editorTheme: Record<ResolvedTheme, string> = {
 }
 
 type CodeEditorProps = {
-  value?: string
-  className?: string
-  onChange: (code: string) => void
+  value?: string;
+  className?: string;
+  onChange: (code: string) => void;
+  readOnly?: boolean;
 }
 
 export const CodeEditor = forwardRef<HTMLDivElement, CodeEditorProps>(
-  ({ value = '', className = '', onChange }, ref) => {
+  ({ value = '', className = '', onChange, readOnly = false }, ref) => {
     const containerRef = useRef<HTMLDivElement>(null)
     const { width, height } = useResizeObserver(containerRef)
     const { resolvedTheme } = useTheme();
@@ -65,11 +66,12 @@ export const CodeEditor = forwardRef<HTMLDivElement, CodeEditorProps>(
       <div
         ref={containerRef}
         className={cn(
-          'relative w-full h-full min-h-[500px] rounded-xl overflow-hidden border border-border shadow-sm',
+          'relative w-full h-full min-h-[500px] rounded-xl overflow-hidden border border-border shadow-sm grow',
           className,
         )}
       >
         <AceEditor
+          readOnly={readOnly}
           mode="java"
           theme={editorTheme[resolvedTheme]}
           name="code-editor"

@@ -186,7 +186,7 @@
     --popover: var(--neutral-800);
     --popover-foreground: var(--neutral-100);
 
-    --muted: var(--neutral-800);
+    --muted: var(--neutral-700);
     --muted-foreground: var(--neutral-400);
 
     --border: var(--neutral-700);
@@ -217,14 +217,4 @@
 
 .description-container > * {
   margin: 0;
-}
-
-.description-container > p,
-.description-container > ol,
-.description-container > ul {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }

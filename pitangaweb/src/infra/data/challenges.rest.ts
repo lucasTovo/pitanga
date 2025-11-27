@@ -6,9 +6,16 @@ import { Page } from '@/types/common.types';
 
 import { challengesApi } from './base';
 
-export const listChallenges = async ({pageParam = 0}): Promise<Page<Challenge>> => {
+export const listMyChallenges = async ({pageParam = 0}): Promise<Page<Challenge>> => {
   const { data } = await challengesApi.get<Page<Challenge>>(
-    `/challenges?page=${pageParam}&size=25`
+    `/challenges/me?page=${pageParam}&size=25`
+  );
+  return data;
+}
+
+export const listPublicChallenges = async ({pageParam = 0}): Promise<Page<Challenge>> => {
+  const { data } = await challengesApi.get<Page<Challenge>>(
+    `/challenges/public?page=${pageParam}&size=25`
   );
   return data;
 }
@@ -18,25 +25,18 @@ export async function getChallengeById(id: string) {
   return response.data;
 }
 
-export async function getChallengeSolution({ params }: { params: Params }) {
-  try {
-    const url = `/challenges/${params.challengeId}`;
-    const challengeRaw = await challengesApi.get<Challenge>(url);
-    const solutionRaw = await challengesApi.get<Solution>(`${url}/solutions`);
+export async function getChallengeSolution(challengeId: string) {
+  const url = `/challenges/${challengeId}`;
 
-    const result = {
-      challenge: challengeRaw.data as Challenge,
-      solution: solutionRaw.status === 200 ? (solutionRaw.data as Solution) : undefined
-    };
+  const [challengeRaw, solutionRaw] = await Promise.all([
+    challengesApi.get<Challenge>(url),
+    challengesApi.get<Solution>(`${url}/solutions`).catch(() => null)
+  ]);
 
-    return result;
-  } catch (err: any) {
-    if (err?.response?.status === 404) {
-      return redirect('/?error=Challenge not found');
-    }
-
-    throw err;
-  }
+  return {
+    challenge: challengeRaw.data,
+    solution: solutionRaw?.status === 200 ? solutionRaw.data : null
+  };
 }
 
 export async function saveChallenge(body: ChallengeDTO) {
@@ -99,4 +99,34 @@ export async function getCompletedChallengesCount(
 ): Promise<Record<string, CompletedChallengesCount>> {
   const response = await challengesApi.post('/solutions/completion-summary', {studentIds, challengeIds});
   return response.data;
+}
+
+export async function copyChallenge(challengeId: string) {
+  const challengeBeingCopied = await getChallengeById(challengeId);
+  const {
+    id,
+    title,
+    level,
+    baseCode,
+    description,
+    validations,
+  }: Challenge = challengeBeingCopied;
+
+  const challenge: ChallengeDTO = {
+    title: `Cópia de ${title}`,
+    description,
+    level,
+    baseCode,
+    originChallengeId: id,
+    validations: validations.map(val => {
+      return { input: val.testInput, output: val.expectedOutput };
+    }),
+  }
+
+  const res = await challengesApi.post<Challenge>('/challenges', {
+    ...challenge,
+    creatorId: "2", // cuidado se o tipo for string
+  });
+
+  return res.data;
 }
