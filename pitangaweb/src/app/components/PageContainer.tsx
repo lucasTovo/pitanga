@@ -22,7 +22,7 @@ export const PageContainer = ({
     >
       <div
         className={cn(
-          'w-full mx-auto max-w-7xl flex flex-col grow p-3 sm:p-6 md:p-10 pb-8 sm:pb-10 md:pb-10',
+          'w-full h-full mx-auto max-w-7xl flex flex-col grow p-3 sm:p-6 md:p-10 pb-8 sm:pb-10 md:pb-10',
           className
         )}
       >
