@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeftFromLineIcon, ClipboardListIcon, PlusIcon, UserIcon } from 'lucide-react';
+import { useQueryClient } from '@tanstack/react-query';
 
 import { useChallenges } from '@/app/hooks/useChallenges';
 import { useAllStudents } from '@/app/hooks/useAllStudents';
@@ -12,8 +13,14 @@ import { useCompletedSummary } from '@/app/hooks/useCompletedSummary';
 import { useAddStudentToSchoolClass } from '@/app/hooks/useAddStudentToSchoolClass';
 import { useAddChallengeToSchoolClass } from '@/app/hooks/useAddChallengeToSchoolClass';
 
-import { challengesColumns, challengesSubTableColumns } from '@/app/pages/SchoolClassPage/challengesColumns';
-import { studentsColumns, studentsSubTableColumns } from '@/app/pages/SchoolClassPage/studentsColumns';
+import { Challenge } from '@/types/challenges.types';
+
+import { cn } from '@/lib/utils';
+import { copyChallenge } from '@/infra/data/challenges.rest';
+
+import { useUser } from '@/app/hooks/useUser';
+import { useActionDialog } from '@/app/hooks/useActionDialog';
+import { usePublicChallenges } from '@/app/hooks/usePublicChallenges';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -23,10 +30,14 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { studentsColumns, studentsSubTableColumns } from '@/app/pages/SchoolClassPage/studentsColumns';
+import { challengesColumns, challengesSubTableColumns } from '@/app/pages/SchoolClassPage/challengesColumns';
 import { DataTable } from '@/app/components/DataTable';
+import { ActionDialog } from '@/app/components/ActionDialog';
 import { ChallengeCard } from '@/app/components/ChallengeCard';
 
 type Tab = 'students' | 'challenges';
+type ChallengesDialogTab = 'my' | 'public';
 
 type TeacherViewProps = {
   classId: string;
@@ -35,7 +46,11 @@ type TeacherViewProps = {
 export const TeacherView = ({ classId }: TeacherViewProps) => {
   const navigate = useNavigate();
   const [tab, setTab] = useState<Tab>('students');
+  const [challengesDialogTab, setChallengesDialogTab] = useState<ChallengesDialogTab>('my');
   const [modalOpen, setModalOpen] = useState(false);
+
+  const { user } = useUser();
+  const queryClient = useQueryClient();
 
   const {
     schoolClass,
@@ -73,6 +88,13 @@ export const TeacherView = ({ classId }: TeacherViewProps) => {
     challengesHasNextPage,
     challengesIsFetchingNextPage
   } = useChallenges();
+
+  const {
+    publicChallenges,
+    publicChallengesFetchNextPage,
+    publicChallengesHasNextPage,
+    publicChallengesIsFetchingNextPage
+  } = usePublicChallenges();
 
   const { addStudent, addingStudent } = useAddStudentToSchoolClass(schoolClass?.id);
   const { addChallenge, addingChallenge } = useAddChallengeToSchoolClass(schoolClass?.id);
@@ -113,6 +135,101 @@ export const TeacherView = ({ classId }: TeacherViewProps) => {
       loadingMsg: 'Carregando desafios...',
     }
   };
+
+  const extractChallengeIdentifiers = (challenges: Challenge[]) => {
+    return new Set(
+      challenges.flatMap(challenge =>
+        [challenge.id, challenge.originChallengeId].filter(Boolean)
+      )
+    );
+  };
+
+  const myAvailableChallenges = useMemo(() => {
+    if (!myChallenges || !classChallenges) return [];
+
+    const classChallengeIdentifiers = extractChallengeIdentifiers(classChallenges);
+
+    return myChallenges.filter(challenge =>
+      !classChallengeIdentifiers.has(challenge.id)
+    );
+  }, [myChallenges, classChallenges]);
+
+  const filteredPublicChallenges = useMemo(() => {
+    if (!publicChallenges || !classChallenges || !user) return [];
+
+    const classChallengeIdentifiers = extractChallengeIdentifiers(classChallenges);
+
+    return publicChallenges.filter(challenge =>
+      challenge.creatorId !== user.id &&
+      !classChallengeIdentifiers.has(challenge.id)
+    );
+  }, [publicChallenges, classChallenges, user]);
+
+
+  const {
+    open,
+    setOpen,
+    config,
+    showDialog,
+    handleConfirm,
+  } = useActionDialog();
+
+  const handleAddChallenge = (challenge: Challenge) => {
+    if (challenge.creatorId !== user?.id) {
+      handleCopyChallenge(challenge.id);
+    } else {
+      addChallenge({ challengeId: challenge.id });
+    }
+
+    setModalOpen(false);
+  };
+
+  const handleCopyChallenge = async (id: string) => {
+    showDialog({
+      title: 'Copiar e usar desafio?',
+      description: `O desafio deve ser copiado e adicionado aos seus desafios
+        para poder adiciona-lo à turma.
+        Isso garante um maior controle para o professor sobre ele.`,
+      confirmLabel: 'Copiar e adicionar',
+      variant: 'default',
+      action: async () => {
+        const response = await copyChallenge(id);
+        queryClient.invalidateQueries({ queryKey: ['my-challenges'] });
+        addChallenge({ challengeId: response.id });
+      }
+    });
+  }
+
+  const renderDialogChallenges = (challenges: Challenge[]) => (
+    <ScrollArea
+      className={cn(
+        'flex flex-1',
+        '[&_[data-radix-scroll-area-viewport]>div]:!block', {/* Evita display: table no SrollAreaViewport */}
+      )}
+    >
+      <div className="pr-3 flex flex-wrap gap-4">
+        {challenges.map((ch, index) => {
+          const isLast = index === challenges.length - 1;
+
+          return (
+            <ChallengeCard
+              key={ch.id}
+              ref={isLast ? lastElementRef : undefined}
+              actionLabel='Adicionar desafio'
+              challenge={ch}
+              fullWidth
+              onAction={() => {
+                handleAddChallenge(ch);
+                setModalOpen(false);
+              }}
+            />
+          );
+        })}
+
+        {challengesIsFetchingNextPage && <Spinner className='m-auto' />}
+      </div>
+    </ScrollArea>
+  );
 
   if (
     schoolClassIsLoading ||
@@ -207,43 +324,43 @@ export const TeacherView = ({ classId }: TeacherViewProps) => {
           </Button>
         </DialogTrigger>
 
-        <DialogContent className="sm:max-w-2x2 w-full max-h-[70vh] flex flex-col flex-1 overflow-hidden">
+        <DialogContent className="sm:max-w-2x2 h-full w-full max-h-[70vh] flex flex-col flex-1 overflow-hidden">
           <DialogHeader>
             <DialogTitle>{dialogContent[tab].title}</DialogTitle>
             <DialogDescription>{dialogContent[tab].description}</DialogDescription>
           </DialogHeader>
 
-          <ScrollArea className="flex flex-col flex-1">
-            <div className="pr-3 flex flex-col gap-4">
-              {tab === 'challenges' && (
-                <>
-                  {myChallenges.map((ch, index) => {
-                    const isLast = index === myChallenges.length - 1;
+          {tab === 'challenges' && (
+            <Tabs
+              value={challengesDialogTab}
+              onValueChange={(v) => setChallengesDialogTab(v as ChallengesDialogTab)}
+              className="flex flex-col h-full flex-1 overflow-hidden"
+            >
+              <TabsList className="mb-3 gap-4">
+                <TabsTrigger value="my">Meus desafios</TabsTrigger>
+                <TabsTrigger value="public">Desafios públicos</TabsTrigger>
+              </TabsList>
 
-                    return (
-                      <ChallengeCard
-                        key={ch.id}
-                        ref={isLast ? lastElementRef : undefined}
-                        actionLabel='Adicionar desafio'
-                        challenge={ch}
-                        fullWidth
-                        onAction={() => {
-                          addChallenge({ challengeId: ch.id });
-                          setModalOpen(false);
-                        }}
-                      />
-                    );
-                  })}
+              <TabsContent value="my" className="data-[state=active]:flex flex-col flex-1 overflow-hidden">
+                {renderDialogChallenges(myAvailableChallenges)}
+              </TabsContent>
 
-                  {challengesIsFetchingNextPage && (
-                    <Spinner className='m-auto' />
-                  )}
-                </>
+              <TabsContent value="public" className="data-[state=active]:flex flex-col flex-1 overflow-hidden">
+                {renderDialogChallenges(filteredPublicChallenges)}
+              </TabsContent>
+            </Tabs>
+          )}
+
+          {tab === 'students' && (
+            <ScrollArea
+              className={cn(
+                'flex flex-1',
+                '[&_[data-radix-scroll-area-viewport]>div]:!block', {/* Evita display: table no SrollAreaViewport */}
               )}
-
-              {tab === 'students' && (
-                filterAvailableUsers().map(student => (
-                  <Card key={student.id} className='p-6 flex items-center justify-between'>
+            >
+              <div className="pr-3 flex flex-wrap gap-4">
+                {filterAvailableUsers().map(student => (
+                  <Card key={student.id} className='p-6 w-full flex items-center justify-between'>
                     <CardHeader className='p-1 space-y-0 flex flex-col gap-2'>
                       <CardTitle>{student.name}</CardTitle>
                       <CardDescription>{student.email}</CardDescription>
@@ -262,12 +379,22 @@ export const TeacherView = ({ classId }: TeacherViewProps) => {
                       </Button>
                     </CardFooter>
                   </Card>
-                ))
-              )}
-            </div>
-          </ScrollArea>
+                ))}
+              </div>
+            </ScrollArea>
+          )}
         </DialogContent>
       </Dialog>
+
+      <ActionDialog
+        open={open}
+        onOpenChange={setOpen}
+        title={config.title}
+        description={config.description}
+        confirmLabel={config.confirmLabel}
+        variant={config.variant}
+        onConfirm={handleConfirm}
+      />
     </>
   );
 };
