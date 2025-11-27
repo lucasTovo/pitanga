@@ -24,6 +24,8 @@ export interface Challenge {
 export interface ChallengeDTO {
   title: string;
   description: string;
+  level: ChallengeLevel;
   baseCode: string;
+  originChallengeId?: string
   validations: { input: string; output: string; }[];
 }

@@ -1,7 +1,7 @@
 // React e libs externas
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeftFromLineIcon, ChevronDownIcon, LogInIcon } from 'lucide-react';
+import { ArrowLeftFromLineIcon, ChevronDownIcon, EyeOffIcon, LogInIcon, Share2Icon } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 
 import type { Challenge } from '@/types/challenges.types';
@@ -9,7 +9,7 @@ import type { ValidationResult } from '@/types/validations.type';
 
 import { cn } from '@/lib/utils';
 import { debounce } from '@/infra/utils/debounce';
-import { saveSolution } from '@/infra/data/challenges.rest';
+import { copyChallenge, saveSolution } from '@/infra/data/challenges.rest';
 
 import { useAuth } from '@/hooks/useAuth';
 import { useActionDialog } from '@/app/hooks/useActionDialog';
@@ -19,8 +19,9 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Card, CardHeader, CardTitle } from '@/components/ui/card';
-import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
 import { CodeEditor } from '@/app/components/CodeEditor';
 import { ActionDialog } from '@/app/components/ActionDialog';
 import { PageContainer } from '@/app/components/PageContainer';
@@ -41,7 +42,11 @@ function getDefaultValidationResults(validations?: Challenge['validations']): Va
   }));
 }
 
-export const ChallengeEditorPage = () => {
+interface Props {
+  readOnly?: boolean;
+}
+
+export const ChallengeEditorPage = ({ readOnly = false }: Props) => {
   const [code, setCode] = useState<string>();
   const [openDrawer, setOpenDrawer] = useState(false);
   const [status, setStatus] = useState<ChallengeEditorStatus>('idle');
@@ -49,10 +54,10 @@ export const ChallengeEditorPage = () => {
   const { challengeId } = useParams<string>();
 
   const navigate = useNavigate();
-  const { isAuthenticated, login } = useAuth();
+  const { userId, isAuthenticated, login } = useAuth();
   const queryClient = useQueryClient();
 
-  const readOnly = !isAuthenticated;
+  const isInteractionDisabled = readOnly || !isAuthenticated;
 
   if (!challengeId) {
     throw new Error("Missing challenge id in route parameters.");
@@ -63,6 +68,10 @@ export const ChallengeEditorPage = () => {
     solution,
     challengeSolutionIsFetchedAfterMount,
   } = useChallengeSolution(challengeId);
+
+  const isChallengeFromAnotherUser =
+    isAuthenticated &&
+    challenge?.creatorId !== userId;
 
   useEffect(() => {
     if (!challenge) return;
@@ -86,7 +95,7 @@ export const ChallengeEditorPage = () => {
   } = useActionDialog();
 
   const saveAndRunCode = useCallback(async (newCode: string) => {
-    if (readOnly) return;
+    if (isInteractionDisabled ) return;
 
     setStatus('saving');
 
@@ -118,7 +127,7 @@ export const ChallengeEditorPage = () => {
     } finally {
       setStatus('idle');
     }
-  }, [challengeId, readOnly]);
+  }, [challengeId, isInteractionDisabled]);
 
   const debouncedSave = useMemo(
     () => debounce(saveAndRunCode, 3000),
@@ -127,20 +136,20 @@ export const ChallengeEditorPage = () => {
 
   useEffect(() => {
     return () => {
-      if (readOnly) return;
+      if (isInteractionDisabled ) return;
       debouncedSave.flush();
     };
-  }, [debouncedSave, readOnly]);
+  }, [debouncedSave, isInteractionDisabled ]);
 
   const handleCodeChange = useCallback((newCode: string) => {
-    if (readOnly) return;
+    if (isInteractionDisabled) return;
 
     setCode(newCode);
     debouncedSave(newCode);
   }, [debouncedSave]);
 
   const handleRestoreChallengeBaseCode = () => {
-    if (readOnly) return;
+    if (isInteractionDisabled ) return;
 
     showDialog({
       title: 'Restaurar código base do desafio?',
@@ -154,17 +163,62 @@ export const ChallengeEditorPage = () => {
     });
   };
 
-  const displayedTests = useMemo(() => (
-    solution?.validationResults ??
-    getDefaultValidationResults(challenge?.validations)
-  ), [solution, challenge?.validations]);
+  const displayedTests = useMemo(() => {
+    if (readOnly) {
+      return getDefaultValidationResults(challenge?.validations);
+    }
 
-  const buttonLabel: Record<ChallengeEditorStatus, string> = {
+    return solution?.validationResults ??
+          getDefaultValidationResults(challenge?.validations);
+  }, [readOnly, solution, challenge?.validations]);
+
+  const isButtonDisabled =
+    (isInteractionDisabled && !isChallengeFromAnotherUser)
+      || status !== 'idle'
+
+  const buttonStatusLabel: Record<ChallengeEditorStatus, string> = {
     idle: 'Salvar e executar',
     running: 'Executando...',
     saving: 'Salvando...',
     error: 'Erro ao salvar ou executar o código',
   };
+
+  const buttonLabel = () => {
+    return isButtonDisabled
+      ? 'Somente visualização'
+      : isChallengeFromAnotherUser
+        ? 'Usar desafio'
+        : buttonStatusLabel[status];
+  }
+
+
+  const handleMainButtonClick = async () => {
+    if (!code) return;
+
+    if (isChallengeFromAnotherUser) {
+      await handleCopyChallenge(challengeId);
+      return;
+    }
+
+    if (isInteractionDisabled) return;
+
+    await saveAndRunCode(code);
+    setOpenDrawer(true);
+  };
+
+  const handleCopyChallenge = async (id: string) => {
+    showDialog({
+      title: 'Usar desafio?',
+      description: 'O desafio deve ser copiado e adicionado aos seus desafios para poder usá-lo.',
+      confirmLabel: 'Copiar',
+      variant: 'default',
+      action: async () => {
+        const response = await copyChallenge(id);
+        queryClient.invalidateQueries({ queryKey: ['my-challenges'] });
+        navigate(`/challenges/${response.id}`);
+      }
+    });
+  }
 
   if (!challenge) {
     return (
@@ -178,23 +232,53 @@ export const ChallengeEditorPage = () => {
         <Button
           className={cn(
             'h-auto',
-            readOnly && 'cursor-not-allowed'
+            !isAuthenticated && 'cursor-not-allowed'
           )}
-          disabled={readOnly}
+          disabled={!isAuthenticated}
           onClick={() => navigate('/')}
         >
           <ArrowLeftFromLineIcon />
         </Button>
 
-        <Card className="w-full flex justify-between">
-          <CardHeader className="p-4 sm:p-6 flex flex-1 items-start gap-2 space-y-0">
-            <DifficultyLevelBadge level={challenge.level} />
-            <CardTitle className="text-md sm:text-lg">
+        <Card className="w-full flex justify-between min-w-0">
+          <CardHeader className="p-4 sm:p-6 flex flex-1 items-start gap-2 space-y-0 min-w-0">
+            <div className='w-full flex justify-between items-start'>
+              <DifficultyLevelBadge level={challenge.level} />
+              <TooltipProvider>
+                <Tooltip delayDuration={200}>
+                  <TooltipTrigger asChild>
+                    {(challenge.isPublic) ? (
+                      <ShareChallengeDialog challengeId={challenge.id}>
+                        <Button variant="secondary" size="icon">
+                          <Share2Icon />
+                        </Button>
+                      </ShareChallengeDialog>
+                    ) : (
+                      <Button
+                        size='icon'
+                        className="bg-muted text-muted-foreground hover:bg-muted cursor-default"
+                        aria-disabled
+                      >
+                        <EyeOffIcon />
+                      </Button>
+                    )}
+                  </TooltipTrigger>
+                  <TooltipContent className="bg-muted text-muted-foreground">
+                    {(challenge.isPublic) ? (
+                      <p>Compartilhar desafio</p>
+                    ) : (
+                      <p>Desafio privado</p>
+                    )}
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+            <CardTitle className="text-md sm:text-lg line-clamp-3 w-full">
               {challenge.title}
             </CardTitle>
           </CardHeader>
           {!isAuthenticated && (
-            <div className='p-4 sm:p-6  flex gap-4 items-center border-l'>
+            <div className='p-4 sm:p-6  flex gap-4 items-center border-l shrink-0'>
               <Button
                 onClick={() => login()}
               >
@@ -246,11 +330,11 @@ export const ChallengeEditorPage = () => {
         <Button
           variant="ghost"
           disabled={
-            readOnly ||
+            isInteractionDisabled  ||
             code === challenge.baseCode
           }
           className={cn(
-            readOnly && 'cursor-not-allowed'
+            isInteractionDisabled  && 'cursor-not-allowed'
           )}
           onClick={handleRestoreChallengeBaseCode}
         >
@@ -264,7 +348,7 @@ export const ChallengeEditorPage = () => {
       ) : (
         <CodeEditor
           value={code}
-          readOnly={readOnly}
+          readOnly={isInteractionDisabled}
           onChange={handleCodeChange}
         />
       )}
@@ -277,19 +361,12 @@ export const ChallengeEditorPage = () => {
         <Button
           className={cn(
             'w-full max-w-sm',
-            readOnly && 'cursor-not-allowed'
+            isButtonDisabled  && 'cursor-not-allowed'
           )}
-          disabled={
-            readOnly ||
-            status !== 'idle'
-          }
-          onClick={async () => {
-            if (!code) return;
-            await saveAndRunCode(code);
-            setOpenDrawer(true);
-          }}
+          disabled={isButtonDisabled}
+          onClick={async () => handleMainButtonClick()}
         >
-          {readOnly ? 'Somente visualização' : buttonLabel[status]}
+          {buttonLabel()}
         </Button>
       </div>
 

@@ -112,13 +112,15 @@ export async function copyChallenge(challengeId: string) {
     validations,
   }: Challenge = challengeBeingCopied;
 
-  const challenge = {
+  const challenge: ChallengeDTO = {
     title: `Cópia de ${title}`,
     description,
     level,
     baseCode,
-    validations,
     originChallengeId: id,
+    validations: validations.map(val => {
+      return { input: val.testInput, output: val.expectedOutput };
+    }),
   }
 
   const res = await challengesApi.post<Challenge>('/challenges', {

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useQueryClient } from '@tanstack/react-query';
 import { LogOutIcon, PlusIcon, UserIcon } from 'lucide-react';
+import { useQueryClient } from '@tanstack/react-query';
 
 import { SchoolClass } from '@/types/school-class.types';
 
@@ -31,7 +31,6 @@ import { PageContainer } from '@/app/components/PageContainer';
 import { ChallengeCard } from '@/app/components/ChallengeCard';
 import { SchoolClassCard } from '@/app/components/SchoolClassCard';
 import { SchoolClassFormDialog } from '@/app/components/SchoolClassFormDialog';
-import { copyChallenge } from '@/infra/data/challenges.rest';
 
 type Tab = 'challenges' | 'classes' | 'public';
 
@@ -109,20 +108,6 @@ export const HomePage = () => {
         queryClient.invalidateQueries({ queryKey: ['public-challenges'] });
         queryClient.invalidateQueries({ queryKey: ['classes'] });
       },
-    });
-  }
-
-  const handleCopyChallenge = async (id: string) => {
-    showDialog({
-      title: 'Copiar desafio?',
-      description: 'O desafio seria copiado e adicionado aos seus desafios',
-      confirmLabel: 'Copiar',
-      variant: 'default',
-      action: async () => {
-        const response = await copyChallenge(id);
-        queryClient.invalidateQueries({ queryKey: ['my-challenges'] });
-        navigate(`/challenges/${response.id}`);
-      }
     });
   }
 
@@ -301,8 +286,8 @@ export const HomePage = () => {
                     challenge={ch}
                     onDelete={ch.creatorId === user.id ? handleDeleteChallenge : undefined}
                     onEdit={ch.creatorId === user.id ? handleEditChallenge : undefined}
-                    onAction={(id) => handleCopyChallenge(id)}
-                    actionLabel='Copiar desafio'
+                    onAction={(id) => navigate(`/challenges/public/${id}`)}
+                    actionLabel='Visualizar desafio'
                     ref={isLast ? lastElementRef : undefined}
                   />
                 )

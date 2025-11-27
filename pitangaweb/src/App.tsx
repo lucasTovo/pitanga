@@ -29,7 +29,7 @@ export const App = () => {
           // 🔓 ROTA PÚBLICA
           {
             path: "/challenges/public/:challengeId",
-            element: <ChallengeEditorPage />,
+            element: <ChallengeEditorPage readOnly />,
           },
 
           // 🔐 ROTAS PROTEGIDAS
